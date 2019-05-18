@@ -1,0 +1,12 @@
+{
+  "name": "bajsic",
+  "version": "0.0.1",
+  "description": "Basic interpreter implemented in JavaScript",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jonatan Magnusson",
+  "license": "ISC"
+}
