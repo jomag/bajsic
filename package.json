@@ -4,9 +4,16 @@
   "description": "Basic interpreter implemented in JavaScript",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node -r esm src/index.js",
+    "test": "mocha -r esm src/**/*.test.*"
   },
   "author": "Jonatan Magnusson",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4"
+  },
+  "dependencies": {
+    "esm": "^3.2.25"
+  }
 }

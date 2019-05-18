@@ -1,7 +1,19 @@
-const fs = require('fs');
+import fs from "fs";
+import { tokenizeLine, LexicalError } from "./tokenizer";
 
 function precompile(code) {
-  return [{ type: "print", expr: "hello" }, { type: "goto", expr: 0}];
+  const lines = code.split("\n");
+  const statements = [];
+
+  try {
+    const tokenizedLines = lines.map((line, i) => tokenizeLine(lines[i], i));
+    return tokenizedLines;
+  } catch (e) {
+    if (e instanceof LexicalError) {
+      console.error(`${e.line}:${e.column}: Lexical error: ${e.message}`);
+      process.exit(1);
+    }
+  }
 }
 
 function evaluate(expr, state) {
@@ -27,7 +39,6 @@ function run(program) {
   }
 }
 
-const source = fs.readFileSync('stuga.bas', 'utf8');
-console.log(source);
-
-run(precompile(test_code));
+const source = fs.readFileSync("stuga.bas", "utf8");
+const precompiled = precompile(source);
+// run(precompiled);
