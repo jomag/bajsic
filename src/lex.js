@@ -28,7 +28,8 @@ export const TokenType = {
 };
 
 export const Keyword = {
-  DIM: "DIM"
+  DIM: "DIM",
+  GOTO: "GOTO"
 };
 
 const keywordAliases = {
@@ -198,5 +199,9 @@ export const tokenizeLine = (line, lineNumber) => {
     }
   }
 
-  return tokens;
+  return {
+    lineNumber,
+    line,
+    tokens
+  };
 };

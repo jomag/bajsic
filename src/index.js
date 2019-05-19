@@ -1,18 +1,31 @@
 import fs from "fs";
 import { tokenizeLine, LexicalError } from "./lex";
+import { parse, SyntaxError } from "./parse";
 
 function precompile(code) {
   const lines = code.split("\n");
-  const statements = [];
+  let statements;
+  let tokenizedLines;
 
   try {
-    const tokenizedLines = lines.map((line, i) => tokenizeLine(lines[i], i));
-    return tokenizedLines;
+    tokenizedLines = lines.map((line, i) => tokenizeLine(lines[i], i));
   } catch (e) {
     if (e instanceof LexicalError) {
       console.error(`${e.line}:${e.column}: Lexical error: ${e.message}`);
       process.exit(1);
     }
+    throw e;
+  }
+
+  try {
+    statements = parse(tokenizedLines);
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      console.error(`${e.line}: Syntax error: ${e.message}`);
+      console.error(`    ${e.code}`);
+      process.exit(1);
+    }
+    throw e;
   }
 }
 
