@@ -1,5 +1,5 @@
 import fs from "fs";
-import { tokenizeLine, LexicalError } from "./tokenizer";
+import { tokenizeLine, LexicalError } from "./lex";
 
 function precompile(code) {
   const lines = code.split("\n");

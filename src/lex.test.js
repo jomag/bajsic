@@ -1,7 +1,7 @@
 const chai = require("chai");
 const expect = chai.expect;
 
-import { tokenizeLine, TokenType, Keyword, LexicalError } from "./tokenizer";
+import { tokenizeLine, TokenType, Keyword, LexicalError } from "./lex";
 
 describe("tokenizeLine", () => {
   it("handles empty lines", () => {

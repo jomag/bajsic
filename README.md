@@ -14,4 +14,4 @@ There's code. It does stuff. But it does not interpret Basic (yet).
 
 ### Why not TypeScript?
 
-Cause then then name would not make sense.
+Cause the name would not make sense.
