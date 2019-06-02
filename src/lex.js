@@ -1,25 +1,25 @@
 export const TokenType = {
+  COLON: "colon",
+  COMMA: "comma",
   COMMENT: "comment",
-  REMARK: "remark",
-  INT: "int",
+  DIV: "div",
+  EQ: "eq",
   FLOAT: "float",
-  STRING: "string",
+  GT: "gt",
+  HASH: "hash",
   IDENTIFIER: "identifier",
+  INT: "int",
   KEYWORD: "keyword",
   LPAR: "lpar",
-  RPAR: "rpar",
-  COMMA: "comma",
-  SEPARATOR: "separator",
-  EQ: "eq",
-  PLUS: "plus",
+  LT: "lt",
   MINUS: "minus",
   MUL: "mul",
-  DIV: "div",
-  GT: "gt",
-  LT: "lt",
-  COLON: "colon",
+  PLUS: "plus",
+  REMARK: "remark",
+  RPAR: "rpar",
   SEMICOLON: "semicolon",
-  HASH: "hash",
+  SEPARATOR: "separator",
+  STRING: "string",
 
   // FIXME: I'm not sure about the meaning of underscore
   //        It's often find in INPUT statements:
@@ -29,7 +29,13 @@ export const TokenType = {
 
 export const Keyword = {
   DIM: "DIM",
-  GOTO: "GOTO"
+  GOTO: "GOTO",
+  IF: "IF",
+  THEN: "THEN",
+  ELSE: "ELSE",
+  PRINT: "PRINT",
+  RETURN: "RETURN",
+  GOSUB: "GOSUB"
 };
 
 const keywordAliases = {
@@ -201,7 +207,7 @@ export const tokenizeLine = (line, lineNumber) => {
 
   return {
     lineNumber,
-    line,
-    tokens
+    tokens,
+    original: line
   };
 };
