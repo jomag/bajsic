@@ -1,20 +1,20 @@
 const chai = require("chai");
 const expect = chai.expect;
 
-import { tokenizeLine, TokenType, Keyword, LexicalError } from "./lex";
+import { tokenize, TokenType, Keyword, LexicalError } from "./lex";
 
-describe("tokenizeLine", () => {
+describe("Lexical Analyzer", () => {
   it("handles empty lines", () => {
-    expect(tokenizeLine("")).to.be.empty;
+    expect(tokenize("")).to.be.empty;
   });
 
   it("handles whitespace", () => {
-    expect(tokenizeLine("    ")).to.be.empty;
+    expect(tokenize("    ")).to.be.empty;
   });
 
   it("handles integers", () => {
     const line = "1 25% 13542";
-    expect(tokenizeLine(line)).to.deep.equal([
+    expect(tokenize(line)).to.deep.equal([
       { type: TokenType.INT, value: 1 },
       { type: TokenType.INT, value: 25 },
       { type: TokenType.INT, value: 13542 }
@@ -23,7 +23,7 @@ describe("tokenizeLine", () => {
 
   it("handles floats", () => {
     const line = "1.0 3.14";
-    expect(tokenizeLine(line)).to.deep.equal([
+    expect(tokenize(line)).to.deep.equal([
       { type: TokenType.FLOAT, value: 1 },
       { type: TokenType.FLOAT, value: 3.14 }
     ]);
@@ -31,7 +31,7 @@ describe("tokenizeLine", () => {
 
   it("handles remark", () => {
     const line = "5000 REM This is a comment";
-    const result = tokenizeLine(line);
+    const result = tokenize(line);
     expect(result).to.deep.equal([
       { type: TokenType.INT, value: 5000 },
       { type: TokenType.REMARK, value: "This is a comment" }
@@ -40,7 +40,7 @@ describe("tokenizeLine", () => {
 
   it("handles shortened remark", () => {
     const line = "5000 ' This is a comment";
-    const result = tokenizeLine(line);
+    const result = tokenize(line);
     expect(result).to.deep.equal([
       { type: TokenType.INT, value: 5000 },
       { type: TokenType.REMARK, value: "This is a comment" }
@@ -49,7 +49,7 @@ describe("tokenizeLine", () => {
 
   it("handles identifiers", () => {
     const line = "a Ab ab123  ";
-    const result = tokenizeLine(line);
+    const result = tokenize(line);
     expect(result).to.deep.equal([
       { type: TokenType.IDENTIFIER, value: "a" },
       { type: TokenType.IDENTIFIER, value: "Ab" },
@@ -59,7 +59,7 @@ describe("tokenizeLine", () => {
 
   it("handles keywords", () => {
     const line = "42 dim foo dimension";
-    const result = tokenizeLine(line);
+    const result = tokenize(line);
     expect(result).to.deep.equal([
       { type: TokenType.INT, value: 42 },
       { type: TokenType.KEYWORD, value: Keyword.DIM },
@@ -70,7 +70,7 @@ describe("tokenizeLine", () => {
 
   it("handles single character tokens", () => {
     const line = "(),\\<>=";
-    const result = tokenizeLine(line);
+    const result = tokenize(line);
     expect(result.map(t => t.type)).to.deep.equal([
       TokenType.LPAR,
       TokenType.RPAR,
@@ -84,7 +84,7 @@ describe("tokenizeLine", () => {
 
   it("handles strings", () => {
     const line = '3000 "" "+" "hello there"';
-    const result = tokenizeLine(line);
+    const result = tokenize(line);
     expect(result).to.deep.equal([
       { type: TokenType.INT, value: 3000 },
       { type: TokenType.STRING, value: "" },
@@ -95,6 +95,6 @@ describe("tokenizeLine", () => {
 
   it("catches incomplete strings", () => {
     const line = '3000 "hello there';
-    expect(() => tokenizeLine(line)).to.throw(LexicalError);
+    expect(() => tokenize(line)).to.throw(LexicalError);
   });
 });

@@ -1,37 +1,59 @@
-import { TokenType, Keyword } from "./lex";
+import { TokenType, Keyword } from './lex';
 
-const StatementType = {
-  REMARK: "remark",
-  DIM: "dim",
-  PRINT: "print",
-  RETURN: "return",
-  GOSUB: "gosub"
+export const StatementType = {
+  DIM: 'dim',
+  EMPTY: 'empty',
+  GOSUB: 'gosub',
+  LIST: 'list',
+  PRINT: 'print',
+  REMARK: 'remark',
+  RETURN: 'return',
+  RUN: 'run'
 };
 
-const expectLineLength = (tokens, length, line) => {
+const expectLineLength = (tokens, length) => {
   if (tokens.length > length) {
     throw new SyntaxError(
-      `Expected end of line. Got token ${tokens[length].type}`,
-      line.lineNumber,
-      line.line
+      `Expected end of line. Got token ${tokens[length].type}`
     );
   }
 };
 
-const expectToken = (tok, type, line) => {
-  if (tok.type !== type) {
+const expectToken = (tok, type) => {
+  const v = Array.isArray(type) ? type : [type];
+  if (!v.includes(tok.type)) {
     throw new SyntaxError(
-      `Expected token of type "${type}", got "${tok.type}"`,
-      line.lineNumber,
-      line.line
+      `Expected token of type ${v.join(' or ')}, got "${tok.type}"`
     );
   }
+};
+
+const popType = (tokens, type) => {
+  const tok = tokens.shift();
+
+  if (!tok) {
+    const exp = (Array.isArray(type) ? type : [type]).join(' or ');
+    throw new SyntaxError(`Expected ${exp} at end of line`);
+  }
+
+  expectToken(tok, type);
+  return tok;
 };
 
 const expectKeyword = (tok, keyword) => {
   if (tok.type !== TokenType.KEYWORD || tok.value !== keyword) {
     throw new SyntaxError(`Expected "${keyword}", got "${tok.type}"`);
   }
+};
+
+const popKeyword = (tokens, keyword) => {
+  const tok = tokens.shift();
+  if (!tok) {
+    throw new SyntaxError(`Expected "${keyword}" at end of line`);
+  }
+
+  expectKeyword(tok, keyword);
+  return tok;
 };
 
 const expectIdentifier = tok => {
@@ -41,34 +63,32 @@ const expectIdentifier = tok => {
 };
 
 export class SyntaxError extends Error {
-  constructor(message, line, code, ...params) {
+  constructor(message, ...params) {
     super(...params);
     this.message = message;
-    this.line = line;
-    this.code = code;
   }
 }
 
-const parseDim = (tokens, line) => {
+const parseDim = tokens => {
   const arrays = {};
   let i = 1;
   while (i < tokens.length) {
     if (i > 1) {
-      expectToken(tokens[i], TokenType.COMMA, line);
+      expectToken(tokens[i], TokenType.COMMA);
       i++;
     }
 
-    expectToken(tokens[i], TokenType.IDENTIFIER, line);
+    expectToken(tokens[i], TokenType.IDENTIFIER);
     const name = tokens[i].value;
     i++;
 
-    expectToken(tokens[i], TokenType.LPAR, line);
+    expectToken(tokens[i], TokenType.LPAR);
     i++;
 
     const dim = [];
 
     while (true) {
-      expectToken(tokens[i], TokenType.INT, line);
+      expectToken(tokens[i], TokenType.INT);
       dim.push(tokens[i].value);
       i++;
 
@@ -77,29 +97,85 @@ const parseDim = (tokens, line) => {
         break;
       }
 
-      expectToken(tokens[i], TokenType.COMMA, line);
+      expectToken(tokens[i], TokenType.COMMA);
       i++;
     }
 
     arrays[name] = dim;
   }
 
-  return {
-    line: line.lineNumber,
-    type: StatementType.DIM,
-    arrays
-  };
+  return new Statement(StatementType.DIM, arrays);
 };
 
-const parseGoto = (tokens, line) => {
-  expectToken(tokens[1], TokenType.INT, line);
+const parseGoto = tokens => {
+  popKeyword(tokens, Keyword.GOTO);
+  const dest = popType(tokens, TokenType.INT);
+  return new Statement(StatementType.GOTO, dest.value);
+};
 
-  expectLineLength(tokens, 2, line);
-  return {
-    line: line.lineNumber,
-    type: StatementType.GOTO,
-    destination: tokens[1].value
-  };
+const parseList = tokens => {
+  // VAX BASIC Ref: page 109
+  // Format: LIST, LIST n, LIST n-m, LIST n,n-m,...
+  popKeyword(tokens, Keyword.LIST);
+  let ranges = [];
+
+  if (tokens.length) {
+    let from = null;
+    let to = null;
+    let expectRange = false;
+
+    const append = () => {
+      if (expectRange) {
+        if (from === null || to === null) {
+          throw new SyntaxError('Incomplete range');
+        }
+        ranges.push([from, to]);
+      } else {
+        if (from === null) {
+          new SyntaxError('Missing line number');
+        }
+        ranges.push([from, from]);
+      }
+
+      expectRange = false;
+      from = null;
+      to = null;
+    };
+
+    while (tokens.length) {
+      const tok = tokens.shift();
+
+      switch (tok.type) {
+        case TokenType.INT:
+          if (expectRange) {
+            to = tok.value;
+          } else {
+            if (from !== null) {
+              throw new SyntaxError('Invalid range');
+            }
+            from = tok.value;
+          }
+          break;
+
+        case TokenType.COMMA:
+          append();
+          break;
+
+        case TokenType.MINUS:
+          if (from === null) {
+            throw new SyntaxError('Negative line number is not allowed');
+          }
+          expectRange = true;
+          break;
+
+        default:
+          throw new SyntaxError('Invalid tokens in list range');
+      }
+    }
+
+    append();
+  }
+  return new Statement(StatementType.LIST, ranges);
 };
 
 const isOperand = tok =>
@@ -118,6 +194,10 @@ const parseExpression = tokens => {
 
   while (tokens.length > 0) {
     const tok = tokens[0];
+
+    if ([TokenType.COMMA, TokenType.SEMICOLON].includes(tok.type)) {
+      return expr;
+    }
 
     if (isKeyword(tok, Keyword.THEN) || isKeyword(tok, Keyword.ELSE)) {
       return expr;
@@ -138,7 +218,7 @@ const parseIf = (tokens, line) => {
     type: StatementType.IF,
     condition: [],
     thenBlock: [],
-    elseBlock: []
+    elseBlock: [],
   };
 
   statement.condition = parseExpression(tokens);
@@ -147,21 +227,37 @@ const parseIf = (tokens, line) => {
   expectKeyword(tok, Keyword.THEN);
 };
 
-const parsePrint = (tokens, line) => {
-  expectKeyword(tokens.shift(), Keyword.PRINT);
+const parsePrint = tokens => {
+  // VAX BASIC Ref: page 462
+  // Format: PRINT, PRINT expr, PRINT #channel, expr
+  popKeyword(tokens, Keyword.PRINT);
+  let channel = null;
+  let list = [];
 
-  return {
-    line: line.lineNumber,
-    type: StatementType.PRINT,
-    expr: parseExpression(tokens)
-  };
+  if (tokens.length) {
+    if (tokens[0].type === TokenType.HASH) {
+      tokens.shift();
+      channel = parseExpression(tokens);
+      popType(tokens, TokenType.COMMA);
+    }
+
+    while (tokens.length) {
+      const expr = parseExpression(tokens);
+      let separator =
+        tokens.length > 0 &&
+        popType(tokens, [TokenType.COMMA, TokenType.SEMICOLON]);
+      list.push([expr, !(separator && separator.type === TokenType.SEMICOLON)]);
+    }
+  }
+
+  return new Statement(StatementType.PRINT, { channel, list });
 };
 
 const parseReturn = (tokens, line) => {
   expectKeyword(tokens.shift(), Keyword.RETURN);
   return {
     line: line.lineNumber,
-    type: StatementType.RETURN
+    type: StatementType.RETURN,
   };
 };
 
@@ -173,78 +269,64 @@ const parseAssignment = (tokens, line) => {
   expectIdentifier(tokens.shift());
 };
 
-export const parseLine = line => {
-  const tokens = line.tokens;
-
-  // Handle line number
-  let tok = tokens.shift();
-  if (!tok || tok.type !== TokenType.INT) {
-    throw new SyntaxError(
-      `Line does not start with line number`,
-      line.lineNumber,
-      line.original
-    );
+const parseRun = tokens => {
+  popKeyword(tokens, Keyword.RUN);
+  if (tokens.length !== 0) {
+    throw new SyntaxError('Expected end of line after run command');
   }
+  return new Statement(StatementType.RUN);
+}
 
-  // The annotated line number
-  const lineNumber = tok.value;
+class Statement {
+  constructor(type, data) {
+    this.type = type;
+    this.data = data;
+  }
+}
 
-  // Check the token after the line number token to determine statement type
-  tok = tokens[0];
+// Parse statement from tokens
+//
+// This function will mutate the tokens array by
+// removing used tokens from it. The function can
+// then be called again with the remaining tokens.
+export const parse = tokens => {
+  const tok = tokens[0];
 
-  try {
-    switch (tok.type) {
-      case TokenType.REMARK:
-        return {
-          lineNumber,
-          type: StatementType.REMARK,
-          value: tok.value
-        };
+  switch (tok.type) {
+    case TokenType.REMARK:
+      while (tokens.length) {
+        tokens.pop();
+      }
+      return new Statement(StatementType.REMARK);
 
-      case TokenType.KEYWORD:
-        switch (tok.value) {
-          case Keyword.DIM:
-            return parseDim(tokens, line);
-          case Keyword.GOTO:
-            return parseGoto(tokens, line);
-          case Keyword.IF:
-            return parseIf(tokens, line);
-          case Keyword.PRINT:
-            return parsePrint(tokens, line);
-          case Keyword.RETURN:
-            return parseReturn(tokens, line);
-          case Keyword.GOSUB:
-            return parseGosub(tokens, line);
-          default:
-            throw new SyntaxError(
-              `Unsupported statement keyword: ${tok.value}`
-            );
-        }
+    case TokenType.KEYWORD:
+      switch (tok.value) {
+        case Keyword.DIM:
+          return parseDim(tokens);
+        case Keyword.GOTO:
+          return parseGoto(tokens);
+        case Keyword.IF:
+          return parseIf(tokens);
+        case Keyword.PRINT:
+          return parsePrint(tokens);
+        case Keyword.RETURN:
+          return parseReturn(tokens);
+        case Keyword.GOSUB:
+          return parseGosub(tokens);
+        case Keyword.LIST:
+          return parseList(tokens);
+        case Keyword.RUN:
+          return parseRun(tokens);
+        default:
+          throw new SyntaxError(`Unsupported statement keyword: ${tok.value}`);
+      }
 
-      case TokenType.IDENTIFIER:
-        return parseAssignment(tokens, line);
+    case TokenType.IDENTIFIER:
+      return parseAssignment(tokens);
 
-      default:
-        throw new SyntaxError(
-          `Illegal syntax. First token is "${tok.type}" with value "${
-            tok.value
-          }"`
-        );
-    }
-  } catch (e) {
-    if (e instanceof SyntaxError) {
-      // Enrich the error with line number and original code
-      e.lineNumber = tok.lineNumber;
-      e.code = line.original;
-    }
-    throw e;
+    default:
+      throw new SyntaxError(
+        `Illegal syntax. First token is "${tok.type}" with value "${tok.value}"`
+      );
   }
 };
-
-export function parse(tokenizedLines) {
-  return tokenizedLines.map(line => {
-    const stmt = parseLine(line);
-    console.log(line.original);
-    console.log(stmt);
-  });
-}

@@ -1,104 +1,111 @@
 export const TokenType = {
-  COLON: "colon",
-  COMMA: "comma",
-  COMMENT: "comment",
-  DIV: "div",
-  EQ: "eq",
-  FLOAT: "float",
-  GT: "gt",
-  HASH: "hash",
-  IDENTIFIER: "identifier",
-  INT: "int",
-  KEYWORD: "keyword",
-  LPAR: "lpar",
-  LT: "lt",
-  MINUS: "minus",
-  MUL: "mul",
-  PLUS: "plus",
-  REMARK: "remark",
-  RPAR: "rpar",
-  SEMICOLON: "semicolon",
-  SEPARATOR: "separator",
-  STRING: "string",
+  COLON: 'colon',
+  COMMA: 'comma',
+  COMMENT: 'comment',
+  DIV: 'div',
+  EQ: 'eq',
+  FLOAT: 'float',
+  GT: 'gt',
+  HASH: 'hash',
+  IDENTIFIER: 'identifier',
+  INT: 'int',
+  KEYWORD: 'keyword',
+  LPAR: 'lpar',
+  LT: 'lt',
+  MINUS: 'minus',
+  MUL: 'mul',
+  PLUS: 'plus',
+  REMARK: 'remark',
+  RPAR: 'rpar',
+  SEMICOLON: 'semicolon',
+  SEPARATOR: 'separator',
+  STRING: 'string',
 
   // FIXME: I'm not sure about the meaning of underscore
   //        It's often find in INPUT statements:
   //        10 INPUT ""_A$
-  UNDERSCORE: "underscore"
+  UNDERSCORE: 'underscore',
 };
 
 export const Keyword = {
-  DIM: "DIM",
-  GOTO: "GOTO",
-  IF: "IF",
-  THEN: "THEN",
-  ELSE: "ELSE",
-  PRINT: "PRINT",
-  RETURN: "RETURN",
-  GOSUB: "GOSUB"
+  DIM: 'DIM',
+  GOTO: 'GOTO',
+  IF: 'IF',
+  THEN: 'THEN',
+  ELSE: 'ELSE',
+  PRINT: 'PRINT',
+  RETURN: 'RETURN',
+  RUN: 'RUN',
+  GOSUB: 'GOSUB',
+  LIST: 'LIST'
 };
 
 const keywordAliases = {
-  DIMENSION: Keyword.DIM
+  DIMENSION: Keyword.DIM,
 };
 
-export class LexicalError extends Error {
-  constructor(message, line, column, code, ...params) {
-    super(...params);
-    this.message = message;
-    this.line = line;
-    this.column = column;
-    this.code = code;
+export class Token {
+  constructor(type, value) {
+    this.type = type;
+    this.value = value;
   }
 }
 
-export const tokenizeLine = (line, lineNumber) => {
-  const space = " \t";
-  const numeric = "0123456789";
-  const lowerAlpha = "abcdefghijklmnopqrstuvwxyz";
+export class LexicalError extends Error {
+  constructor(message, column, ...params) {
+    super(...params);
+    this.message = message;
+    this.column = column;
+  }
+}
+
+export const tokenize = (source, sourceLineNo) => {
+  const space = ' \t';
+  const numeric = '0123456789';
+  const lowerAlpha = 'abcdefghijklmnopqrstuvwxyz';
   const alpha = lowerAlpha + lowerAlpha.toUpperCase();
   const alphaNumeric = alpha + numeric;
   const remarkChar = "'";
-  const nameCharacters = alphaNumeric + "$%";
+  const nameCharacters = alphaNumeric + '$%';
   const tokens = [];
   const singleCharacterToken = {
-    [","]: TokenType.COMMA,
-    ["("]: TokenType.LPAR,
-    [")"]: TokenType.RPAR,
-    ["\\"]: TokenType.SEPARATOR,
-    ["<"]: TokenType.LT,
-    ["="]: TokenType.EQ,
-    [">"]: TokenType.GT,
-    ["+"]: TokenType.PLUS,
-    ["-"]: TokenType.MINUS,
-    ["*"]: TokenType.MUL,
-    ["/"]: TokenType.DIV,
-    [":"]: TokenType.COLON,
-    [";"]: TokenType.SEMICOLON,
-    ["_"]: TokenType.UNDERSCORE,
-    ["#"]: TokenType.HASH
+    [',']: TokenType.COMMA,
+    ['(']: TokenType.LPAR,
+    [')']: TokenType.RPAR,
+    ['\\']: TokenType.SEPARATOR,
+    ['<']: TokenType.LT,
+    ['=']: TokenType.EQ,
+    ['>']: TokenType.GT,
+    ['+']: TokenType.PLUS,
+    ['-']: TokenType.MINUS,
+    ['*']: TokenType.MUL,
+    ['/']: TokenType.DIV,
+    [':']: TokenType.COLON,
+    [';']: TokenType.SEMICOLON,
+    ['_']: TokenType.UNDERSCORE,
+    ['#']: TokenType.HASH,
   };
   let i = 0;
 
   const skipSpace = () => {
-    while (i < line.length && space.includes(line[i])) i++;
+    while (i < source.length && space.includes(source[i])) i++;
   };
 
   const parseNumber = () => {
     let type = TokenType.INT;
     const j = i;
 
-    while (numeric.includes(line[i])) i++;
+    while (numeric.includes(source[i])) i++;
 
-    if (line[i] === ".") {
+    if (source[i] === '.') {
       type = TokenType.FLOAT;
       i++;
-      while (numeric.includes(line[i])) i++;
+      while (numeric.includes(source[i])) i++;
     }
 
-    const sub = line.substring(j, i);
+    const sub = source.substring(j, i);
 
-    if (line[i] === "%") {
+    if (source[i] === '%') {
       type = TokenType.INT;
       i++;
     }
@@ -111,67 +118,50 @@ export const tokenizeLine = (line, lineNumber) => {
     i++;
     skipSpace();
     const j = i;
-    i = line.length;
-    return {
-      type: TokenType.REMARK,
-      value: line.substring(j, i)
-    };
+    i = source.length;
+    return new Token(TokenType.REMARK, source.substring(j, i));
   };
 
   const parseIdentifierOrKeyword = () => {
     const j = i++;
-    while (i < line.length && nameCharacters.includes(line[i])) i++;
-    const value = line.substring(j, i);
+    while (i < source.length && nameCharacters.includes(source[i])) i++;
+    const value = source.substring(j, i);
 
     // Special handling of the REM keyword
-    if (value.toUpperCase() === "REM") {
+    if (value.toUpperCase() === 'REM') {
       return parseRemark();
     }
 
     const keyword = value.toUpperCase();
 
     if (Object.keys(keywordAliases).includes(keyword)) {
-      return {
-        type: TokenType.KEYWORD,
-        value: keywordAliases[keyword]
-      };
+      return new Token(TokenType.KEYWORD, keywordAliases[keyword]);
     }
 
     if (Object.keys(Keyword).includes(keyword)) {
-      return {
-        type: TokenType.KEYWORD,
-        value: Keyword[keyword]
-      };
+      return new Token(TokenType.KEYWORD, Keyword[keyword]);
     }
 
-    return {
-      type: TokenType.IDENTIFIER,
-      value
-    };
+    return new Token(TokenType.IDENTIFIER, value);
   };
 
   const parseString = () => {
     const j = ++i;
-    while (i < line.length && line[i] !== '"') i++;
+    while (i < source.length && source[i] !== '"') i++;
 
-    if (line[i] !== '"') {
-      throw new LexicalError(
-        'Missing terminating " character',
-        lineNumber,
-        i,
-        line
-      );
+    if (source[i] !== '"') {
+      throw new LexicalError('Missing terminating " character', i);
     }
 
-    const value = line.substring(j, i++);
-    return { type: TokenType.STRING, value };
+    const value = source.substring(j, i++);
+    return new Token(TokenType.STRING, value);
   };
 
-  while (i < line.length) {
+  while (i < source.length) {
     skipSpace();
 
-    if (i < line.length) {
-      const c = line[i];
+    if (i < source.length) {
+      const c = source[i];
 
       if (numeric.includes(c)) {
         tokens.push(parseNumber());
@@ -194,20 +184,14 @@ export const tokenizeLine = (line, lineNumber) => {
       }
 
       if (Object.keys(singleCharacterToken).includes(c)) {
-        tokens.push({
-          type: singleCharacterToken[c]
-        });
+        tokens.push(new Token(singleCharacterToken[c]));
         i++;
         continue;
       }
 
-      throw new LexicalError(`Invalid character '${c}'`, lineNumber, i, line);
+      throw new LexicalError(`Invalid character '${c}'`, i);
     }
   }
 
-  return {
-    lineNumber,
-    tokens,
-    original: line
-  };
+  return tokens;
 };
