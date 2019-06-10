@@ -10,6 +10,8 @@ The name Bajsic is a wordplay with BASIC and JS (JavaScript). Nothing else.
 
 - [VAX Basic User Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY15B-TE_VAX_BASIC_User_Manual_Feb90.pdf) (1990)
 - [VAX Basic Reference Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY16B-TE_VAX_BASIC_Reference_Manual_Feb90.pdf) (1990)
+- [ Let's Build a Compiler, by Jack Crenshaw](https://compilers.iecc.com/crenshaw/) (1989)
+
 
 ## Q & A
 
