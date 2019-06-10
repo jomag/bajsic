@@ -54,7 +54,15 @@ export class Line {
 
   exec(program, context) {
     for (const stmt of this.statements) {
-      evaluate(stmt, program, context);
+      const next = evaluate(stmt, program, context);
+
+      // If next is undefined, the program should either
+      // go to another line or end execution. In either case
+      // the remaining statements of the line will not get
+      // executed.
+      if (next !== undefined) {
+        return next;
+      }
     }
   }
 }

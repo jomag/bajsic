@@ -1,11 +1,13 @@
 import yargs from 'yargs';
 import readline from 'readline';
 import chalk from 'chalk';
+import fs from 'fs';
 
 import { Line } from './line';
 import { SyntaxError } from './parse';
 import { Program } from './program';
 import { Context } from './context';
+import { RuntimeError } from './evaluate';
 
 const PROMPT = '] ';
 
@@ -43,10 +45,18 @@ function startInteractiveMode(program, context) {
       }
     } else {
       if (line.num === undefined) {
-        line.exec(program, context);
+        try {
+          line.exec(program, context);
+        } catch (e) {
+          if (e instanceof RuntimeError) {
+            printError(e.message);
+            rl.prompt();
+            return;
+          }
+        }
       } else {
         program.add(line);
-      }  
+      }
     }
 
     rl.prompt();
@@ -58,7 +68,26 @@ function start(argv) {
   const context = new Context();
 
   if (argv.source) {
-    const sourceText = fs.readFileSync(argv.source, 'utf-8');
+    const srcOriginal = fs.readFileSync(argv.source, 'utf-8');
+    const srcLines = srcOriginal.split('\n');
+    let n = 0;
+    for (const src of srcLines) {
+      try {
+        const line = Line.parse(src);
+        program.add(line);
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          printError(e.message);
+          break;
+        } else {
+          console.error(`Unexpected error on line ${n}`)
+          throw e;
+        }
+      }
+
+      n = n + 1;
+    }
+
     const precompiled = precompile(source);
   }
 

@@ -37,7 +37,8 @@ export const Keyword = {
   RETURN: 'RETURN',
   RUN: 'RUN',
   GOSUB: 'GOSUB',
-  LIST: 'LIST'
+  LIST: 'LIST',
+  END: 'END',
 };
 
 const keywordAliases = {

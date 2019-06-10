@@ -49,4 +49,13 @@ export class Program {
     // map to find the first and last index to return.
     return this.lines.filter(line => line.num >= from && to >= line.num);
   }
+
+  lineNumberToIndex(num) {
+    // Optimize: build and reuse a line number to index map
+    for (let i = 0; i < this.lines.length; i++) {
+      if (this.lines[i].num === num) {
+        return i;
+      }
+    }
+  }
 }

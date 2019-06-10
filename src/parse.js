@@ -8,7 +8,9 @@ export const StatementType = {
   PRINT: 'print',
   REMARK: 'remark',
   RETURN: 'return',
-  RUN: 'run'
+  GOTO: 'goto',
+  END: 'end',
+  RUN: 'run',
 };
 
 const expectLineLength = (tokens, length) => {
@@ -41,15 +43,23 @@ const popType = (tokens, type) => {
 };
 
 const expectKeyword = (tok, keyword) => {
-  if (tok.type !== TokenType.KEYWORD || tok.value !== keyword) {
-    throw new SyntaxError(`Expected "${keyword}", got "${tok.type}"`);
+  const kws = Array.isArray(keyword) ? keyword : [keyword];
+
+  if (tok.type !== TokenType.KEYWORD) {
+    throw new SyntaxError(`Expected ${kws.join(' or ')}, got "${tok.type}"`);
+  }
+
+  if (!kws.includes(tok.value)) {
+    throw new SyntaxError(`Expected ${kws.join(' or ')}, got ${tok.value}`);
   }
 };
 
 const popKeyword = (tokens, keyword) => {
+  const kws = Array.isArray(keyword) ? keyword : [keyword];
   const tok = tokens.shift();
+
   if (!tok) {
-    throw new SyntaxError(`Expected "${keyword}" at end of line`);
+    throw new SyntaxError(`Expected ${kws.join(' or ')} at end of line`);
   }
 
   expectKeyword(tok, keyword);
@@ -70,6 +80,10 @@ export class SyntaxError extends Error {
 }
 
 const parseDim = tokens => {
+  // VAX BASIC Ref: page 244
+  // Format: DIM [data-type] name()
+  // Format: LIST, LIST n, LIST n-m, LIST n,n-m,...
+
   const arrays = {};
   let i = 1;
   while (i < tokens.length) {
@@ -188,7 +202,11 @@ const isOperator = tok => tok.type === TokenType.LT;
 const isKeyword = (tok, keyword) =>
   tok.type === TokenType.KEYWORD && tok.value === keyword;
 
-const parseExpression = tokens => {
+class Expression {
+  
+}
+
+export const parseExpression = tokens => {
   // FIXME: very simplified expression parser!
   const expr = [];
 
@@ -275,7 +293,24 @@ const parseRun = tokens => {
     throw new SyntaxError('Expected end of line after run command');
   }
   return new Statement(StatementType.RUN);
-}
+};
+
+const parseEnd = tokens => {
+  // VAX BASIC Ref: page 253
+  // Format: END, END PROGRAM, END IF, ...
+  popKeyword(tokens, Keyword.END);
+
+  const blockKeywords = [Keyword.PROGRAM];
+
+  let blockType = null;
+
+  if (tokens.length > 0) {
+    const tok = popKeyword(tokens, blockKeywords);
+    blockType = tok.value;
+  }
+
+  return new Statement(StatementType.END, blockType);
+};
 
 class Statement {
   constructor(type, data) {
@@ -317,6 +352,8 @@ export const parse = tokens => {
           return parseList(tokens);
         case Keyword.RUN:
           return parseRun(tokens);
+        case Keyword.END:
+          return parseEnd(tokens);
         default:
           throw new SyntaxError(`Unsupported statement keyword: ${tok.value}`);
       }

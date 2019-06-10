@@ -1,36 +1,32 @@
 import { StatementType } from './parse';
+import { Keyword } from './lex';
 
-class RuntimeError extends Error {
+export class RuntimeError extends Error {
   constructor(message, ...params) {
     super(...params);
     this.message = message;
   }
 }
 
-const termPrint = (value) => {
+const termPrint = value => {
   process.stdout.write(value.toString());
-}
+};
 
-const termPrintln = (value) => {
+const termPrintln = value => {
   process.stdout.write(value.toString());
   process.stdout.write('\n');
-}
+};
 
 const evalExpr = (expr, program, context) => {
   if (expr.length !== 1) {
-    throw new Error("FIXME: only single operand expressions supported");
+    throw new Error('FIXME: only single operand expressions supported');
   }
   return expr[0].value;
-}
+};
 
 const evalGoto = (statement, program, context) => {
-  const lineNum  = statement.data;
-  const lineIndex = program.lineNumberToIndex(lineNum);
-  if (!lineIndex) {
-    throw new RuntimeError(`Undefined line number: ${lineNum}`);
-  }
-  context.pc = lineIndex;
-}
+  return statement.data;
+};
 
 const evalList = (statement, program, context) => {
   if (statement.data.length === 0) {
@@ -51,18 +47,46 @@ const evalPrint = (statement, program, context) => {
   }
 };
 
+const evalEnd = (statement, program, context) => {
+  switch (statement.data) {
+    case null:
+    case Keyword.PROGRAM:
+      return false;
+    default:
+      throw new SyntaxError(`Unsupported end of block type: ${statement.data}`);
+  }
+}
+
 const evalRun = (statement, program, context) => {
   while (true) {
     const line = program.lines[context.pc];
-    line.exec(program, context);
+    const next = line.exec(program, context);
+
+    if (next === false) {
+      break;
+    }
+
+    if (next !== undefined) {
+      const lineIndex = program.lineNumberToIndex(next);
+      if (!lineIndex) {
+        throw new RuntimeError(`Undefined line number: ${next}`);
+      }
+      context.pc = lineIndex;
+    } else {
+      context.pc = context.pc + 1;
+      if (context.pc >= program.lines.length) {
+        break;
+      }
+    }
   }
-}
+};
 
 const evalMap = {
   [StatementType.LIST]: evalList,
   [StatementType.PRINT]: evalPrint,
   [StatementType.GOTO]: evalGoto,
-  [StatementType.RUN]: evalRun
+  [StatementType.RUN]: evalRun,
+  [StatementType.END]: evalEnd
 };
 
 export const evaluate = (statement, program, context) =>
