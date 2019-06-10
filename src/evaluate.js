@@ -1,4 +1,4 @@
-import { StatementType } from './parse';
+import { StatementType } from './parser';
 import { Keyword } from './lex';
 
 export class RuntimeError extends Error {
@@ -55,7 +55,7 @@ const evalEnd = (statement, program, context) => {
     default:
       throw new SyntaxError(`Unsupported end of block type: ${statement.data}`);
   }
-}
+};
 
 const evalRun = (statement, program, context) => {
   while (true) {

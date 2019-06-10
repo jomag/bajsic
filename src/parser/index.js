@@ -1,4 +1,4 @@
-import { TokenType, Keyword } from './lex';
+import { TokenType, Keyword } from '../lex';
 
 export const StatementType = {
   DIM: 'dim',
@@ -10,7 +10,7 @@ export const StatementType = {
   RETURN: 'return',
   GOTO: 'goto',
   END: 'end',
-  RUN: 'run',
+  RUN: 'run'
 };
 
 const expectLineLength = (tokens, length) => {
@@ -202,9 +202,7 @@ const isOperator = tok => tok.type === TokenType.LT;
 const isKeyword = (tok, keyword) =>
   tok.type === TokenType.KEYWORD && tok.value === keyword;
 
-class Expression {
-  
-}
+class Expression {}
 
 export const parseExpression = tokens => {
   // FIXME: very simplified expression parser!
@@ -236,7 +234,7 @@ const parseIf = (tokens, line) => {
     type: StatementType.IF,
     condition: [],
     thenBlock: [],
-    elseBlock: [],
+    elseBlock: []
   };
 
   statement.condition = parseExpression(tokens);
@@ -275,7 +273,7 @@ const parseReturn = (tokens, line) => {
   expectKeyword(tokens.shift(), Keyword.RETURN);
   return {
     line: line.lineNumber,
-    type: StatementType.RETURN,
+    type: StatementType.RETURN
   };
 };
 

@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 
 import { Line } from './line';
-import { SyntaxError } from './parse';
+import { SyntaxError } from './parser';
 import { Program } from './program';
 import { Context } from './context';
 import { RuntimeError } from './evaluate';
@@ -19,7 +19,7 @@ function startInteractiveMode(program, context) {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: PROMPT,
+    prompt: PROMPT
   });
 
   rl.prompt();
@@ -80,7 +80,7 @@ function start(argv) {
           printError(e.message);
           break;
         } else {
-          console.error(`Unexpected error on line ${n}`)
+          console.error(`Unexpected error on line ${n}`);
           throw e;
         }
       }
@@ -101,7 +101,7 @@ yargs
     yargs => {
       yargs.positional('source', {
         describe: 'filename of basic source to run',
-        type: 'string',
+        type: 'string'
       });
     },
     start

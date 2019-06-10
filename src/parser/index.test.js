@@ -1,17 +1,18 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-import { StatementType, parse, parseExpression } from './parse';
-import { tokenize, TokenType } from './lex';
+import { StatementType, parse, parseExpression } from './';
+import { tokenize, TokenType } from '../lex';
 
-const P = text => parse(tokenize(text));
+const T = text => tokenize(text);
+const P = text => parse(T(text));
 
 describe('Syntactical Analyzer', () => {
   describe('parseExpression()', () => {
     it('parses single number', () => {
       const expr = parseExpression(T('31482'));
-      
-    })
+      // FIXME
+    });
   });
 
   describe('LIST', () => {

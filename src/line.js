@@ -1,5 +1,5 @@
 import { TokenType, LexicalError, tokenize } from './lex';
-import { SyntaxError, parse } from './parse';
+import { SyntaxError, parse } from './parser';
 import { evaluate } from './evaluate';
 
 export class Line {
@@ -35,7 +35,7 @@ export class Line {
     while (tokens.length > 0) {
       n = n + 1;
       if (n > 1000) {
-        throw new Error("1000+ statements, does not seem right. Endless loop?");
+        throw new Error('1000+ statements, does not seem right. Endless loop?');
       }
 
       try {

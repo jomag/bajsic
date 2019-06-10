@@ -1,9 +1,9 @@
-import fs from "fs";
-import { tokenizeLine, LexicalError } from "./lex";
-import { parse, SyntaxError } from "./parse";
+import fs from 'fs';
+import { tokenizeLine, LexicalError } from './lex';
+import { parse, SyntaxError } from './parser';
 
 function precompile(code) {
-  const lines = code.split("\n");
+  const lines = code.split('\n');
   let statements;
   let tokenizedLines;
 
@@ -35,12 +35,12 @@ function evaluate(expr, state) {
 
 function execute_statement(statement, state) {
   switch (statement.type) {
-    case "print":
+    case 'print':
       console.log(evaluate(statement.expr, state));
       state.pc = state.pc + 1;
       break;
 
-    case "goto":
+    case 'goto':
       state.pc = evaluate(statement.expr);
   }
 }
@@ -52,6 +52,6 @@ function run(program) {
   }
 }
 
-const source = fs.readFileSync("stuga.bas", "utf8");
+const source = fs.readFileSync('stuga.bas', 'utf8');
 const precompiled = precompile(source);
 // run(precompiled);

@@ -1,0 +1,5 @@
+{
+    "mocha.files.glob": "src/**/*.test.*",
+    "javascript.preferences.quoteStyle": "single",
+    "prettier.singleQuote": true
+}
