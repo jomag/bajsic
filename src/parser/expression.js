@@ -23,14 +23,14 @@ const isOperator = tokenType => tokenType !== TokenType.INT; // fixme: not quite
 
 export const parseExpression = tokens => {
   const expr = new Expression();
-  const outputQueue = []; // output queue
+  const result = [];
   const operatorStack = [];
 
   while (tokens.length > 0) {
     const tok = tokens[0];
 
     if (isOperand(tok.type)) {
-      outputQueue.push(tok);
+      result.push(tok);
     }
 
     if (isOperator(tok.type)) {
@@ -42,7 +42,7 @@ export const parseExpression = tokens => {
           const c2 = prec[o.type] === prec[tok.type] && assoc[o.type] === 'L';
 
           if ((c1 || c2) && o.type !== TokenType.LPAR) {
-            outputQueue.push(operatorStack.pop());
+            result.push(operatorStack.pop());
           } else {
             break;
           }
@@ -58,7 +58,7 @@ export const parseExpression = tokens => {
 
     if (tok.type === TokenType.RPAR) {
       while (peek(operatorStack).type !== TokenType.LPAR) {
-        outputQueue.push(operatorStack.pop());
+        result.push(operatorStack.pop());
       }
 
       if (peek(operatorStack).type !== TokenType.LPAR) {
@@ -72,8 +72,8 @@ export const parseExpression = tokens => {
   }
 
   while (operatorStack.length > 0) {
-    outputQueue.push(operatorStack.pop());
+    result.push(operatorStack.pop());
   }
 
-  return outputQueue;
+  return result;
 };
