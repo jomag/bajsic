@@ -1,42 +1,79 @@
 import { Expression } from '../expr';
 import { TokenType } from '../lex';
 
+// Operator associativity (left/right)
+const assoc = {
+  [TokenType.MUL]: 'L',
+  [TokenType.DIV]: 'L',
+  [TokenType.PLUS]: 'L',
+  [TokenType.MINUS]: 'L'
+};
+
+// Operator precedence
+const prec = {
+  [TokenType.MUL]: 1,
+  [TokenType.DIV]: 1,
+  [TokenType.PLUS]: 0,
+  [TokenType.MINUS]: 0
+};
+
+const peek = tokens => tokens[tokens.length - 1];
+const isOperand = tokenType => tokenType === TokenType.INT;
+const isOperator = tokenType => tokenType !== TokenType.INT; // fixme: not quite true
+
 export const parseExpression = tokens => {
   const expr = new Expression();
+  const outputQueue = []; // output queue
+  const operatorStack = [];
 
   while (tokens.length > 0) {
     const tok = tokens[0];
 
-    switch (tok.type) {
-      case TokenType.INT:
-        expr.add(tok);
-        break;
+    if (isOperand(tok.type)) {
+      outputQueue.push(tok);
+    }
 
-      default:
-        return;
+    if (isOperator(tok.type)) {
+      while (operatorStack.length > 0) {
+        o = peek(operatorStack);
+
+        while (true) {
+          const c1 = prec[o.type] > prec[tok.type];
+          const c2 = prec[o.type] === prec[tok.type] && assoc[o.type] === 'L';
+
+          if ((c1 || c2) && o.type !== TokenType.LPAR) {
+            outputQueue.push(operatorStack.pop());
+          } else {
+            break;
+          }
+        }
+
+        operatorStack.push(tok);
+      }
+    }
+
+    if (tok.type === TokenType.LPAR) {
+      operatorStack.push(tok);
+    }
+
+    if (tok.type === TokenType.RPAR) {
+      while (peek(operatorStack).type !== TokenType.LPAR) {
+        outputQueue.push(operatorStack.pop());
+      }
+
+      if (peek(operatorStack).type !== TokenType.LPAR) {
+        throw new SyntaxError('Mismatched paranthesis in expression');
+      }
+
+      operatorStack.pop();
     }
 
     tokens.shift();
   }
+
+  while (operatorStack.length > 0) {
+    outputQueue.push(operatorStack.pop());
+  }
+
+  return outputQueue;
 };
-
-// export const oldParseExpression = tokens => {
-//   // FIXME: very simplified expression parser!
-//   const expr = [];
-
-//   while (tokens.length > 0) {
-//     const tok = tokens[0];
-
-//     if ([TokenType.COMMA, TokenType.SEMICOLON].includes(tok.type)) {
-//       return expr;
-//     }
-
-//     if (isKeyword(tok, Keyword.THEN) || isKeyword(tok, Keyword.ELSE)) {
-//       return expr;
-//     }
-
-//     expr.push(tokens.shift());
-//   }
-
-//   return expr;
-// };

@@ -7,11 +7,27 @@ import { tokenize, TokenType } from '../lex';
 const T = text => tokenize(text);
 const P = text => parse(T(text));
 
+const tokenToString = tok => {
+  switch (tok.type) {
+    case TokenType.INT:
+      return tok.value.toString();
+    default:
+      return tok.type;
+  }
+};
+
 describe('Syntactical Analyzer', () => {
   describe('parseExpression()', () => {
     it('parses single number', () => {
       const expr = parseExpression(T('31482'));
-      // FIXME
+      const abbrev = expr.map(tokenToString);
+      expect(abbrev).to.deep.equal(['31482']);
+    });
+
+    it('parses a + b', () => {
+      const expr = parseExpression(T('100 + 242'));
+      const abbrev = expr.map(tokenToString);
+      expect(abbrev).to.deep.equal(['100', '242', TokenType.PLUS]);
     });
   });
 
