@@ -26,7 +26,6 @@ describe('Syntactical Analyzer', () => {
 
     it('parses a + b', () => {
       const tokens = T('100 + 242');
-      console.log('TOKENS: ', tokens);
       const expr = parseExpression(T('100 + 242'));
       const abbrev = expr.map(tokenToString);
       expect(abbrev).to.deep.equal(['100', '242', TokenType.PLUS]);

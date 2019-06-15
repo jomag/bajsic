@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node -r esm src/cli.js",
-    "test": "mocha --inspect -r esm src/**/*.test.*"
+    "test": "mocha --inspect -r esm ./**/*.test.*"
   },
   "author": "Jonatan Magnusson",
   "license": "ISC",

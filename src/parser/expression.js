@@ -47,9 +47,9 @@ export const parseExpression = tokens => {
             break;
           }
         }
-
-        operatorStack.push(tok);
       }
+      
+      operatorStack.push(tok);
     }
 
     if (tok.type === TokenType.LPAR) {
