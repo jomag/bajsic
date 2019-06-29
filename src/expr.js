@@ -1,67 +1,65 @@
-export const Op = {
-  OPERAND: 'operand',
-  PLUS: '+',
-  MINUS: '-',
-};
+export const ExprType = Object.freeze({
+  // { type: CONSTANT, valueType: INT, value: 42 }
+  CONST: 1,
 
-export const ValueType = {
+  // { type: IDENTIFIER, name: 'variableName' }
+  IDENT: 2,
+
+  // Binary operands: { type: ADD, children: [ <left expr>, <right expr> ] }
+  ADD: 100,
+  SUB: 101
+});
+
+export const ValueType = Object.freeze({
   INT: 'int',
-  STRING: 'string',
-};
+  STRING: 'string'
+});
 
-export class Value {
-  constructor(type, value) {
+export class Expr {
+  constructor(type) {
     this.type = type;
-    this.value = value;
-  }
-
-  copy(value) {
-    return new Value(this.type, this.value);
-  }
-
-  static newInt(value) {
-    return new Value(ValueType.INT, Number(value));
-  }
-
-  static newString(value) {
-    return new Value(ValueType.STRING, value.toString());
-  }
-}
-
-export class Expression {
-  constructor(op, value, children) {
-    this.op = op;
-    this.value = value;
-    this.children = children;
-  }
-
-  static binaryOp(op, left, right) {
-    return new Expression(op, undefined, [left, right]);
-  }
-
-  static operand(value) {
-    return new Expression(Op.OPERAND, value);
   }
 
   evaluate() {
-    switch (this.op) {
-      case Op.OPERAND:
-        return this.value.copy();
-      case Op.PLUS: {
-        const left = this.children[0].evaluate();
-        const right = this.children[1].evaluate();
-        // FIXME: Naive: left and right may be a variable or function
-        return Value.newInt(left.value + right.value);
-      }
-      case Op.MINUS: {
-        const left = this.children[0].evaluate();
-        const right = this.children[1].evaluate();
-        // FIXME: Naive: left and right may be a variable or function
-        return Value.newInt(left.value - right.value);
-      }
+    throw new Error('Evaluation method not implemented!');
+  }
+}
 
-      default:
-        throw new Error(`Unhandled expression type: ${this.op}`);
-    }
+export class ConstExpr extends Expr {
+  constructor(valueType, value) {
+    super(ExprType.CONST);
+    this.valueType = valueType;
+    this.value = value;
+  }
+
+  evaluate() {
+    return { type: this.valueType, value: this.value };
+  }
+
+  toString() {
+    return `${this.valueType.toUpperCase()}(${this.value})`;
+  }
+}
+
+export class BinaryOperatorExpr extends Expr {
+  constructor(exprType, child1, child2) {
+    super(exprType);
+    this.children = [child1, child2];
+  }
+
+  toString() {
+    return `ADD(${this.children[0].toString()}, ${this.children[1].toString()})`;
+  }
+}
+
+export class AddExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.ADD, child1, child2);
+  }
+
+  evaluate() {
+    const result1 = this.children[0].evaluate();
+    const result2 = this.children[1].evaluate();
+    return { type: ValueType.INT, value: result1.value + result2.value };
   }
 }

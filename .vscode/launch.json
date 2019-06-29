@@ -3,6 +3,7 @@
     {
       "type": "node",
       "request": "launch",
+      "runtimeExecutable": "/opt/node/bin/node",
       "name": "All Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
@@ -18,16 +19,10 @@
     {
       "type": "node",
       "request": "launch",
+      "runtimeExecutable": "/opt/node/bin/node",
       "name": "Current File",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "esm",
-        "--timeout",
-        "999999",
-        "--colors",
-        "${file}"
-      ],
+      "args": ["-r", "esm", "--timeout", "999999", "--colors", "${file}"],
       "internalConsoleOptions": "openOnSessionStart"
     }
   ]

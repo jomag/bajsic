@@ -2,6 +2,7 @@ import { TokenType, Keyword } from '../lex';
 import { parseExpression } from './expression';
 import { parsePrint } from './parsePrint';
 import { parseList } from './parseList';
+import { popKeyword, popType, expectIdentifier } from './utils';
 
 export { parseExpression } from './expression';
 

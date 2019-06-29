@@ -3,6 +3,7 @@ const expect = chai.expect;
 
 import { StatementType, parse, parseExpression } from './';
 import { tokenize, TokenType } from '../lex';
+import { ExprType, ValueType } from '../expr';
 
 const T = text => tokenize(text);
 const P = text => parse(T(text));
@@ -20,8 +21,11 @@ describe('Syntactical Analyzer', () => {
   describe('parseExpression()', () => {
     it('parses single number', () => {
       const expr = parseExpression(T('31482'));
-      const abbrev = expr.map(tokenToString);
-      expect(abbrev).to.deep.equal(['31482']);
+      expect(expr).to.deep.equal({
+        type: ExprType.CONST,
+        valueType: ValueType.INT,
+        value: 31482
+      });
     });
 
     it('parses a + b', () => {

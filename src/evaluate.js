@@ -17,13 +17,6 @@ const termPrintln = value => {
   process.stdout.write('\n');
 };
 
-const evalExpr = (expr, program, context) => {
-  if (expr.length !== 1) {
-    throw new Error('FIXME: only single operand expressions supported');
-  }
-  return expr[0].value;
-};
-
 const evalGoto = (statement, program, context) => {
   return statement.data;
 };
@@ -42,8 +35,8 @@ const evalList = (statement, program, context) => {
 const evalPrint = (statement, program, context) => {
   // FIXME: handle different output channels
   for (const outp of statement.data.list) {
-    const value = evalExpr(outp[0], program, context);
-    outp[1] ? termPrintln(value) : termPrint(value);
+    const result = outp[0].evaluate(); // evalExpr(outp[0], program, context);
+    outp[1] ? termPrintln(result.value) : termPrint(result.value);
   }
 };
 
