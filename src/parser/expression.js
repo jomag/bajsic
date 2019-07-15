@@ -140,7 +140,7 @@ const buildOperatorExpr = (operator, child1, child2) => {
 
 // Some hints:
 // https://www.klittlepage.com/2013/12/22/twelve-days-2013-shunting-yard-algorithm/
-const parseExpression = tokens => {
+export const parseExpression = tokens => {
   const operatorStack = [];
   const exprStack = [];
   const argCountStack = [];
