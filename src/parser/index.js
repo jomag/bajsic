@@ -1,23 +1,11 @@
 import { TokenType, Keyword } from '../lex';
+import { StatementType } from '../statement';
 import { parseExpression } from './expression';
 import { parsePrint } from './parsePrint';
 import { parseList } from './parseList';
-import { popKeyword, popType, expectIdentifier } from './utils';
+import { popKeyword, popType, expectIdentifier, expectToken } from './utils';
 
 export { parseExpression } from './expression';
-
-export const StatementType = {
-  DIM: 'dim',
-  EMPTY: 'empty',
-  GOSUB: 'gosub',
-  LIST: 'list',
-  PRINT: 'print',
-  REMARK: 'remark',
-  RETURN: 'return',
-  GOTO: 'goto',
-  END: 'end',
-  RUN: 'run'
-};
 
 export class SyntaxError extends Error {
   constructor(message, ...params) {
@@ -32,37 +20,38 @@ const parseDim = tokens => {
   // Format: LIST, LIST n, LIST n-m, LIST n,n-m,...
 
   const arrays = {};
+  let first = true;
   let i = 1;
+
+  popKeyword(tokens, Keyword.DIM);
+
   while (i < tokens.length) {
-    if (i > 1) {
-      expectToken(tokens[i], TokenType.COMMA);
-      i++;
-    }
+    const nameToken = popType(tokens, TokenType.IDENTIFIER);
+    const name = nameToken.value;
 
-    expectToken(tokens[i], TokenType.IDENTIFIER);
-    const name = tokens[i].value;
-    i++;
-
-    expectToken(tokens[i], TokenType.LPAR);
-    i++;
-
+    popType(tokens, TokenType.LPAR);
     const dim = [];
 
     while (true) {
-      expectToken(tokens[i], TokenType.INT);
-      dim.push(tokens[i].value);
-      i++;
+      // FIXME: does not handle non-zero based dimensions like DIM A(10 TO 20)
+      const lenToken = popType(tokens, TokenType.INT);
+      const len = lenToken.value;
+      dim.push(len);
 
-      if (tokens[i].type === TokenType.RPAR) {
-        i++;
+      const nextToken = popType(tokens, [TokenType.COMMA, TokenType.RPAR]);
+
+      if (nextToken.type === TokenType.RPAR) {
         break;
       }
-
-      expectToken(tokens[i], TokenType.COMMA);
-      i++;
     }
 
     arrays[name] = dim;
+
+    if (tokens.length) {
+      popType(tokens, TokenType.COMMA);
+    } else {
+      break;
+    }
   }
 
   return new Statement(StatementType.DIM, arrays);
@@ -85,21 +74,20 @@ const isKeyword = (tok, keyword) =>
   tok.type === TokenType.KEYWORD && tok.value === keyword;
 
 const parseIf = (tokens, line) => {
-  let tok = tokens.shift();
-  expectKeyword(tok, Keyword.IF);
+  popKeyword(tokens, Keyword.IF);
+  const condition = parseExpression(tokens);
+  popKeyword(tokens, Keyword.THEN);
 
-  const statement = {
-    line: line.lineNumber,
-    type: StatementType.IF,
-    condition: [],
-    thenBlock: [],
-    elseBlock: []
-  };
+  const thenBlock = null;
+  const elseBlock = null;
 
-  statement.condition = parseExpression(tokens);
+  // FIXME: incomplete!!
 
-  tok = tokens.shift();
-  expectKeyword(tok, Keyword.THEN);
+  return new Statement(StatementType.GOTO, {
+    condition,
+    thenBlock,
+    elseBlock
+  });
 };
 
 const parseReturn = (tokens, line) => {

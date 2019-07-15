@@ -1,4 +1,4 @@
-import { StatementType } from './parser';
+import { StatementType } from './statement';
 import { Keyword } from './lex';
 
 export class RuntimeError extends Error {
@@ -63,7 +63,7 @@ const evalRun = (statement, program, context) => {
 
     if (next !== undefined) {
       const lineIndex = program.lineNumberToIndex(next);
-      if (!lineIndex) {
+      if (lineIndex === undefined) {
         throw new RuntimeError(`Undefined line number: ${next}`);
       }
       context.pc = lineIndex;

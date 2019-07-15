@@ -1,6 +1,7 @@
 import { popKeyword } from './utils';
 import { Keyword, TokenType } from '../lex';
-import { Statement, StatementType } from './';
+import { Statement } from './';
+import { StatementType } from '../statement';
 
 export const parseList = tokens => {
   // VAX BASIC Ref: page 109

@@ -41,6 +41,15 @@ export const expectKeyword = (tok, keyword) => {
   }
 };
 
+export const expectType = (token, types) => {
+  const list = Array.isArray(types) ? types : [types];
+  if (list.indexOf(token.type) < 0) {
+    throw new SyntaxError(
+      `Expected token with type ${list.join(' or ')}, got ${token.type}`
+    );
+  }
+};
+
 export const popKeyword = (tokens, keyword) => {
   const kws = Array.isArray(keyword) ? keyword : [keyword];
   const tok = tokens.shift();

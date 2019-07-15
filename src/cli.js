@@ -67,8 +67,8 @@ function start(argv) {
   const program = new Program();
   const context = new Context();
 
-  if (argv.source) {
-    const srcOriginal = fs.readFileSync(argv.source, 'utf-8');
+  for (let source of argv['_']) {
+    const srcOriginal = fs.readFileSync(source, 'utf-8');
     const srcLines = srcOriginal.split('\n');
     let n = 0;
     for (const src of srcLines) {

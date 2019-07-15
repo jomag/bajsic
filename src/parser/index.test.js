@@ -1,9 +1,9 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-import { StatementType, parse, parseExpression } from './';
+import { parse } from './';
+import { StatementType } from '../statement';
 import { tokenize, TokenType } from '../lex';
-import { ExprType, ValueType } from '../expr';
 
 const T = text => tokenize(text);
 const P = text => parse(T(text));
@@ -18,6 +18,33 @@ const tokenToString = tok => {
 };
 
 describe('Parse Statements', () => {
+  describe('DIM', () => {
+    it('handles single, one dimensional array', () => {
+      const s = P('DIM A(5)');
+      expect(s.type).to.equal(StatementType.DIM);
+      expect(s.data).to.deep.equal({
+        A: [5]
+      });
+    });
+
+    it('handles single, multi-dimensional array', () => {
+      const s = P('DIM A(5, 10, 15)');
+      expect(s.type).to.equal(StatementType.DIM);
+      expect(s.data).to.deep.equal({
+        A: [5, 10, 15]
+      });
+    });
+
+    it('handles multiple, multi-dimensional arrays', () => {
+      const s = P('DIM A(11, 22), B(33, 44)');
+      expect(s.type).to.equal(StatementType.DIM);
+      expect(s.data).to.deep.equal({
+        A: [11, 22],
+        B: [33, 44]
+      });
+    });
+  });
+
   describe('LIST', () => {
     it('without lines', () => {
       const s = P('LIST');
