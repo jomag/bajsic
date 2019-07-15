@@ -8,20 +8,13 @@ export class RuntimeError extends Error {
   }
 }
 
-const termPrint = value => {
-  process.stdout.write(value.toString());
+const termPrint = (value, context) => {
+  context.stdout.write(value.toString());
 };
 
-const termPrintln = value => {
-  process.stdout.write(value.toString());
-  process.stdout.write('\n');
-};
-
-const evalExpr = (expr, program, context) => {
-  if (expr.length !== 1) {
-    throw new Error('FIXME: only single operand expressions supported');
-  }
-  return expr[0].value;
+const termPrintln = (value, context) => {
+  context.stdout.write(value.toString());
+  context.stdout.write('\n');
 };
 
 const evalGoto = (statement, program, context) => {
@@ -30,11 +23,11 @@ const evalGoto = (statement, program, context) => {
 
 const evalList = (statement, program, context) => {
   if (statement.data.length === 0) {
-    program.lines.forEach(line => console.log(line.source));
+    program.lines.forEach(line => termPrintln(line.source, context));
   } else {
     for (const range of statement.data) {
       const lines = program.getRange(range[0], range[1]);
-      lines.forEach(line => console.log(line.source));
+      lines.forEach(line => termPrintln(line.source, context));
     }
   }
 };
@@ -42,8 +35,10 @@ const evalList = (statement, program, context) => {
 const evalPrint = (statement, program, context) => {
   // FIXME: handle different output channels
   for (const outp of statement.data.list) {
-    const value = evalExpr(outp[0], program, context);
-    outp[1] ? termPrintln(value) : termPrint(value);
+    const result = outp[0].evaluate(context);
+    outp[1]
+      ? termPrintln(result.value, context)
+      : termPrint(result.value, context);
   }
 };
 

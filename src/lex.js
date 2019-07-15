@@ -24,7 +24,7 @@ export const TokenType = {
   // FIXME: I'm not sure about the meaning of underscore
   //        It's often find in INPUT statements:
   //        10 INPUT ""_A$
-  UNDERSCORE: 'underscore',
+  UNDERSCORE: 'underscore'
 };
 
 export const Keyword = {
@@ -38,15 +38,18 @@ export const Keyword = {
   RUN: 'RUN',
   GOSUB: 'GOSUB',
   LIST: 'LIST',
-  END: 'END',
+  END: 'END'
 };
 
 const keywordAliases = {
-  DIMENSION: Keyword.DIM,
+  DIMENSION: Keyword.DIM
 };
 
 export class Token {
   constructor(type, value) {
+    if (!type) {
+      throw new Error(`Internal error: create token with type: ${type}`)
+    }
     this.type = type;
     this.value = value;
   }
@@ -84,7 +87,7 @@ export const tokenize = (source, sourceLineNo) => {
     [':']: TokenType.COLON,
     [';']: TokenType.SEMICOLON,
     ['_']: TokenType.UNDERSCORE,
-    ['#']: TokenType.HASH,
+    ['#']: TokenType.HASH
   };
   let i = 0;
 
