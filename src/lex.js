@@ -47,6 +47,9 @@ const keywordAliases = {
 
 export class Token {
   constructor(type, value) {
+    if (!type) {
+      throw new Error(`Internal error: create token with type: ${type}`)
+    }
     this.type = type;
     this.value = value;
   }

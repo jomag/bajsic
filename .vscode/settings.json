@@ -1,5 +1,7 @@
 {
     "mocha.files.glob": "src/**/*.test.*",
     "javascript.preferences.quoteStyle": "single",
-    "prettier.singleQuote": true
+    "prettier.singleQuote": true,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
 }

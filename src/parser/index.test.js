@@ -17,25 +17,7 @@ const tokenToString = tok => {
   }
 };
 
-describe('Syntactical Analyzer', () => {
-  describe('parseExpression()', () => {
-    it('parses single number', () => {
-      const expr = parseExpression(T('31482'));
-      expect(expr).to.deep.equal({
-        type: ExprType.CONST,
-        valueType: ValueType.INT,
-        value: 31482
-      });
-    });
-
-    it('parses a + b', () => {
-      const tokens = T('100 + 242');
-      const expr = parseExpression(T('100 + 242'));
-      const abbrev = expr.map(tokenToString);
-      expect(abbrev).to.deep.equal(['100', '242', TokenType.PLUS]);
-    });
-  });
-
+describe('Parse Statements', () => {
   describe('LIST', () => {
     it('without lines', () => {
       const s = P('LIST');

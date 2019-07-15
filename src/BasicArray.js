@@ -6,34 +6,32 @@ export default class BasicArray {
   constructor(type, dimensions) {
     this.type = type;
     this.dimensions = dimensions;
-    this.data = {};
+    this.data = [];
+  }
+
+  pathToIndex(path) {
+    if (path.length !== this.dimensions.length) {
+      throw new RuntimeError('Bad subscript error');
+    }
+
+    let index = 0;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      const dim = this.dimensions[i];
+      index = index + (dim[1] - dim[0]) * path[i];
+    }
+
+    return index + path[path.length - 1];
   }
 
   set(path, value) {
-    if (path.length !== this.dimensions.length) {
-      throw new RuntimeError('Bad subscript error');
-    }
-
-    let o = this.data;
-    for (let i = 0; i < path.length; i++) {
-      o = o[path[i]] || {};
-    }
-
-    for (const i of path) {
-    }
+    const index = this.pathToIndex(path);
+    this.data[index] = value;
   }
 
   get(path) {
-    if (path.length !== this.dimensions.length) {
-      throw new RuntimeError('Bad subscript error');
-    }
-
-    let o = this.data;
-    for (let i = 0; i < path.length - 1; i++) {
-      o = o[path[i]] || {};
-    }
-
-    return o[path[path.length-1]];
+    const index = this.pathToIndex(path);
+    return this.data[index];
   }
 
   totalSize() {

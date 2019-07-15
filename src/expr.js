@@ -1,26 +1,40 @@
-export const ExprType = Object.freeze({
+import { Enum } from './utils';
+import { RuntimeError } from './evaluate';
+
+export const ExprType = Enum([
   // { type: CONSTANT, valueType: INT, value: 42 }
-  CONST: 1,
+  'CONST',
 
   // { type: IDENTIFIER, name: 'variableName' }
-  IDENT: 2,
+  'IDENT',
 
   // Binary operands: { type: ADD, children: [ <left expr>, <right expr> ] }
-  ADD: 100,
-  SUB: 101
-});
+  'ADD',
+  'SUBTRACT',
+  'MULTIPLY',
 
-export const ValueType = Object.freeze({
-  INT: 'int',
-  STRING: 'string'
-});
+  // Function call, or array indexation
+  'CALL',
+
+  // Expression list, for example function arguments
+  'GROUP'
+]);
+
+export const ValueType = Enum(['INT', 'STRING', 'FUNCTION']);
+
+export class Value {
+  constructor(type, value) {
+    this.type = type;
+    this.value = value;
+  }
+}
 
 export class Expr {
   constructor(type) {
     this.type = type;
   }
 
-  evaluate() {
+  evaluate(context) {
     throw new Error('Evaluation method not implemented!');
   }
 }
@@ -32,7 +46,7 @@ export class ConstExpr extends Expr {
     this.value = value;
   }
 
-  evaluate() {
+  evaluate(context) {
     return { type: this.valueType, value: this.value };
   }
 
@@ -41,14 +55,50 @@ export class ConstExpr extends Expr {
   }
 }
 
+export class IdentifierExpr extends Expr {
+  constructor(value) {
+    super(ExprType.IDENT);
+    this.value = value;
+  }
+
+  evaluate(context) {
+    return context.get(this.value);
+  }
+
+  toString() {
+    return `IDENTIFIER:${this.value}`;
+  }
+}
+
+export class CallExpr extends Expr {
+  constructor(fun, args) {
+    super(ExprType.CALL);
+    this.children = [fun, ...(args || [])];
+  }
+
+  addArgument(expr) {
+    this.children.push(expr);
+  }
+
+  toString() {
+    return `Call`;
+  }
+
+  evaluate(context) {
+    const values = this.children.map(expr => expr.evaluate(context));
+
+    if (values[0].type !== ValueType.FUNCTION) {
+      throw new RuntimeError('Not a function');
+    }
+
+    return values[0].value.call(values.slice(1));
+  }
+}
+
 export class BinaryOperatorExpr extends Expr {
   constructor(exprType, child1, child2) {
     super(exprType);
     this.children = [child1, child2];
-  }
-
-  toString() {
-    return `ADD(${this.children[0].toString()}, ${this.children[1].toString()})`;
   }
 }
 
@@ -57,9 +107,21 @@ export class AddExpr extends BinaryOperatorExpr {
     super(ExprType.ADD, child1, child2);
   }
 
-  evaluate() {
-    const result1 = this.children[0].evaluate();
-    const result2 = this.children[1].evaluate();
-    return { type: ValueType.INT, value: result1.value + result2.value };
+  evaluate(context) {
+    const result1 = this.children[0].evaluate(context);
+    const result2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, result1.value + result2.value);
+  }
+}
+
+export class MultiplyExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.MULTIPLY, child1, child2);
+  }
+
+  evaluate(context) {
+    const result1 = this.children[0].evaluate(context);
+    const result2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, result1.value * result2.value);
   }
 }

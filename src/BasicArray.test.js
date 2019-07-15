@@ -31,7 +31,7 @@ describe('BasicArray', () => {
       }
 
       for (let j = 0; j < 5; j++) {
-        data.forEach((c, i) => expect(a.get([j, i]).to.equal(c)));
+        data.forEach((c, i) => expect(a.get([j, i])).to.equal(c));
       }
     });
   });
