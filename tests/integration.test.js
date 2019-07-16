@@ -5,10 +5,9 @@ import { Context } from '../src/context';
 import { Program } from '../src/program';
 import { Line } from '../src/line';
 import { evaluate } from '../src/evaluate';
-import { Statement } from '../src/parser';
-import { StatementType } from '../src/statement';
 import { Value, ValueType } from '../src/expr';
 import { builtinFunctions } from '../src/function';
+import { RunStatement } from '../src/statement';
 
 const chai = require('chai');
 const expect = chai.expect;
@@ -57,7 +56,7 @@ describe('Integration tests', () => {
         next();
       };
 
-      evaluate(new Statement(StatementType.RUN), program, context);
+      evaluate(new RunStatement(), program, context);
       expect(output.trim()).to.equal(txt);
     });
   }

@@ -1,8 +1,7 @@
-import { popKeyword, popType } from './utils';
+import { popKeyword, popType, popOptionalType } from './utils';
 import { parseExpression } from './expression';
 import { Keyword, TokenType } from '../lex';
-import { Statement } from './';
-import { StatementType } from '../statement';
+import { PrintStatement } from '../statement';
 
 export const parsePrint = tokens => {
   // VAX BASIC Ref: page 462
@@ -23,14 +22,18 @@ export const parsePrint = tokens => {
     const expr = parseExpression(tokens);
 
     let lineFeed = true;
+    const tok = popOptionalType(tokens, [TokenType.SEMICOLON, TokenType.COMMA]);
 
-    if (tokens.length > 0 && tokens[0].type === TokenType.SEMICOLON) {
+    if (tok && tok.type === TokenType.SEMICOLON) {
       lineFeed = false;
-      tokens.shift();
     }
 
     list.push([expr, lineFeed]);
+
+    if (!tok) {
+      break;
+    }
   }
 
-  return new Statement(StatementType.PRINT, { channel, list });
+  return new PrintStatement(channel, list);
 };

@@ -43,7 +43,11 @@ export const Keyword = {
   GOSUB: 'GOSUB',
   LIST: 'LIST',
   END: 'END',
-  LET: 'LET'
+  LET: 'LET',
+  ON: 'ON',
+  OTHERWISE: 'OTHERWISE',
+  FOR: 'FOR',
+  TO: 'TO'
 };
 
 const keywordAliases = {

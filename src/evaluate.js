@@ -18,14 +18,14 @@ const termPrintln = (value, context) => {
 };
 
 const evalGoto = (statement, program, context) => {
-  return statement.data;
+  return statement.destination;
 };
 
 const evalList = (statement, program, context) => {
-  if (statement.data.length === 0) {
+  if (statement.ranges.length === 0) {
     program.lines.forEach(line => termPrintln(line.source, context));
   } else {
-    for (const range of statement.data) {
+    for (const range of statement.ranges) {
       const lines = program.getRange(range[0], range[1]);
       lines.forEach(line => termPrintln(line.source, context));
     }
@@ -34,7 +34,7 @@ const evalList = (statement, program, context) => {
 
 const evalPrint = (statement, program, context) => {
   // FIXME: handle different output channels
-  for (const outp of statement.data.list) {
+  for (const outp of statement.list) {
     const result = outp[0].evaluate(context);
     outp[1]
       ? termPrintln(result.value, context)
@@ -43,12 +43,14 @@ const evalPrint = (statement, program, context) => {
 };
 
 const evalEnd = (statement, program, context) => {
-  switch (statement.data) {
+  switch (statement.blockType) {
     case null:
     case Keyword.PROGRAM:
       return false;
     default:
-      throw new SyntaxError(`Unsupported end of block type: ${statement.data}`);
+      throw new SyntaxError(
+        `Unsupported end of block type: ${statement.blockType}`
+      );
   }
 };
 
@@ -84,5 +86,11 @@ const evalMap = {
   [StatementType.END]: evalEnd
 };
 
-export const evaluate = (statement, program, context) =>
-  evalMap[statement.type](statement, program, context);
+export const evaluate = (statement, program, context) => {
+  if (statement.exec) {
+    return statement.exec(program, context);
+  } else {
+    console.log('EVAL TYPE ', statement.type);
+    return evalMap[statement.type](statement, program, context);
+  }
+};

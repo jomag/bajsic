@@ -10,7 +10,9 @@ import {
   MultiplyExpr,
   ValueType,
   RelationalOperatorExpr,
-  ExprType
+  ExprType,
+  SubtractExpr,
+  DivideExpr
 } from '../expr';
 
 const Operator = Enum([
@@ -167,8 +169,12 @@ const buildOperatorExpr = (operator, child1, child2) => {
   switch (operator) {
     case Operator.PLUS:
       return new AddExpr(child1, child2);
+    case Operator.MINUS:
+      return new SubtractExpr(child1, child2);
     case Operator.MUL:
       return new MultiplyExpr(child1, child2);
+    case Operator.DIV:
+      return new DivideExpr(child1, child2);
     case Operator.AND:
       return new AndExpr(child1, child2);
     case Operator.OR:

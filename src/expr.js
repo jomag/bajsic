@@ -1,5 +1,6 @@
 import { Enum } from './utils';
 import { RuntimeError } from './evaluate';
+import { interfaces } from 'mocha';
 
 export const ExprType = Enum([
   // { type: CONSTANT, valueType: INT, value: 42 }
@@ -12,6 +13,7 @@ export const ExprType = Enum([
   'ADD',
   'SUBTRACT',
   'MULTIPLY',
+  'DIVIDE',
 
   // Function call, or array indexation
   'CALL',
@@ -40,6 +42,15 @@ export class Value {
     this.type = type;
     this.value = value;
   }
+
+  isLessThan(other) {
+    // FIXME: be more correct!
+    return this.value < other.value;
+  }
+
+  add(value) {
+    return new Value(this.type, this.value + value.value);
+  }
 }
 
 export class Expr {
@@ -60,7 +71,7 @@ export class ConstExpr extends Expr {
   }
 
   evaluate(context) {
-    return { type: this.valueType, value: this.value };
+    return new Value(this.valueType, this.value);
   }
 
   toString() {
@@ -124,6 +135,30 @@ export class AddExpr extends BinaryOperatorExpr {
     const value1 = this.children[0].evaluate(context);
     const value2 = this.children[1].evaluate(context);
     return new Value(ValueType.INT, value1.value + value2.value);
+  }
+}
+
+export class SubtractExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.SUBTRACT, child1, child2);
+  }
+
+  evaluate(context) {
+    const value1 = this.children[0].evaluate(context);
+    const value2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value - value2.value);
+  }
+}
+
+export class DivideExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.DIVIDE, child1, child2);
+  }
+
+  evaluate(context) {
+    const value1 = this.children[0].evaluate(context);
+    const value2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value / value2.value);
   }
 }
 

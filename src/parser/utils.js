@@ -17,6 +17,17 @@ export const expectToken = (tok, type) => {
   }
 };
 
+export const popOptionalType = (tokens, types) => {
+  const tok = tokens[0];
+
+  if (tok) {
+    const list = Array.isArray(types) ? types : [types];
+    if (list.includes(tok.type)) {
+      return tokens.shift();
+    }
+  }
+};
+
 export const popType = (tokens, type) => {
   const tok = tokens.shift();
 
@@ -50,6 +61,17 @@ export const expectType = (token, types) => {
   }
 };
 
+export const popOptionalKeyword = (tokens, keywords) => {
+  const list = Array.isArray(keywords) ? keywords : [keywords];
+  const tok = tokens[0];
+
+  if (tok && tok.type === TokenType.KEYWORD) {
+    if (list.includes(tok.value)) {
+      return tokens.shift();
+    }
+  }
+};
+
 export const popKeyword = (tokens, keyword) => {
   const kws = Array.isArray(keyword) ? keyword : [keyword];
   const tok = tokens.shift();
@@ -66,4 +88,12 @@ export const expectIdentifier = tok => {
   if (tok.type !== TokenType.IDENTIFIER) {
     throw new SyntaxError(`Expected identifier, got ${tok.type}`);
   }
+};
+
+export const popIdentifier = tokens => {
+  const tok = tokens.shift();
+  if (tok.type !== TokenType.IDENTIFIER) {
+    throw new SyntaxError(`Expected identifier token, found ${tok.type}`);
+  }
+  return tok.value;
 };
