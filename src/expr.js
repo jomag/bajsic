@@ -8,13 +8,26 @@ export const ExprType = Enum([
   // { type: IDENTIFIER, name: 'variableName' }
   'IDENT',
 
-  // Binary operands: { type: ADD, children: [ <left expr>, <right expr> ] }
+  // Binary operators: { type: ADD, children: [ <left expr>, <right expr> ] }
   'ADD',
   'SUBTRACT',
   'MULTIPLY',
 
   // Function call, or array indexation
   'CALL',
+
+  // Relational operators
+  'LT',
+  'LE',
+  'GT',
+  'GE',
+  'NE',
+  'EQ',
+
+  // Logical operators
+  'AND',
+  'OR',
+  'XOR',
 
   // Expression list, for example function arguments
   'GROUP'
@@ -108,9 +121,33 @@ export class AddExpr extends BinaryOperatorExpr {
   }
 
   evaluate(context) {
-    const result1 = this.children[0].evaluate(context);
-    const result2 = this.children[1].evaluate(context);
-    return new Value(ValueType.INT, result1.value + result2.value);
+    const value1 = this.children[0].evaluate(context);
+    const value2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value + value2.value);
+  }
+}
+
+export class AndExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.AND, child1, child2);
+  }
+
+  evaluate(context) {
+    const value1 = this.children[0].evaluate(context);
+    const value2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value && value2.value);
+  }
+}
+
+export class OrExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.OR, child1, child2);
+  }
+
+  evaluate(context) {
+    const value1 = this.children[0].evaluate(context);
+    const value2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value || value2.value);
   }
 }
 
@@ -120,8 +157,45 @@ export class MultiplyExpr extends BinaryOperatorExpr {
   }
 
   evaluate(context) {
-    const result1 = this.children[0].evaluate(context);
-    const result2 = this.children[1].evaluate(context);
-    return new Value(ValueType.INT, result1.value * result2.value);
+    const value1 = this.children[0].evaluate(context);
+    const value2 = this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value * value2.value);
+  }
+}
+
+export class RelationalOperatorExpr extends BinaryOperatorExpr {
+  constructor(exprType, child1, child2) {
+    super(exprType, child1, child2);
+  }
+
+  evaluate(context) {
+    const value1 = this.children[0].evaluate(context);
+    const value2 = this.children[1].evaluate(context);
+    let result;
+
+    switch (this.type) {
+      case ExprType.EQ:
+        result = value1 === value2;
+        break;
+      case ExprType.LT:
+        result = value1 < value2;
+        break;
+      case ExprType.LE:
+        result = value1 <= value2;
+        break;
+      case ExprType.GT:
+        result = value1 > value2;
+        break;
+      case ExprType.GE:
+        result = value1 >= value2;
+        break;
+      case ExprType.NE:
+        result = value1 !== value2;
+        break;
+      default:
+        throw new RuntimeError('Unhandled relational operator type');
+    }
+
+    return new Value(ValueType.INT, result);
   }
 }

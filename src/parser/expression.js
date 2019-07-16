@@ -2,11 +2,15 @@ import { TokenType } from '../lex';
 import { Enum } from '../utils';
 import {
   AddExpr,
+  AndExpr,
+  OrExpr,
   CallExpr,
   ConstExpr,
   IdentifierExpr,
   MultiplyExpr,
-  ValueType
+  ValueType,
+  RelationalOperatorExpr,
+  ExprType
 } from '../expr';
 
 const Operator = Enum([
@@ -43,7 +47,16 @@ const assoc = {
   [Operator.MUL]: 'L',
   [Operator.DIV]: 'L',
   [Operator.PLUS]: 'L',
-  [Operator.MINUS]: 'L'
+  [Operator.MINUS]: 'L',
+  [Operator.LE]: 'L',
+  [Operator.LT]: 'L',
+  [Operator.GE]: 'L',
+  [Operator.GT]: 'L',
+  [Operator.EQ]: 'L',
+  [Operator.NE]: 'L',
+  [Operator.AND]: 'L',
+  [Operator.OR]: 'L',
+  [Operator.XOR]: 'L'
 };
 
 const token2operator = {
@@ -51,6 +64,18 @@ const token2operator = {
   [TokenType.DIV]: Operator.DIV,
   [TokenType.PLUS]: Operator.PLUS,
   [TokenType.MINUS]: Operator.MINUS,
+
+  [TokenType.EQ]: Operator.EQ,
+  [TokenType.GE]: Operator.GE,
+  [TokenType.GT]: Operator.GT,
+  [TokenType.LE]: Operator.LE,
+  [TokenType.LT]: Operator.LT,
+  [TokenType.NE]: Operator.NE,
+
+  [TokenType.NOT]: Operator.NOT,
+  [TokenType.AND]: Operator.AND,
+  [TokenType.OR]: Operator.OR,
+  [TokenType.XOR]: Operator.XOR,
 
   [TokenType.LPAR]: Operator.LPAR,
   [TokenType.RPAR]: Operator.RPAR,
@@ -97,12 +122,11 @@ function assert(cond, message, obj) {
   }
 }
 
-const operands = [TokenType.INT, TokenType.STRING, TokenType.IDENTIFIER];
-const binaryOperators = [
-  TokenType.PLUS,
-  TokenType.MINUS,
-  TokenType.MUL,
-  TokenType.DIV
+const operands = [
+  TokenType.INT,
+  TokenType.FLOAT,
+  TokenType.STRING,
+  TokenType.IDENTIFIER
 ];
 
 const peek = tokens => tokens[tokens.length - 1];
@@ -112,6 +136,8 @@ const buildOperandExpression = token => {
   switch (token.type) {
     case TokenType.INT:
       return new ConstExpr(ValueType.INT, token.value);
+    case TokenType.FLOAT:
+      return new ConstExpr(ValueType.FLOAT, token.value);
     case TokenType.STRING:
       return new ConstExpr(ValueType.STRING, token.value);
     case TokenType.IDENTIFIER:
@@ -124,16 +150,32 @@ const buildOperandExpression = token => {
 };
 
 const buildOperatorExpr = (operator, child1, child2) => {
+  const relOpMap = {
+    [Operator.LT]: ExprType.LT,
+    [Operator.LE]: ExprType.LE,
+    [Operator.GT]: ExprType.GT,
+    [Operator.GE]: ExprType.GE,
+    [Operator.EQ]: ExprType.EQ,
+    [Operator.NE]: ExprType.NE
+  };
+
+  if (Object.keys(relOpMap).indexOf(operator) >= 0) {
+    const exprType = relOpMap[operator];
+    return new RelationalOperatorExpr(exprType, child1, child2);
+  }
+
   switch (operator) {
     case Operator.PLUS:
       return new AddExpr(child1, child2);
     case Operator.MUL:
       return new MultiplyExpr(child1, child2);
+    case Operator.AND:
+      return new AndExpr(child1, child2);
+    case Operator.OR:
+      return new OrExpr(child1, child2);
     default:
       throw new Error(
-        `Internal error: can't build binary operator from token: ${JSON.stringify(
-          token
-        )}`
+        `Internal error: can't build binary operator of type: ${operator}`
       );
   }
 };
@@ -212,7 +254,11 @@ export const parseExpression = tokens => {
       }
 
       if (!operatorStack.length) {
-        throw new SyntaxError('Mismatched paranthesis in expression');
+        // No matching left paranthesis in expression
+        // The closing paranthesis is likely part of the
+        // outer statement, so assume we've reached the end
+        // of the expression.
+        break;
       }
 
       if (peek(operatorStack) === Operator.CALL) {

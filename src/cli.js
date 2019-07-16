@@ -77,7 +77,7 @@ function start(argv) {
         program.add(line);
       } catch (e) {
         if (e instanceof SyntaxError) {
-          printError(e.message);
+          printError(`Line ${n}: ${e.message}`);
           break;
         } else {
           console.error(`Unexpected error on line ${n}`);
@@ -87,8 +87,6 @@ function start(argv) {
 
       n = n + 1;
     }
-
-    const precompiled = precompile(source);
   }
 
   startInteractiveMode(program, context);

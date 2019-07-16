@@ -78,32 +78,67 @@ const parseIf = (tokens, line) => {
   const condition = parseExpression(tokens);
   popKeyword(tokens, Keyword.THEN);
 
-  const thenBlock = null;
-  const elseBlock = null;
+  const thenStatements = [];
+  const elseStatements = [];
+
+  // Handle special case with a number following the THEN keyword.
+  // It should be handled as a GOTO:
+  // `IF cond THEN 724` is equal to `IF cond THEN GOTO 724`
+  if (tokens.length && tokens[0].type === TokenType.INT) {
+    const line = tokens.shift();
+    thenStatements.push(new Statement(StatementType.GOTO, line.value));
+  }
 
   // FIXME: incomplete!!
 
   return new Statement(StatementType.GOTO, {
     condition,
-    thenBlock,
-    elseBlock
+    thenStatements,
+    elseStatements
   });
 };
 
+const parseLet = tokens => {
+  console.log('in parseLet');
+  let identifier = tokens[0];
+
+  // The 'LET' prefix is optional
+  if (identifier.type !== TokenType.IDENTIFIER) {
+    popKeyword(tokens, Keyword.LET);
+    identifier = popType(tokens, TokenType.IDENTIFIER);
+  } else {
+    tokens.shift();
+  }
+
+  const tok = popType(tokens, [TokenType.EQ, TokenType.LPAR]);
+  const index = [];
+
+  if (tok.type === TokenType.LPAR) {
+    while (true) {
+      index.push(parseExpression(tokens));
+      const tok = popType(tokens, [TokenType.COMMA, TokenType.RPAR]);
+      if (tok.type === TokenType.RPAR) {
+        break;
+      }
+    }
+
+    popType(tokens, TokenType.EQ);
+  }
+
+  const expr = parseExpression(tokens);
+
+  return new Statement(StatementType.LET, { identifier, index, expr });
+};
+
 const parseReturn = (tokens, line) => {
-  expectKeyword(tokens.shift(), Keyword.RETURN);
-  return {
-    line: line.lineNumber,
-    type: StatementType.RETURN
-  };
+  popKeyword(tokens, Keyword.RETURN);
+  return new Statement(StatementType.RETURN);
 };
 
 const parseGosub = (tokens, line) => {
-  expectKeyword(tokens.shift(), Keyword.GOSUB);
-};
-
-const parseAssignment = (tokens, line) => {
-  expectIdentifier(tokens.shift());
+  popKeyword(tokens, Keyword.GOSUB);
+  const dest = popType(tokens, TokenType.INT);
+  return new Statement(StatementType.GOSUB, dest.value);
 };
 
 const parseRun = tokens => {
@@ -143,7 +178,7 @@ export class Statement {
 // This function will mutate the tokens array by
 // removing used tokens from it. The function can
 // then be called again with the remaining tokens.
-export const parse = tokens => {
+export const parseStatement = tokens => {
   const tok = tokens[0];
 
   switch (tok.type) {
@@ -173,16 +208,33 @@ export const parse = tokens => {
           return parseRun(tokens);
         case Keyword.END:
           return parseEnd(tokens);
+        case Keyword.LET:
+          return parseLet(tokens);
         default:
           throw new SyntaxError(`Unsupported statement keyword: ${tok.value}`);
       }
 
     case TokenType.IDENTIFIER:
-      return parseAssignment(tokens);
+      return parseLet(tokens);
 
     default:
       throw new SyntaxError(
         `Illegal syntax. First token is "${tok.type}" with value "${tok.value}"`
       );
   }
+};
+
+export const parseStatements = tokens => {
+  const statements = [];
+
+  while (tokens.length > 0) {
+    const statement = parseStatement(tokens);
+    statements.push(statement);
+
+    if (tokens.length > 0 && tokens[0].type === TokenType.SEPARATOR) {
+      tokens.shift();
+    }
+  }
+
+  return statements;
 };

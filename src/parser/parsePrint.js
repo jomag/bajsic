@@ -17,14 +17,19 @@ export const parsePrint = tokens => {
       channel = parseExpression(tokens);
       popType(tokens, TokenType.COMMA);
     }
+  }
 
-    while (tokens.length) {
-      const expr = parseExpression(tokens);
-      let separator =
-        tokens.length > 0 &&
-        popType(tokens, [TokenType.COMMA, TokenType.SEMICOLON]);
-      list.push([expr, !(separator && separator.type === TokenType.SEMICOLON)]);
+  while (tokens.length && tokens[0].type !== TokenType.SEPARATOR) {
+    const expr = parseExpression(tokens);
+
+    let lineFeed = true;
+
+    if (tokens.length > 0 && tokens[0].type === TokenType.SEMICOLON) {
+      lineFeed = false;
+      tokens.shift();
     }
+
+    list.push([expr, lineFeed]);
   }
 
   return new Statement(StatementType.PRINT, { channel, list });

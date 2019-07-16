@@ -18,8 +18,12 @@ export const TokenType = {
   REMARK: 'remark',
   RPAR: 'rpar',
   SEMICOLON: 'semicolon',
-  SEPARATOR: 'separator',
+  SEPARATOR: 'SEPARATOR',
   STRING: 'string',
+  NOT: 'not',
+  AND: 'and',
+  OR: 'or',
+  XOR: 'xor',
 
   // FIXME: I'm not sure about the meaning of underscore
   //        It's often find in INPUT statements:
@@ -38,7 +42,8 @@ export const Keyword = {
   RUN: 'RUN',
   GOSUB: 'GOSUB',
   LIST: 'LIST',
-  END: 'END'
+  END: 'END',
+  LET: 'LET'
 };
 
 const keywordAliases = {
@@ -48,7 +53,7 @@ const keywordAliases = {
 export class Token {
   constructor(type, value) {
     if (!type) {
-      throw new Error(`Internal error: create token with type: ${type}`)
+      throw new Error(`Internal error: create token with type: ${type}`);
     }
     this.type = type;
     this.value = value;
@@ -131,12 +136,25 @@ export const tokenize = (source, sourceLineNo) => {
     while (i < source.length && nameCharacters.includes(source[i])) i++;
     const value = source.substring(j, i);
 
+    const keyword = value.toUpperCase();
+
     // Special handling of the REM keyword
-    if (value.toUpperCase() === 'REM') {
+    if (keyword === 'REM') {
       return parseRemark();
     }
 
-    const keyword = value.toUpperCase();
+    // Special handling of a few operators, that arguable are keywords,
+    // but have specific token types.
+    switch (keyword) {
+      case 'AND':
+        return new Token(TokenType.AND);
+      case 'OR':
+        return new Token(TokenType.OR);
+      case 'NOT':
+        return new Token(TokenType.NOT);
+      case 'XOR':
+        return new Token(TokenType.XOR);
+    }
 
     if (Object.keys(keywordAliases).includes(keyword)) {
       return new Token(TokenType.KEYWORD, keywordAliases[keyword]);

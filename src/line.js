@@ -1,5 +1,5 @@
 import { TokenType, LexicalError, tokenize } from './lex';
-import { SyntaxError, parse } from './parser';
+import { SyntaxError, parseStatements } from './parser';
 import { evaluate } from './evaluate';
 
 export class Line {
@@ -31,22 +31,14 @@ export class Line {
       tokens.shift();
     }
 
-    let n = 0;
-    while (tokens.length > 0) {
-      n = n + 1;
-      if (n > 1000) {
-        throw new Error('1000+ statements, does not seem right. Endless loop?');
+    try {
+      line.statements = parseStatements(tokens);
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        e.code = source;
+        e.lineNumber = sourceLineNo;
       }
-
-      try {
-        line.statements.push(parse(tokens));
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          e.code = source;
-          e.lineNumber = sourceLineNo;
-        }
-        throw e;
-      }
+      throw e;
     }
 
     return line;
