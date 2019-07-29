@@ -12,8 +12,10 @@ import {
   RelationalOperatorExpr,
   ExprType,
   SubtractExpr,
-  DivideExpr
+  DivideExpr,
+  NotExpr
 } from '../expr';
+import { RuntimeError } from '../evaluate';
 
 const Operator = Enum([
   'EXP',
@@ -84,6 +86,8 @@ const token2operator = {
   [TokenType.COMMA]: Operator.SEPARATOR
 };
 
+const unaryOperators = [Operator.NOT];
+
 // Operator precedence
 // Reference: VAX Basic Reference, table 1-15 (p. 1-51)
 const prec = {
@@ -133,6 +137,7 @@ const operands = [
 
 const peek = tokens => tokens[tokens.length - 1];
 const isOperand = tokenType => operands.indexOf(tokenType) >= 0;
+const isUnary = op => unaryOperators.includes(op);
 
 const buildOperandExpression = token => {
   switch (token.type) {
@@ -151,7 +156,7 @@ const buildOperandExpression = token => {
   }
 };
 
-const buildOperatorExpr = (operator, child1, child2) => {
+const buildBinaryOperatorExpr = (operator, child1, child2) => {
   const relOpMap = {
     [Operator.LT]: ExprType.LT,
     [Operator.LE]: ExprType.LE,
@@ -186,9 +191,20 @@ const buildOperatorExpr = (operator, child1, child2) => {
   }
 };
 
+const buildUnaryOperatorExpr = (operator, operand) => {
+  switch (operator) {
+    case Operator.NOT:
+      return new NotExpr(operand);
+    default:
+      throw new Error(
+        `Internal error: can't unary operator of type: ${operator}`
+      );
+  }
+};
+
 // Some hints:
 // https://www.klittlepage.com/2013/12/22/twelve-days-2013-shunting-yard-algorithm/
-export const parseExpression = tokens => {
+export const parseOptionalExpression = tokens => {
   const operatorStack = [];
   const exprStack = [];
   const argCountStack = [];
@@ -210,13 +226,19 @@ export const parseExpression = tokens => {
     }
   };
 
-  // for (let tok of tokens) {
-  //    console.log("Token: ", tok)
-  //  }
+  const buildExpr = operator => {
+    if (isUnary(operator)) {
+      const operand = exprStack.pop();
+      exprStack.push(buildUnaryOperatorExpr(operator, operand));
+    } else {
+      const op2 = exprStack.pop();
+      const op1 = exprStack.pop();
+      exprStack.push(buildBinaryOperatorExpr(operator, op1, op2));
+    }
+  };
 
   while (tokens.length > 0) {
     const tok = tokens[0];
-
     const op = token2operator[tok.type];
 
     // Determine end of expression
@@ -253,10 +275,7 @@ export const parseExpression = tokens => {
       const empty = emptyBracketStack.pop();
 
       while (notOpenBracket()) {
-        const operator = operatorStack.pop();
-        const op2 = exprStack.pop();
-        const op1 = exprStack.pop();
-        exprStack.push(buildOperatorExpr(operator, op1, op2));
+        buildExpr(operatorStack.pop());
       }
 
       if (!operatorStack.length) {
@@ -277,7 +296,6 @@ export const parseExpression = tokens => {
         const fun = exprStack.pop();
         const call = new CallExpr(fun, args.reverse());
         exprStack.push(call);
-        argCountStack.pop();
       }
 
       possibleFunctionCall = true;
@@ -287,10 +305,7 @@ export const parseExpression = tokens => {
     // Expression separator, typically for functions
     else if (op === Operator.SEPARATOR) {
       while (notOpenBracket()) {
-        const operator = operatorStack.pop();
-        const op2 = exprStack.pop();
-        const op1 = exprStack.pop();
-        exprStack.push(buildOperatorExpr(operator, op1, op2));
+        buildExpr(operatorStack.pop());
       }
 
       argCountStack.push(argCountStack.pop() + 1);
@@ -306,10 +321,7 @@ export const parseExpression = tokens => {
         const c2 = prec[o] === prec[op] && assoc[o] === 'L';
 
         if ((c1 || c2) && o !== TokenType.LPAR) {
-          const operator = operatorStack.pop();
-          const op2 = exprStack.pop();
-          const op1 = exprStack.pop();
-          exprStack.push(buildOperatorExpr(operator, op1, op2));
+          buildExpr(operatorStack.pop());
         } else {
           break;
         }
@@ -323,10 +335,7 @@ export const parseExpression = tokens => {
   }
 
   while (operatorStack.length > 0) {
-    const operator = operatorStack.pop();
-    const op2 = exprStack.pop();
-    const op1 = exprStack.pop();
-    exprStack.push(buildOperatorExpr(operator, op1, op2));
+    buildExpr(operatorStack.pop());
   }
 
   assert(
@@ -335,11 +344,13 @@ export const parseExpression = tokens => {
     operatorStack
   );
 
-  assert(
-    exprStack.length === 1,
-    `Expression stack has length ${exprStack.length}, expected 1`,
-    exprStack
-  );
-
   return exprStack.pop();
+};
+
+export const parseExpression = tokens => {
+  const expr = parseOptionalExpression(tokens);
+  if (!expr) {
+    throw new SyntaxError('Empty expression');
+  }
+  return expr;
 };

@@ -13,10 +13,16 @@ import {
 const chai = require('chai');
 const expect = chai.expect;
 
-const { INT, PLUS, IDENTIFIER, LPAR, RPAR, STRING, COMMA } = TokenType;
+const { INT, PLUS, IDENTIFIER, LPAR, RPAR, STRING, COMMA, NOT } = TokenType;
 
 function printExprTree(expr, indent) {
   const indent2 = indent || '';
+
+  if (expr === undefined) {
+    console.log(`${indent}undefined`);
+    return;
+  }
+
   console.log(
     `${indent2}${expr.type} ${expr.value !== undefined ? expr.value : ''}`
   );
@@ -34,6 +40,7 @@ function compareExpressions(expr1, expr2) {
     console.log('Second expression:');
     printExprTree(expr2, '');
   }
+
   if (expr1.type !== expr2.type) {
     printDiff();
     throw new Error(`Type differs: ${expr1.type} vs ${expr2.type}`);
@@ -199,5 +206,27 @@ describe('Parse Expressions', () => {
       new ConstExpr(ValueType.INT, 3)
     ]);
     expect(compareExpressions(expr, expected)).to.be.true;
+  });
+
+  it('should handle nested function calls', () => {
+    const tokens = [
+      new Token(IDENTIFIER, 'A'),
+      new Token(LPAR),
+      new Token(IDENTIFIER, 'B'),
+      new Token(LPAR),
+      new Token(IDENTIFIER, 'C'),
+      new Token(RPAR),
+      new Token(RPAR)
+    ];
+    const expr = parseExpression(tokens);
+    const expected = new CallExpr(new IdentifierExpr('A'), [
+      new CallExpr(new IdentifierExpr('B'), [new IdentifierExpr('C')])
+    ]);
+    expect(compareExpressions(expr, expected)).to.be.true;
+  });
+
+  it('should handle "NOT" operator', () => {
+    const tokens = [new Token(NOT), new Token(INT, 0)];
+    const expr = parseExpression(tokens);
   });
 });

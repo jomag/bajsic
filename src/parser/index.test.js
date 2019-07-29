@@ -100,9 +100,11 @@ describe('Parse Statements', () => {
   });
 
   describe('IF as statement modifier', () => {
-    const s = P('PRINT "ok" IF 2 > 1');
-    expect(s.type).to.equal(StatementType.IF);
-    expect(s.thenStatements.length).to.equal(1);
-    expect(s.thenStatements[0].type).to.equal(StatementType.PRINT);
+    it('handle basic case', () => {
+      const s = P('PRINT "ok" IF 2 > 1');
+      expect(s.type).to.equal(StatementType.IF);
+      expect(s.thenStatements.length).to.equal(1);
+      expect(s.thenStatements[0].type).to.equal(StatementType.PRINT);
+    });
   });
 });

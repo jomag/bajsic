@@ -12,7 +12,17 @@ export const StatementType = {
   RUN: 'run',
   ON_GOTO: 'onGoto',
   ON_GOSUB: 'onGosub',
-  FOR: 'for'
+  FOR: 'for',
+  INPUT: 'input',
+  CLOSE: 'close',
+  OPEN: 'open',
+  MARGIN: 'margin',
+  QUOTE: 'quote',
+  STOP: 'stop',
+  READ: 'read',
+  DATA: 'data',
+  DEF: 'def',
+  CHANGE: 'change'
 };
 
 export class BaseStatement {
@@ -51,10 +61,9 @@ export class GosubStatement extends BaseStatement {
 }
 
 export class LetStatement extends BaseStatement {
-  constructor(identifier, index, expr) {
+  constructor(identifier, expr) {
     super(StatementType.LET);
     this.identifier = identifier;
-    this.index = index;
     this.expr = expr;
   }
 }
@@ -68,22 +77,6 @@ export class ReturnStatement extends BaseStatement {
 export class RunStatement extends BaseStatement {
   constructor() {
     super(StatementType.RUN);
-  }
-}
-
-export class EndStatement extends BaseStatement {
-  constructor(blockType) {
-    super(StatementType.END);
-    this.blockType = blockType;
-  }
-}
-
-export class IfStatement extends BaseStatement {
-  constructor(conditionExpr, thenStatements, elseStatements) {
-    super(StatementType.IF);
-    this.conditionExpr = conditionExpr;
-    this.thenStatements = thenStatements;
-    this.elseStatements = elseStatements;
   }
 }
 

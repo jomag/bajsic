@@ -1,20 +1,37 @@
 import { TokenType, Keyword } from '../lex';
+
 import {
   DimStatement,
-  IfStatement,
   GosubStatement,
   GotoStatement,
   RemarkStatement,
   ReturnStatement,
   LetStatement
 } from '../statement';
+
+import { IfStatement } from '../statements/ifStatement';
+import { EndStatement } from '../statements/EndStatement';
+
 import { parseExpression } from './expression';
+import { parseVar } from './parseVar';
 import { parsePrint } from './parsePrint';
 import { parseList } from './parseList';
 import { parseOnStatement } from './parseOnStatement';
 import { popKeyword, popType, popOptionalKeyword } from './utils';
 import { parseForStatement } from './parseForStatement';
-
+import { parseNextStatement } from './parseNextStatement.js';
+import { parseInputStatement } from './parseInputStatement';
+import { parseCloseStatement } from './parseCloseStatement';
+import { parseOpenStatement } from './parseOpenStatement';
+import { parseResumeStatement } from './parseResumeStatement';
+import { parseMarginStatement } from './parseMarginStatement';
+import { parseQuoteStatement } from './parseQuoteStatement';
+import { parseStopStatement } from './parseStopStatement';
+import { parseReadStatement } from './parseReadStatement';
+import { parseDataStatement } from './parseDataStatement';
+import { parseDefStatement } from './parseDefStatement';
+import { parseChangeStatement } from './parseChangeStatement';
+import { parseWriteStatement } from './parseWriteStatement';
 export { parseExpression } from './expression';
 
 export class SyntaxError extends Error {
@@ -30,7 +47,6 @@ const parseDim = tokens => {
   // Format: LIST, LIST n, LIST n-m, LIST n,n-m,...
 
   const arrays = {};
-  let first = true;
   let i = 1;
 
   popKeyword(tokens, Keyword.DIM);
@@ -119,34 +135,13 @@ const parseIf = (tokens, line) => {
 };
 
 const parseLet = tokens => {
-  let identifier = tokens[0];
+  popOptionalKeyword(tokens, Keyword.LET);
 
-  // The 'LET' prefix is optional
-  if (identifier.type !== TokenType.IDENTIFIER) {
-    popKeyword(tokens, Keyword.LET);
-    identifier = popType(tokens, TokenType.IDENTIFIER);
-  } else {
-    tokens.shift();
-  }
-
-  const tok = popType(tokens, [TokenType.EQ, TokenType.LPAR]);
-  const index = [];
-
-  if (tok.type === TokenType.LPAR) {
-    while (true) {
-      index.push(parseExpression(tokens));
-      const tok = popType(tokens, [TokenType.COMMA, TokenType.RPAR]);
-      if (tok.type === TokenType.RPAR) {
-        break;
-      }
-    }
-
-    popType(tokens, TokenType.EQ);
-  }
-
+  const identifier = parseVar(tokens);
+  popType(tokens, TokenType.EQ);
   const expr = parseExpression(tokens);
 
-  return new LetStatement(identifier, index, expr);
+  return new LetStatement(identifier, expr);
 };
 
 const parseReturn = (tokens, line) => {
@@ -183,6 +178,13 @@ const parseEnd = tokens => {
   }
 
   return new EndStatement(blockType);
+};
+
+const parseFnEnd = tokens => {
+  // VAX BASIC Ref: page 245, 4-85
+  // Alias for END FUNCTION
+  popKeyword(tokens, Keyword.FNEND);
+  return new EndStatement(Keyword.FUNCTION);
 };
 
 // Parse statement from tokens
@@ -223,6 +225,36 @@ export const parseStatement = tokens => {
             return parseLet(tokens);
           case Keyword.ON:
             return parseOnStatement(tokens);
+          case Keyword.FOR:
+            return parseForStatement(tokens);
+          case Keyword.NEXT:
+            return parseNextStatement(tokens);
+          case Keyword.INPUT:
+            return parseInputStatement(tokens);
+          case Keyword.OPEN:
+            return parseOpenStatement(tokens);
+          case Keyword.CLOSE:
+            return parseCloseStatement(tokens);
+          case Keyword.RESUME:
+            return parseResumeStatement(tokens);
+          case Keyword.MARGIN:
+            return parseMarginStatement(tokens);
+          case Keyword.QUOTE:
+            return parseQuoteStatement(tokens);
+          case Keyword.STOP:
+            return parseStopStatement(tokens);
+          case Keyword.READ:
+            return parseReadStatement(tokens);
+          case Keyword.DATA:
+            return parseDataStatement(tokens);
+          case Keyword.DEF:
+            return parseDefStatement(tokens);
+          case Keyword.FNEND:
+            return parseFnEnd(tokens);
+          case Keyword.CHANGE:
+            return parseChangeStatement(tokens);
+          case Keyword.WRITE:
+            return parseWriteStatement(tokens);
           default:
             throw new SyntaxError(
               `Unsupported statement keyword: ${tok.value}`

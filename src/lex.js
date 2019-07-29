@@ -10,6 +10,7 @@ export const TokenType = {
   IDENTIFIER: 'identifier',
   INT: 'int',
   KEYWORD: 'keyword',
+  DATA_TYPE: 'dataType',
   LPAR: 'lpar',
   LT: 'lt',
   MINUS: 'minus',
@@ -24,9 +25,10 @@ export const TokenType = {
   AND: 'and',
   OR: 'or',
   XOR: 'xor',
+  NOT: 'not',
 
   // FIXME: I'm not sure about the meaning of underscore
-  //        It's often find in INPUT statements:
+  //        It's often found in INPUT statements:
   //        10 INPUT ""_A$
   UNDERSCORE: 'underscore'
 };
@@ -47,7 +49,37 @@ export const Keyword = {
   ON: 'ON',
   OTHERWISE: 'OTHERWISE',
   FOR: 'FOR',
-  TO: 'TO'
+  TO: 'TO',
+  NEXT: 'NEXT',
+  INPUT: 'input',
+  CLOSE: 'close',
+  LINE: 'line',
+  OPEN: 'open',
+  OUTPUT: 'output',
+  AS: 'as',
+  FILE: 'file',
+  RESUME: 'resume',
+  MARGIN: 'margin',
+  QUOTE: 'quote',
+  STOP: 'stop',
+  READ: 'read',
+  DATA: 'data',
+  DEF: 'def',
+  PROGRAM: 'program',
+  FUNCTION: 'function',
+  FNEND: 'fnend',
+  CHANGE: 'change',
+  WRITE: 'write'
+};
+
+const DataType = {
+  BYTE: 'byte',
+  WORD: 'word',
+  LONG: 'long',
+  SINGLE: 'single',
+  DOUBLE: 'double',
+  STRING: 'string',
+  RFA: 'rfa'
 };
 
 const keywordAliases = {
@@ -135,21 +167,21 @@ export const tokenize = (source, sourceLineNo) => {
     return new Token(TokenType.REMARK, source.substring(j, i));
   };
 
-  const parseIdentifierOrKeyword = () => {
+  const parseWord = () => {
     const j = i++;
     while (i < source.length && nameCharacters.includes(source[i])) i++;
     const value = source.substring(j, i);
 
-    const keyword = value.toUpperCase();
+    const word = value.toUpperCase();
 
     // Special handling of the REM keyword
-    if (keyword === 'REM') {
+    if (word === 'REM') {
       return parseRemark();
     }
 
     // Special handling of a few operators, that arguable are keywords,
     // but have specific token types.
-    switch (keyword) {
+    switch (word) {
       case 'AND':
         return new Token(TokenType.AND);
       case 'OR':
@@ -160,12 +192,16 @@ export const tokenize = (source, sourceLineNo) => {
         return new Token(TokenType.XOR);
     }
 
-    if (Object.keys(keywordAliases).includes(keyword)) {
-      return new Token(TokenType.KEYWORD, keywordAliases[keyword]);
+    if (Object.keys(keywordAliases).includes(word)) {
+      return new Token(TokenType.KEYWORD, keywordAliases[word]);
     }
 
-    if (Object.keys(Keyword).includes(keyword)) {
-      return new Token(TokenType.KEYWORD, Keyword[keyword]);
+    if (Object.keys(Keyword).includes(word)) {
+      return new Token(TokenType.KEYWORD, Keyword[word]);
+    }
+
+    if (Object.keys(DataType).includes(word)) {
+      return new Token(TokenType.DATA_TYPE, DataType[word]);
     }
 
     return new Token(TokenType.IDENTIFIER, value);
@@ -200,7 +236,7 @@ export const tokenize = (source, sourceLineNo) => {
       }
 
       if (alpha.includes(c)) {
-        tokens.push(parseIdentifierOrKeyword());
+        tokens.push(parseWord());
         continue;
       }
 

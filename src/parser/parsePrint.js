@@ -1,5 +1,5 @@
 import { popKeyword, popType, popOptionalType } from './utils';
-import { parseExpression } from './expression';
+import { parseOptionalExpression, parseExpression } from './expression';
 import { Keyword, TokenType } from '../lex';
 import { PrintStatement } from '../statement';
 
@@ -10,16 +10,19 @@ export const parsePrint = tokens => {
   let channel = null;
   let list = [];
 
-  if (tokens.length) {
-    if (tokens[0].type === TokenType.HASH) {
-      tokens.shift();
-      channel = parseExpression(tokens);
-      popType(tokens, TokenType.COMMA);
+  if (popOptionalType(tokens, TokenType.HASH)) {
+    channel = parseExpression(tokens);
+    if (!popOptionalType(tokens, TokenType.COMMA)) {
+      return new PrintStatement(channel, []);
     }
   }
 
-  while (tokens.length && tokens[0].type !== TokenType.SEPARATOR) {
-    const expr = parseExpression(tokens);
+  while (tokens.length) {
+    const expr = parseOptionalExpression(tokens);
+
+    if (!expr) {
+      break;
+    }
 
     let lineFeed = true;
     const tok = popOptionalType(tokens, [TokenType.SEMICOLON, TokenType.COMMA]);

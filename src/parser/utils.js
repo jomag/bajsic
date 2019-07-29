@@ -72,6 +72,20 @@ export const popOptionalKeyword = (tokens, keywords) => {
   }
 };
 
+export const popOptionalDataType = tokens => {
+  const tok = tokens[0];
+  if (tok && tok.type === TokenType.DATA_TYPE) {
+    return tokens.shift();
+  }
+};
+
+export const popOptionalIdentifier = tokens => {
+  const tok = tokens[0];
+  if (tok && tok.type === TokenType.IDENTIFIER) {
+    return tokens.shift();
+  }
+};
+
 export const popKeyword = (tokens, keyword) => {
   const kws = Array.isArray(keyword) ? keyword : [keyword];
   const tok = tokens.shift();

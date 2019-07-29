@@ -90,7 +90,6 @@ export const evaluate = (statement, program, context) => {
   if (statement.exec) {
     return statement.exec(program, context);
   } else {
-    console.log('EVAL TYPE ', statement.type);
     return evalMap[statement.type](statement, program, context);
   }
 };

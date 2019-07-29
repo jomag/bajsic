@@ -1,4 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
+import { Value, ValueType } from '../expr';
+import { evaluate } from '../evaluate';
 
 export class ForStatement extends BaseStatement {
   constructor(name, startExpr, finalExpr, stepExpr, untilExpr, whileExpr) {
@@ -29,7 +31,7 @@ export class ForStatement extends BaseStatement {
         context.assignVariable(this.name, nextValue);
 
         const jumpTo = evaluate(this.statement, program, context);
-        if (jumpTo) {
+        if (jumpTo !== undefined) {
           return jumpTo;
         }
 

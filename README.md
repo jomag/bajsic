@@ -6,6 +6,33 @@ Swedish text adventure _Stugan_.
 
 The name Bajsic is a wordplay with BASIC and JS (JavaScript).
 
+## Compliance
+
+This interpreter aims to implement a subset of VAX BASIC, which was
+the interpreter originally used to write _Stugan_ in late 70's.
+The source code of the game is not 100% compatible with the
+VAX BASIC reference (see below). This may be because the language
+has changed in a non-backwards compatible way, or it may be because
+I've still not got the right language reference.
+
+### Underscore in INPUT statements
+
+INPUT statements allows "," or ";" to separate the string presented
+from the target variable:
+
+```
+INPUT "Question";A$
+```
+
+The _Stugan_ source code also uses underscore, which is not legal according
+to the reference:
+
+```
+INPUT "Question"_A$
+```
+
+Currently this is handled by treating `,`, `;` and `_` equally.
+
 ## References
 
 - [VAX Basic User Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY15B-TE_VAX_BASIC_User_Manual_Feb90.pdf) (1990)

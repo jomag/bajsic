@@ -51,6 +51,17 @@ export class Value {
   add(value) {
     return new Value(this.type, this.value + value.value);
   }
+
+  isTrue() {
+    switch (this.type) {
+      case ValueType.INT:
+        return this.value !== 0;
+      default:
+        throw new Error(
+          `Internal error: isTrue not implemented for type ${this.type}`
+        );
+    }
+  }
 }
 
 export class Expr {
@@ -204,8 +215,8 @@ export class RelationalOperatorExpr extends BinaryOperatorExpr {
   }
 
   evaluate(context) {
-    const value1 = this.children[0].evaluate(context);
-    const value2 = this.children[1].evaluate(context);
+    const value1 = this.children[0].evaluate(context).value;
+    const value2 = this.children[1].evaluate(context).value;
     let result;
 
     switch (this.type) {
@@ -231,6 +242,23 @@ export class RelationalOperatorExpr extends BinaryOperatorExpr {
         throw new RuntimeError('Unhandled relational operator type');
     }
 
-    return new Value(ValueType.INT, result);
+    return new Value(ValueType.INT, result ? -1 : 0);
+  }
+}
+
+export class UnaryOperatorExpr extends Expr {
+  constructor(exprType, operand) {
+    super(exprType);
+    this.operand = operand;
+  }
+}
+
+export class NotExpr extends UnaryOperatorExpr {
+  constructor(operand) {
+    super(ExprType.NOT, operand);
+  }
+
+  evaluate(context) {
+    throw new RuntimeError('NOT is not implemented');
   }
 }

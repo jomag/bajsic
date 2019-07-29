@@ -72,20 +72,22 @@ function start(argv) {
     const srcLines = srcOriginal.split('\n');
     let n = 0;
     for (const src of srcLines) {
-      try {
-        const line = Line.parse(src);
-        program.add(line);
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          printError(`Line ${n}: ${e.message}`);
-          break;
-        } else {
-          console.error(`Unexpected error on line ${n}`);
-          throw e;
+      if (src.trim().length > 0) {
+        try {
+          const line = Line.parse(src);
+          program.add(line);
+        } catch (e) {
+          if (e instanceof SyntaxError) {
+            printError(`Line ${n}: ${e.message}`);
+            break;
+          } else {
+            console.error(`Unexpected error on line ${n}`);
+            throw e;
+          }
         }
-      }
 
-      n = n + 1;
+        n = n + 1;
+      }
     }
   }
 
