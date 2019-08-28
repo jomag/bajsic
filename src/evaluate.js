@@ -17,10 +17,6 @@ const termPrintln = (value, context) => {
   context.stdout.write('\n');
 };
 
-const evalGoto = (statement, program, context) => {
-  return statement.destination;
-};
-
 const evalList = (statement, program, context) => {
   if (statement.ranges.length === 0) {
     program.lines.forEach(line => termPrintln(line.source, context));
@@ -81,7 +77,6 @@ const evalRun = (statement, program, context) => {
 const evalMap = {
   [StatementType.LIST]: evalList,
   [StatementType.PRINT]: evalPrint,
-  [StatementType.GOTO]: evalGoto,
   [StatementType.RUN]: evalRun,
   [StatementType.END]: evalEnd
 };
@@ -89,7 +84,13 @@ const evalMap = {
 export const evaluate = (statement, program, context) => {
   if (statement.exec) {
     return statement.exec(program, context);
-  } else {
+  }
+
+  if (evalMap[statement.type]) {
     return evalMap[statement.type](statement, program, context);
   }
+
+  throw new Error(
+    `Evaluation of statement type '${statement.type}' is not implemented`
+  );
 };

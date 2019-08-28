@@ -6,6 +6,7 @@ import {
   GotoStatement,
   RemarkStatement,
   ReturnStatement,
+  RunStatement,
   LetStatement
 } from '../statement';
 
@@ -266,9 +267,7 @@ export const parseStatement = tokens => {
 
       default:
         throw new SyntaxError(
-          `Illegal syntax. First token is "${tok.type}" with value "${
-            tok.value
-          }"`
+          `Illegal syntax. First token is "${tok.type}" with value "${tok.value}"`
         );
     }
   };

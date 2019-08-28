@@ -52,6 +52,8 @@ function startInteractiveMode(program, context) {
             printError(e.message);
             rl.prompt();
             return;
+          } else {
+            throw e;
           }
         }
       } else {
@@ -81,7 +83,7 @@ function start(argv) {
             printError(`Line ${n}: ${e.message}`);
             break;
           } else {
-            console.error(`Unexpected error on line ${n}`);
+            console.error(`Unexpected error on line ${n}:\n${src}\n`);
             throw e;
           }
         }

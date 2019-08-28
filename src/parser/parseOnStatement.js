@@ -1,7 +1,8 @@
 import { popKeyword, popOptionalKeyword, popType } from './utils';
 import { Keyword, TokenType } from '../lex';
 import { parseExpression } from './expression';
-import { OnGotoStatement, OnGosubStatement } from '../statement';
+import { OnGosubStatement } from '../statements/OnGosubStatement';
+import { OnGotoStatement } from '../statements/OnGotoStatement';
 
 // There's a number of statement types that begins with "ON":
 //

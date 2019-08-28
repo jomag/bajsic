@@ -44,12 +44,20 @@ export class DimStatement extends BaseStatement {
     super(StatementType.DIM);
     this.arrays = arrays;
   }
+
+  exec(program, context) {
+    console.warn('DimStatement.exec is only a stub!');
+  }
 }
 
 export class GotoStatement extends BaseStatement {
   constructor(destination) {
     super(StatementType.GOTO);
     this.destination = destination;
+  }
+
+  exec(program, context) {
+    return this.destination;
   }
 }
 
@@ -84,32 +92,15 @@ export class RemarkStatement extends BaseStatement {
   constructor() {
     super(StatementType.REMARK);
   }
+
+  exec(program, context) {
+    console.log('Ignoring remark');
+  }
 }
 
 export class ListStatement extends BaseStatement {
   constructor(ranges) {
     super(StatementType.LIST);
     this.ranges = ranges;
-  }
-}
-
-class BaseOnStatement extends BaseStatement {
-  constructor(type, expr, targets, otherwise) {
-    super(type);
-    this.expr = expr;
-    this.targets = targets;
-    this.otherwise = otherwise;
-  }
-}
-
-export class OnGotoStatement extends BaseOnStatement {
-  constructor(expr, targets, otherwise) {
-    super(StatementType.ON_GOTO, expr, targets, otherwise);
-  }
-}
-
-export class OnGosubStatement extends BaseOnStatement {
-  constructor(expr, targets, otherwise) {
-    super(StatementType.ON_GOSUB, expr, targets, otherwise);
   }
 }
