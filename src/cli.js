@@ -15,16 +15,24 @@ function printError(msg) {
   console.error(chalk.redBright(msg));
 }
 
-function startInteractiveMode(program, context) {
+export const userInput = async prompt => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: PROMPT
+    prompt: prompt
   });
 
-  rl.prompt();
+  return new Promise((resolve, reject) => {
+    rl.question(prompt, input => {
+      rl.close();
+      resolve(input, reject);
+    });
+  });
+};
 
-  rl.on('line', text => {
+async function startInteractiveMode(program, context) {
+  while (true) {
+    const text = await userInput(PROMPT);
     let line;
 
     try {
@@ -32,7 +40,6 @@ function startInteractiveMode(program, context) {
     } catch (e) {
       if (e instanceof SyntaxError) {
         printError(e.message);
-        rl.prompt();
         return;
       } else {
         throw e;
@@ -46,11 +53,10 @@ function startInteractiveMode(program, context) {
     } else {
       if (line.num === undefined) {
         try {
-          line.exec(program, context);
+          await line.exec(program, context);
         } catch (e) {
           if (e instanceof RuntimeError) {
             printError(e.message);
-            rl.prompt();
             return;
           } else {
             throw e;
@@ -60,9 +66,7 @@ function startInteractiveMode(program, context) {
         program.add(line);
       }
     }
-
-    rl.prompt();
-  });
+  }
 }
 
 function start(argv) {

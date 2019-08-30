@@ -44,9 +44,9 @@ export class Line {
     return line;
   }
 
-  exec(program, context) {
+  async exec(program, context) {
     for (const stmt of this.statements) {
-      const next = evaluate(stmt, program, context);
+      const next = await evaluate(stmt, program, context);
 
       // If next is undefined, the program should either
       // go to another line or end execution. In either case

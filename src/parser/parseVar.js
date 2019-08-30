@@ -6,7 +6,7 @@ import Var from '../Var';
 export const parseVar = tokens => {
   const name = popIdentifier(tokens);
   const index = [];
-  let expectMore = false;
+
   if (popOptionalType(tokens, TokenType.LPAR)) {
     while (!popOptionalType(tokens, TokenType.RPAR)) {
       index.push(parseExpression(tokens));
@@ -18,5 +18,5 @@ export const parseVar = tokens => {
     }
   }
 
-  return new Var(name.value, index.length ? index : null);
+  return new Var(name, index.length ? index : null);
 };

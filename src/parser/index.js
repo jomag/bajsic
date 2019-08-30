@@ -1,17 +1,18 @@
 import { TokenType, Keyword } from '../lex';
 
 import {
-  DimStatement,
   GosubStatement,
   GotoStatement,
   RemarkStatement,
   ReturnStatement,
-  RunStatement,
-  LetStatement
+  RunStatement
 } from '../statement';
 
+import { DimStatement } from '../statements/DimStatement';
 import { IfStatement } from '../statements/ifStatement';
 import { EndStatement } from '../statements/EndStatement';
+import { DebugStatement } from '../statements/DebugStatement';
+import { LetStatement } from '../statements/LetStatement';
 
 import { parseExpression } from './expression';
 import { parseVar } from './parseVar';
@@ -158,10 +159,12 @@ const parseGosub = (tokens, line) => {
 
 const parseRun = tokens => {
   popKeyword(tokens, Keyword.RUN);
-  if (tokens.length !== 0) {
-    throw new SyntaxError('Expected end of line after run command');
-  }
   return new RunStatement();
+};
+
+const parseDebugStatement = tokens => {
+  popKeyword(tokens, Keyword.DEBUG);
+  return new DebugStatement();
 };
 
 const parseEnd = tokens => {
@@ -256,6 +259,8 @@ export const parseStatement = tokens => {
             return parseChangeStatement(tokens);
           case Keyword.WRITE:
             return parseWriteStatement(tokens);
+          case Keyword.DEBUG:
+            return parseDebugStatement(tokens);
           default:
             throw new SyntaxError(
               `Unsupported statement keyword: ${tok.value}`

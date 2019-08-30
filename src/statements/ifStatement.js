@@ -9,12 +9,12 @@ export class IfStatement extends BaseStatement {
     this.elseStatements = elseStatements;
   }
 
-  exec(program, context) {
-    const result = this.conditionExpr.evaluate(context);
+  async exec(program, context) {
+    const result = await this.conditionExpr.evaluate(context);
     const block = result.isTrue() ? this.thenStatements : this.elseStatements;
 
     for (let stmt of block || []) {
-      const jumpTo = evaluate(stmt, program, context);
+      const jumpTo = await evaluate(stmt, program, context);
       if (jumpTo !== undefined) {
         return jumpTo;
       }

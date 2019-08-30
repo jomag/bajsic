@@ -15,6 +15,10 @@ export class Context {
     this.variables[name] = value;
   }
 
+  setArrayItem(name, index, value) {
+    this.variables[name].set(index, value);
+  }
+
   get(name) {
     const value = this.variables[name];
     if (value !== undefined) {

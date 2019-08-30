@@ -28,10 +28,10 @@ const evalList = (statement, program, context) => {
   }
 };
 
-const evalPrint = (statement, program, context) => {
+const evalPrint = async (statement, program, context) => {
   // FIXME: handle different output channels
   for (const outp of statement.list) {
-    const result = outp[0].evaluate(context);
+    const result = await outp[0].evaluate(context);
     outp[1]
       ? termPrintln(result.value, context)
       : termPrint(result.value, context);
@@ -50,10 +50,10 @@ const evalEnd = (statement, program, context) => {
   }
 };
 
-const evalRun = (statement, program, context) => {
+const evalRun = async (statement, program, context) => {
   while (true) {
     const line = program.lines[context.pc];
-    const next = line.exec(program, context);
+    const next = await line.exec(program, context);
 
     if (next === false) {
       break;
@@ -81,14 +81,16 @@ const evalMap = {
   [StatementType.END]: evalEnd
 };
 
-export const evaluate = (statement, program, context) => {
+export const evaluate = async (statement, program, context) => {
   if (statement.exec) {
-    return statement.exec(program, context);
+    return await statement.exec(program, context);
   }
 
   if (evalMap[statement.type]) {
-    return evalMap[statement.type](statement, program, context);
+    return await evalMap[statement.type](statement, program, context);
   }
+
+  console.log(statement);
 
   throw new Error(
     `Evaluation of statement type '${statement.type}' is not implemented`

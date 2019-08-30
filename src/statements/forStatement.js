@@ -16,12 +16,12 @@ export class ForStatement extends BaseStatement {
     this.statement = null;
   }
 
-  exec(program, context) {
+  async exec(program, context) {
     if (this.statement) {
-      const start = this.startExpr.evaluate(context);
-      const final = this.finalExpr.evaluate(context);
+      const start = await this.startExpr.evaluate(context);
+      const final = await this.finalExpr.evaluate(context);
       const step = this.stepExpr
-        ? this.stepExpr.evaluate(context)
+        ? await this.stepExpr.evaluate(context)
         : new Value(ValueType.INT, 1);
 
       context.assignVariable(this.name, start);
@@ -30,7 +30,7 @@ export class ForStatement extends BaseStatement {
       while (nextValue.isLessThan(final)) {
         context.assignVariable(this.name, nextValue);
 
-        const jumpTo = evaluate(this.statement, program, context);
+        const jumpTo = await evaluate(this.statement, program, context);
         if (jumpTo !== undefined) {
           return jumpTo;
         }

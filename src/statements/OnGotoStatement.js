@@ -6,8 +6,8 @@ export class OnGotoStatement extends BaseOnStatement {
     super(StatementType.ON_GOTO, expr, targets, otherwise);
   }
 
-  exec(program, context) {
-    const result = this.expr.evaluate(context);
+  async exec(program, context) {
+    const result = await this.expr.evaluate(context);
     console.warn('OnGotoStatement.exec is only a stub');
   }
 }

@@ -22,11 +22,21 @@ export const StatementType = {
   READ: 'read',
   DATA: 'data',
   DEF: 'def',
-  CHANGE: 'change'
+  CHANGE: 'change',
+  DEBUG: 'debug',
+  LET: 'let',
+  NEXT: 'next',
+  RESUME: 'resume'
 };
 
 export class BaseStatement {
   constructor(type) {
+    if (!type) {
+      throw new Error(
+        `Internal error: BaseStatement initialized with invalid type: ${type}`
+      );
+    }
+
     this.type = type;
   }
 }
@@ -36,17 +46,6 @@ export class PrintStatement extends BaseStatement {
     super(StatementType.PRINT);
     this.channel = channel;
     this.list = list;
-  }
-}
-
-export class DimStatement extends BaseStatement {
-  constructor(arrays) {
-    super(StatementType.DIM);
-    this.arrays = arrays;
-  }
-
-  exec(program, context) {
-    console.warn('DimStatement.exec is only a stub!');
   }
 }
 
@@ -65,14 +64,6 @@ export class GosubStatement extends BaseStatement {
   constructor(destination) {
     super(StatementType.GOSUB);
     this.destination = destination;
-  }
-}
-
-export class LetStatement extends BaseStatement {
-  constructor(identifier, expr) {
-    super(StatementType.LET);
-    this.identifier = identifier;
-    this.expr = expr;
   }
 }
 

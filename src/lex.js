@@ -69,7 +69,8 @@ export const Keyword = {
   FUNCTION: 'function',
   FNEND: 'fnend',
   CHANGE: 'change',
-  WRITE: 'write'
+  WRITE: 'write',
+  DEBUG: 'debug'
 };
 
 const DataType = {
