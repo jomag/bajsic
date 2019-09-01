@@ -1,3 +1,5 @@
+// @ts-check
+
 import { RuntimeError } from './evaluate';
 
 export default class BasicArray {
@@ -24,7 +26,12 @@ export default class BasicArray {
     return index + path[path.length - 1];
   }
 
+  /**
+   * @param {number} path
+   * @param {string|number} value
+   */
   set(path, value) {
+    console.log(`PATH: ${path} VALUE: ${value}`);
     const index = this.pathToIndex(path);
     this.data[index] = value;
   }

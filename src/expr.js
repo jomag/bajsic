@@ -1,6 +1,5 @@
 import { Enum } from './utils';
 import { RuntimeError } from './evaluate';
-import { interfaces } from 'mocha';
 
 export const ExprType = Enum([
   // { type: CONSTANT, valueType: INT, value: 42 }
@@ -35,7 +34,14 @@ export const ExprType = Enum([
   'GROUP'
 ]);
 
-export const ValueType = Enum(['INT', 'STRING', 'FUNCTION']);
+/**
+ * @enum {string}
+ */
+export const ValueType = {
+  INT: 'int',
+  STRING: 'string',
+  FUNCTION: 'function'
+};
 
 export class Value {
   constructor(type, value) {
@@ -69,6 +75,10 @@ export class Expr {
     this.type = type;
   }
 
+  /**
+   * @param {Context} context
+   * @returns {Promise<Value>}
+   */
   evaluate(context) {
     throw new Error('Evaluation method not implemented!');
   }
@@ -97,7 +107,11 @@ export class IdentifierExpr extends Expr {
   }
 
   evaluate(context) {
-    return context.get(this.value);
+    const value = context.get(this.value);
+    if (value === undefined) {
+      throw new RuntimeError(`Undeclared variable: ${this.value}`);
+    }
+    return value;
   }
 
   toString() {

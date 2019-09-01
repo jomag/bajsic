@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 
 import { Line } from './line';
-import { SyntaxError } from './parser';
+// import { SyntaxError } from './parser';
 import { Program } from './program';
 import { Context } from './context';
 import { RuntimeError } from './evaluate';

@@ -1,6 +1,22 @@
 import { BaseStatement, StatementType } from '../statement';
 import { RuntimeError } from '../evaluate';
-import { userInput } from '../cli';
+import readline from 'readline';
+//import { userInput } from '../cli';
+
+export const userInput = async prompt => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: prompt
+  });
+
+  return new Promise((resolve, reject) => {
+    rl.question(prompt, input => {
+      rl.close();
+      resolve(input, reject);
+    });
+  });
+};
 
 const PROMPT = 'dbg> ';
 
