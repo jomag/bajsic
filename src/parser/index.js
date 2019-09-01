@@ -1,18 +1,14 @@
 import { TokenType, Keyword } from '../lex';
 
-import {
-  GosubStatement,
-  GotoStatement,
-  RemarkStatement,
-  ReturnStatement,
-  RunStatement
-} from '../statement';
+import { GotoStatement, RemarkStatement, RunStatement } from '../statement';
 
-import { DimStatement } from '../statements/DimStatement';
-import { IfStatement } from '../statements/ifStatement';
-import { EndStatement } from '../statements/EndStatement';
 import { DebugStatement } from '../statements/DebugStatement';
+import { DimStatement } from '../statements/DimStatement';
+import { EndStatement } from '../statements/EndStatement';
+import { GosubStatement } from '../statements/GosubStatement';
+import { IfStatement } from '../statements/ifStatement';
 import { LetStatement } from '../statements/LetStatement';
+import { ReturnStatement } from '../statements/ReturnStatement';
 
 import { parseExpression } from './expression';
 import { parseVar } from './parseVar';

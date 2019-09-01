@@ -24,22 +24,12 @@ export class LetStatement extends BaseStatement {
    */
   async exec(program, context) {
     const result = await this.expr.evaluate(context);
-    console.log(
-      `this identifier: ${JSON.stringify(this.identifier)}, ${JSON.stringify(
-        result
-      )}`
-    );
-    if (this.identifier.index) {
-      for (const x of this.identifier.index) {
-        console.log(`idx: ${JSON.stringify(x)}`);
-      }
 
+    if (this.identifier.index) {
       const index = [];
       for (const expr of this.identifier.index) {
         index.push(await expr.evaluate(context));
       }
-
-      console.log(`index: ${JSON.stringify(index)}`);
 
       const numIndex = index.map(value => {
         if (value.type !== ValueType.INT) {
@@ -49,8 +39,6 @@ export class LetStatement extends BaseStatement {
         }
         return value.value;
       });
-
-      console.log(`numIndex: ${JSON.stringify(numIndex)}, ${result}`);
 
       context.setArrayItem(this.identifier.name, numIndex, result);
     } else {

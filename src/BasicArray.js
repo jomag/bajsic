@@ -31,13 +31,14 @@ export default class BasicArray {
    * @param {string|number} value
    */
   set(path, value) {
-    console.log(`PATH: ${path} VALUE: ${value}`);
     const index = this.pathToIndex(path);
     this.data[index] = value;
   }
 
   get(path) {
+    console.log('PATH: ', path);
     const index = this.pathToIndex(path);
+    console.log('INDEX: ', index);
     return this.data[index];
   }
 

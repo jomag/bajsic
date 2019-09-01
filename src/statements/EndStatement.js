@@ -7,6 +7,16 @@ export class EndStatement extends BaseStatement {
   }
 
   exec(program, context) {
-    throw new Error('END is not implemented');
+    switch (this.blockType) {
+      case null:
+      case Keyword.PROGRAM:
+        // Return null to stop program execution
+        return null;
+
+      default:
+        throw new RuntimeError(
+          `Unsupported end of block type: ${this.blockType}`
+        );
+    }
   }
 }

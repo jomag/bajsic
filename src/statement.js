@@ -60,19 +60,6 @@ export class GotoStatement extends BaseStatement {
   }
 }
 
-export class GosubStatement extends BaseStatement {
-  constructor(destination) {
-    super(StatementType.GOSUB);
-    this.destination = destination;
-  }
-}
-
-export class ReturnStatement extends BaseStatement {
-  constructor() {
-    super(StatementType.RETURN);
-  }
-}
-
 export class RunStatement extends BaseStatement {
   constructor() {
     super(StatementType.RUN);
@@ -84,9 +71,7 @@ export class RemarkStatement extends BaseStatement {
     super(StatementType.REMARK);
   }
 
-  exec(program, context) {
-    console.log('Ignoring remark');
-  }
+  exec(program, context) {}
 }
 
 export class ListStatement extends BaseStatement {

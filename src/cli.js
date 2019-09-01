@@ -8,6 +8,8 @@ import { Line } from './line';
 import { Program } from './program';
 import { Context } from './context';
 import { RuntimeError } from './evaluate';
+import { Value, ValueType } from './expr';
+import { builtinFunctions } from './function';
 
 const PROMPT = '] ';
 
@@ -72,6 +74,11 @@ async function startInteractiveMode(program, context) {
 function start(argv) {
   const program = new Program();
   const context = new Context();
+  const functions = builtinFunctions();
+
+  for (const name of Object.keys(functions)) {
+    context.assignConst(name, new Value(ValueType.FUNCTION, functions[name]));
+  }
 
   for (let source of argv['_']) {
     const srcOriginal = fs.readFileSync(source, 'utf-8');

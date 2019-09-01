@@ -155,14 +155,6 @@ describe('Parse Expressions', () => {
     expect(compareExpressions(expr, expected)).to.be.true;
   });
 
-  /*
-  it('should handle expression ss', () => {
-    const tokens = [new Token(INT, 1), new Token(TokenType.COMMA), new Token(INT, 2)];
-    const expr = parseExpression(tokens);
-    expect(expr.children.map(e => e.value)).to.deep.equal([1, 2]);
-  });
-  */
-
   it('should handle function call with one argument', () => {
     const tokens = [
       new Token(IDENTIFIER, 'hello'),

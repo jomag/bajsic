@@ -1,5 +1,6 @@
 // @ts-check
 import { Value, ValueType } from './expr';
+import { RuntimeError } from './evaluate';
 
 export class Context {
   constructor() {
@@ -7,6 +8,7 @@ export class Context {
     this.pc = 0;
     this.constants = {};
     this.variables = {};
+    this.stack = [];
 
     this.options = {
       verbose: false
@@ -19,12 +21,30 @@ export class Context {
     this.stdout = process.stdout;
   }
 
+  /**
+   * @param {number} value
+   */
+  push(value) {
+    this.stack.push(value);
+  }
+
+  /**
+   * @returns {number}
+   */
+  pop() {
+    if (this.stack.length === 0) {
+      throw new RuntimeError('Pop on empty stack');
+    }
+
+    return this.stack.pop();
+  }
+
   assignConst(name, value) {
-    this.constants[name] = value;
+    this.constants[name.toUpperCase()] = value;
   }
 
   assignVariable(name, value) {
-    this.variables[name] = value;
+    this.variables[name.toUpperCase()] = value;
   }
 
   /**
@@ -33,14 +53,28 @@ export class Context {
    * @param {Value} value
    */
   setArrayItem(name, index, value) {
-    this.variables[name].set(index, value);
+    const v = this.variables[name.toUpperCase()];
+
+    if (!v) {
+      throw new RuntimeError(`${name} is not defined`);
+    }
+
+    if (v.type !== ValueType.ARRAY) {
+      throw new RuntimeError(`${name} is not an array`);
+    }
+
+    v.value.set(index, value);
   }
 
+  /**
+   * @param {string} name
+   */
   get(name) {
-    const value = this.variables[name];
+    const nm = name.toUpperCase();
+    const value = this.variables[nm];
     if (value !== undefined) {
       return value;
     }
-    return this.constants[name];
+    return this.constants[nm];
   }
 }

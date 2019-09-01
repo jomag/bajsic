@@ -58,4 +58,8 @@ export class Program {
       }
     }
   }
+
+  lineIndexToNumber(idx) {
+    return this.lines[idx].num;
+  }
 }

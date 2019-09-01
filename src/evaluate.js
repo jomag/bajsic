@@ -38,24 +38,12 @@ const evalPrint = async (statement, program, context) => {
   }
 };
 
-const evalEnd = (statement, program, context) => {
-  switch (statement.blockType) {
-    case null:
-    case Keyword.PROGRAM:
-      return false;
-    default:
-      throw new SyntaxError(
-        `Unsupported end of block type: ${statement.blockType}`
-      );
-  }
-};
-
 const evalRun = async (statement, program, context) => {
   while (true) {
     const line = program.lines[context.pc];
     const next = await line.exec(program, context);
 
-    if (next === false) {
+    if (next === null) {
       break;
     }
 
@@ -77,8 +65,7 @@ const evalRun = async (statement, program, context) => {
 const evalMap = {
   [StatementType.LIST]: evalList,
   [StatementType.PRINT]: evalPrint,
-  [StatementType.RUN]: evalRun,
-  [StatementType.END]: evalEnd
+  [StatementType.RUN]: evalRun
 };
 
 export const evaluate = async (statement, program, context) => {

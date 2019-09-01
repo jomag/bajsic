@@ -1,24 +1,5 @@
 import { BaseStatement, StatementType } from '../statement';
-import { RuntimeError } from '../evaluate';
-import readline from 'readline';
-//import { userInput } from '../cli';
-
-export const userInput = async prompt => {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: prompt
-  });
-
-  return new Promise((resolve, reject) => {
-    rl.question(prompt, input => {
-      rl.close();
-      resolve(input, reject);
-    });
-  });
-};
-
-const PROMPT = 'dbg> ';
+import Debugger from '../debugger';
 
 export class DebugStatement extends BaseStatement {
   constructor() {
@@ -26,31 +7,7 @@ export class DebugStatement extends BaseStatement {
   }
 
   async exec(program, context) {
-    while (true) {
-      const line = program.lines[context.pc];
-
-      console.log('Variables:\n', context.variables, '\n');
-      console.log('Next line:\n', line.source);
-
-      const cmd = await userInput(PROMPT);
-      const next = await line.exec(program, context);
-
-      if (next === false) {
-        break;
-      }
-
-      if (next !== undefined) {
-        const lineIndex = program.lineNumberToIndex(next);
-        if (lineIndex === undefined) {
-          throw new RuntimeError(`Undefined line number: ${next}`);
-        }
-        context.pc = lineIndex;
-      } else {
-        context.pc = context.pc + 1;
-        if (context.pc >= program.lines.length) {
-          break;
-        }
-      }
-    }
+    const dbg = new Debugger();
+    await dbg.enter(program, context);
   }
 }

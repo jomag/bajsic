@@ -40,7 +40,8 @@ export const ExprType = Enum([
 export const ValueType = {
   INT: 'int',
   STRING: 'string',
-  FUNCTION: 'function'
+  FUNCTION: 'function',
+  ARRAY: 'array'
 };
 
 export class Value {
@@ -107,10 +108,22 @@ export class IdentifierExpr extends Expr {
   }
 
   evaluate(context) {
+    const value = this.evaluateIdentifier(context);
+
+    if (value.type === ValueType.FUNCTION) {
+      return value.value.call([], context);
+    }
+
+    return value;
+  }
+
+  evaluateIdentifier(context) {
     const value = context.get(this.value);
+
     if (value === undefined) {
       throw new RuntimeError(`Undeclared variable: ${this.value}`);
     }
+
     return value;
   }
 
@@ -133,14 +146,35 @@ export class CallExpr extends Expr {
     return `Call`;
   }
 
-  evaluate(context) {
-    const values = this.children.map(expr => expr.evaluate(context));
+  async evaluate(context) {
+    const funExpr = this.children[0];
+    const args = this.children.slice(1);
 
-    if (values[0].type !== ValueType.FUNCTION) {
-      throw new RuntimeError('Not a function');
+    if (funExpr.type !== ExprType.IDENT) {
+      throw new RuntimeError(
+        'Only single identifier expressions are supported for function expressions'
+      );
     }
 
-    return values[0].value.call(values.slice(1));
+    const fun = funExpr.evaluateIdentifier(context);
+
+    const argValues = [];
+
+    for (const expr of args) {
+      argValues.push(await expr.evaluate(context));
+    }
+
+    if (fun.type === ValueType.ARRAY) {
+      const index = argValues.map(arg => arg.value);
+      console.log('Result: ', fun.value.get(index));
+      return fun.value.get(index);
+    }
+
+    if (fun.type === ValueType.FUNCTION) {
+      return fun.value.call(argValues);
+    }
+
+    throw new RuntimeError(`Not a function or array: ${fun.type}`);
   }
 }
 
@@ -156,9 +190,9 @@ export class AddExpr extends BinaryOperatorExpr {
     super(ExprType.ADD, child1, child2);
   }
 
-  evaluate(context) {
-    const value1 = this.children[0].evaluate(context);
-    const value2 = this.children[1].evaluate(context);
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
     return new Value(ValueType.INT, value1.value + value2.value);
   }
 }
@@ -168,9 +202,9 @@ export class SubtractExpr extends BinaryOperatorExpr {
     super(ExprType.SUBTRACT, child1, child2);
   }
 
-  evaluate(context) {
-    const value1 = this.children[0].evaluate(context);
-    const value2 = this.children[1].evaluate(context);
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
     return new Value(ValueType.INT, value1.value - value2.value);
   }
 }
@@ -180,9 +214,9 @@ export class DivideExpr extends BinaryOperatorExpr {
     super(ExprType.DIVIDE, child1, child2);
   }
 
-  evaluate(context) {
-    const value1 = this.children[0].evaluate(context);
-    const value2 = this.children[1].evaluate(context);
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
     return new Value(ValueType.INT, value1.value / value2.value);
   }
 }
@@ -192,9 +226,9 @@ export class AndExpr extends BinaryOperatorExpr {
     super(ExprType.AND, child1, child2);
   }
 
-  evaluate(context) {
-    const value1 = this.children[0].evaluate(context);
-    const value2 = this.children[1].evaluate(context);
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
     return new Value(ValueType.INT, value1.value && value2.value);
   }
 }
@@ -204,9 +238,9 @@ export class OrExpr extends BinaryOperatorExpr {
     super(ExprType.OR, child1, child2);
   }
 
-  evaluate(context) {
-    const value1 = this.children[0].evaluate(context);
-    const value2 = this.children[1].evaluate(context);
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
     return new Value(ValueType.INT, value1.value || value2.value);
   }
 }
@@ -216,9 +250,9 @@ export class MultiplyExpr extends BinaryOperatorExpr {
     super(ExprType.MULTIPLY, child1, child2);
   }
 
-  evaluate(context) {
-    const value1 = this.children[0].evaluate(context);
-    const value2 = this.children[1].evaluate(context);
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
     return new Value(ValueType.INT, value1.value * value2.value);
   }
 }
@@ -228,9 +262,9 @@ export class RelationalOperatorExpr extends BinaryOperatorExpr {
     super(exprType, child1, child2);
   }
 
-  evaluate(context) {
-    const value1 = this.children[0].evaluate(context).value;
-    const value2 = this.children[1].evaluate(context).value;
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context).value;
+    const value2 = await this.children[1].evaluate(context).value;
     let result;
 
     switch (this.type) {
