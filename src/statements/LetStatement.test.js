@@ -1,6 +1,6 @@
 import Var from '../Var';
 import { Context } from '../context';
-import { ConstExpr, ValueType } from '../expr';
+import { ConstExpr, ValueType, Value } from '../expr';
 import { LetStatement } from './LetStatement';
 import BasicArray from '../BasicArray';
 
@@ -14,7 +14,7 @@ describe('LetStatement', () => {
     const identifier = new Var('a');
     const stmt = new LetStatement(identifier, expr);
     await stmt.exec(undefined, context);
-    expect(context.variables.a).to.deep.equal({
+    expect(context.variables.A).to.deep.equal({
       type: ValueType.STRING,
       value: 'Popcorn!'
     });
@@ -22,7 +22,10 @@ describe('LetStatement', () => {
 
   it('assigns value to array index', async () => {
     const context = new Context();
-    context.assignVariable('v', new BasicArray('string', [3, 3]));
+    context.assignVariable(
+      'v',
+      new Value(ValueType.ARRAY, new BasicArray(ValueType.STRING, [3, 3]))
+    );
 
     const stmt = new LetStatement(
       new Var('v', [
@@ -33,7 +36,7 @@ describe('LetStatement', () => {
     );
     await stmt.exec(undefined, context);
 
-    const v = context.variables.v;
+    const v = context.variables.V.value;
     expect(v.get([1, 2])).to.deep.equal({
       type: ValueType.STRING,
       value: 'Penguin!'

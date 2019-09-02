@@ -40,6 +40,7 @@ export class LetStatement extends BaseStatement {
         return value.value;
       });
 
+      console.log('here');
       context.setArrayItem(this.identifier.name, numIndex, result);
     } else {
       context.assignVariable(this.identifier.name, result);

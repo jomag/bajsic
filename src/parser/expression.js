@@ -13,7 +13,8 @@ import {
   ExprType,
   SubtractExpr,
   DivideExpr,
-  NotExpr
+  NotExpr,
+  UnaryMinusExpr
 } from '../expr';
 import { RuntimeError } from '../evaluate';
 
@@ -86,7 +87,7 @@ const token2operator = {
   [TokenType.COMMA]: Operator.SEPARATOR
 };
 
-const unaryOperators = [Operator.NOT];
+const unaryOperators = [Operator.NOT, Operator.UMINUS];
 
 // Operator precedence
 // Reference: VAX Basic Reference, table 1-15 (p. 1-51)
@@ -195,9 +196,11 @@ const buildUnaryOperatorExpr = (operator, operand) => {
   switch (operator) {
     case Operator.NOT:
       return new NotExpr(operand);
+    case Operator.UMINUS:
+      return new UnaryMinusExpr(operand);
     default:
       throw new Error(
-        `Internal error: can't unary operator of type: ${operator}`
+        `Internal error: can't build unary operator of type: ${operator}`
       );
   }
 };
@@ -239,7 +242,11 @@ export const parseOptionalExpression = tokens => {
 
   while (tokens.length > 0) {
     const tok = tokens[0];
-    const op = token2operator[tok.type];
+    let op = token2operator[tok.type];
+
+    if (op === Operator.MINUS && !possibleFunctionCall) {
+      op = Operator.UMINUS;
+    }
 
     // Determine end of expression
     if (op === Operator.SEPARATOR && argCountStack.length === 0) {

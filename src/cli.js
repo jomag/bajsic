@@ -10,12 +10,9 @@ import { Context } from './context';
 import { RuntimeError } from './evaluate';
 import { Value, ValueType } from './expr';
 import { builtinFunctions } from './function';
+import io from './io';
 
 const PROMPT = '] ';
-
-function printError(msg) {
-  console.error(chalk.redBright(msg));
-}
 
 export const userInput = async prompt => {
   const rl = readline.createInterface({
@@ -41,7 +38,7 @@ async function startInteractiveMode(program, context) {
       line = Line.parse(text);
     } catch (e) {
       if (e instanceof SyntaxError) {
-        printError(e.message);
+        io.printError(e.message);
         return;
       } else {
         throw e;
@@ -58,7 +55,8 @@ async function startInteractiveMode(program, context) {
           await line.exec(program, context);
         } catch (e) {
           if (e instanceof RuntimeError) {
-            printError(e.message);
+            e.setContext(context, program);
+            io.printRuntimeError(e);
             return;
           } else {
             throw e;
@@ -91,7 +89,7 @@ function start(argv) {
           program.add(line);
         } catch (e) {
           if (e instanceof SyntaxError) {
-            printError(`Line ${n}: ${e.message}`);
+            io.printError(`Line ${n}: ${e.message}`);
             break;
           } else {
             console.error(`Unexpected error on line ${n}:\n${src}\n`);

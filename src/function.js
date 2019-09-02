@@ -103,12 +103,18 @@ const dateDollar = args => {
   return new Value(ValueType.STRING, result);
 };
 
+const len = args => {
+  validateValueType(args[0], ValueType.STRING);
+  return new Value(ValueType.INT, args[0].value.length);
+};
+
 export const builtinFunctions = () => {
   return {
     sin: new Function(1, 0, ([angle]) => {
       return new Value(ValueType.INT, Math.sin(angle.value));
     }),
     ['TIME$']: new Function(0, 1, timeDollar),
-    ['DATE$']: new Function(0, 1, dateDollar)
+    ['DATE$']: new Function(0, 1, dateDollar),
+    ['LEN']: new Function(1, 0, len)
   };
 };

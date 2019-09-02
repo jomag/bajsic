@@ -7,13 +7,24 @@ import {
   AddExpr,
   MultiplyExpr,
   ExprType,
-  IdentifierExpr
+  IdentifierExpr,
+  UnaryMinusExpr
 } from '../expr';
 
 const chai = require('chai');
 const expect = chai.expect;
 
-const { INT, PLUS, IDENTIFIER, LPAR, RPAR, STRING, COMMA, NOT } = TokenType;
+const {
+  INT,
+  PLUS,
+  IDENTIFIER,
+  LPAR,
+  RPAR,
+  STRING,
+  COMMA,
+  NOT,
+  MINUS
+} = TokenType;
 
 function printExprTree(expr, indent) {
   const indent2 = indent || '';
@@ -220,5 +231,12 @@ describe('Parse Expressions', () => {
   it('should handle "NOT" operator', () => {
     const tokens = [new Token(NOT), new Token(INT, 0)];
     const expr = parseExpression(tokens);
+  });
+
+  it('should handle unary minus operator', () => {
+    const tokens = [new Token(MINUS), new Token(INT, 1)];
+    const expr = parseExpression(tokens);
+    const expected = new UnaryMinusExpr(new ConstExpr(ValueType.INT, 1));
+    expect(compareExpressions(expr, expected)).to.be.true;
   });
 });

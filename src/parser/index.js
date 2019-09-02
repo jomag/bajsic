@@ -42,7 +42,7 @@ export class SyntaxError extends Error {
 const parseDim = tokens => {
   // VAX BASIC Ref: page 244
   // Format: DIM [data-type] name()
-  // Format: LIST, LIST n, LIST n-m, LIST n,n-m,...
+  // FIXME: does not handle types!
 
   const arrays = {};
   let i = 1;

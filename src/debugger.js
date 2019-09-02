@@ -6,6 +6,7 @@ import process from 'process';
 import { Program } from './program';
 import { Context } from './context';
 import { RuntimeError } from './evaluate';
+import io, { printError } from './io';
 
 export const userInput = async prompt => {
   const rl = readline.createInterface({
@@ -42,14 +43,14 @@ class Debugger {
     } else if (args.length === 1) {
       line = Number(args[0]);
     } else {
-      console.error('Usage: break [line-number]');
+      io.printError('Usage: break [line-number]');
       return;
     }
 
     if (this.breakpoints.includes(line)) {
-      console.log(`Breakpoint already exists for line ${line}`);
+      io.print(`Breakpoint already exists for line ${line}`);
     } else {
-      console.log(`Adding breakpoint on line ${line}`);
+      io.print(`Adding breakpoint on line ${line}`);
       this.breakpoints.push(line);
     }
   }
@@ -61,7 +62,7 @@ class Debugger {
    */
   async cmdNext(args, program, context) {
     if (args.length !== 0) {
-      console.error('Usage: next');
+      io.printError('Usage: next');
       return;
     }
 
@@ -93,7 +94,7 @@ class Debugger {
    */
   async cmdContinue(args, program, context) {
     if (args.length !== 0) {
-      console.error('Usage: next');
+      io.printError('Usage: next');
       return;
     }
 
@@ -125,11 +126,40 @@ class Debugger {
     }
   }
 
+  /**
+   * @param {string[]} args
+   * @param {Program} program
+   * @param {Context} context
+   */
+  async cmdPrint(args, program, context) {
+    for (const arg of args) {
+      const val = context.get(arg);
+      if (val) {
+        io.print(`${arg}: ${JSON.stringify(val)}`);
+      } else {
+        io.print(`${arg}: not found`);
+      }
+    }
+
+    io.print();
+  }
+
+  /**
+   * @param {string[]} args
+   * @param {Program} program
+   * @param {Context} context
+   */
+  async cmdSkip(args, program, context) {
+    const line = program.lines[context.pc];
+    io.print(`Skipping line ${line.num}`);
+    context.pc += 1;
+  }
+
   async enter(program, context) {
     while (true) {
       //console.log('Variables:\n', context.variables, '\n');
       const line = program.lines[context.pc];
-      console.log('Next line:\n', line.source);
+      io.print(`Next line:\n ${line.source}`);
 
       let cmd = await userInput(PROMPT);
       cmd = cmd
@@ -146,15 +176,41 @@ class Debugger {
       if (cmd.startsWith('b')) {
         this.cmdBreakpoint(args, program, context);
       } else if (cmd.startsWith('n')) {
-        const result = await this.cmdNext(args, program, context);
+        let result;
+        try {
+          result = await this.cmdNext(args, program, context);
+        } catch (e) {
+          if (e instanceof RuntimeError) {
+            e.setContext(context, program);
+            io.printRuntimeError(e);
+          } else {
+            throw e;
+          }
+        }
+
         if (result === null) {
           break;
         }
       } else if (cmd.startsWith('c')) {
-        const result = await this.cmdContinue(args, program, context);
+        let result;
+        try {
+          result = await this.cmdContinue(args, program, context);
+        } catch (e) {
+          if (e instanceof RuntimeError) {
+            e.setContext(context, program);
+            io.printRuntimeError(e);
+          } else {
+            throw e;
+          }
+        }
+
         if (result === null) {
           break;
         }
+      } else if (cmd.startsWith('p')) {
+        this.cmdPrint(args, program, context);
+      } else if (cmd.startsWith('sk')) {
+        this.cmdSkip(args, program, context);
       }
     }
   }

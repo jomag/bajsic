@@ -1,6 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 
+import { Value, ValueType } from './expr';
 import BasicArray from './BasicArray';
 
 describe('BasicArray', () => {
@@ -20,18 +21,21 @@ describe('BasicArray', () => {
     let a;
 
     beforeEach('create array', () => {
-      a = new BasicArray('int', [[0, 10], [0, 4]]);
+      a = new BasicArray(ValueType.INT, [[0, 10], [0, 4]]);
     });
 
     it('can set and get in multi dimension array', () => {
       const data = ['a', 'b', 'c', 'd'];
 
       for (let j = 0; j < 5; j++) {
-        data.forEach((c, i) => a.set([j, i], c));
+        data.forEach((c, i) => a.set([j, i], new Value(ValueType.INT, c)));
       }
 
       for (let j = 0; j < 5; j++) {
-        data.forEach((c, i) => expect(a.get([j, i])).to.equal(c));
+        data.forEach((c, i) => {
+          const item = a.get([j, i]);
+          expect(item.value).to.equal(c);
+        });
       }
     });
   });

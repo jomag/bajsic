@@ -31,7 +31,10 @@ export const ExprType = Enum([
   'XOR',
 
   // Expression list, for example function arguments
-  'GROUP'
+  'GROUP',
+
+  // Unary operators
+  'UMINUS'
 ]);
 
 /**
@@ -48,6 +51,13 @@ export class Value {
   constructor(type, value) {
     this.type = type;
     this.value = value;
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  isNumeric() {
+    return this.type === ValueType.INT;
   }
 
   isLessThan(other) {
@@ -193,7 +203,25 @@ export class AddExpr extends BinaryOperatorExpr {
   async evaluate(context) {
     const value1 = await this.children[0].evaluate(context);
     const value2 = await this.children[1].evaluate(context);
-    return new Value(ValueType.INT, value1.value + value2.value);
+
+    if (value1.type === ValueType.STRING && value2.type === ValueType.STRING) {
+      return new Value(ValueType.STRING, value1.value + value2.value);
+    }
+
+    if (value1.isNumeric() && value2.isNumeric()) {
+      // FIXME: should not always result in an INT
+      return new Value(ValueType.INT, value1.value + value2.value);
+    }
+
+    if (value1.type === value2.type) {
+      throw new RuntimeError(
+        `Adding values of type ${value1.type} is not allowed`
+      );
+    } else {
+      throw new RuntimeError(
+        `Adding values of type ${value1.type} and ${value2.type} is not allowed`
+      );
+    }
   }
 }
 
@@ -308,5 +336,21 @@ export class NotExpr extends UnaryOperatorExpr {
 
   evaluate(context) {
     throw new RuntimeError('NOT is not implemented');
+  }
+}
+
+export class UnaryMinusExpr extends UnaryOperatorExpr {
+  constructor(operand) {
+    super(ExprType.UMINUS, operand);
+  }
+
+  async evaluate(context) {
+    const value = await this.operand.evaluate(context);
+
+    if (!value.isNumeric()) {
+      throw new RuntimeError(`Can't negate value of type "${value.type}"`);
+    }
+
+    return new Value(value.type, -value.value);
   }
 }

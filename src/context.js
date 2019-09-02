@@ -60,7 +60,7 @@ export class Context {
     }
 
     if (v.type !== ValueType.ARRAY) {
-      throw new RuntimeError(`${name} is not an array`);
+      throw new RuntimeError(`${name} is not an array: ${v.type}`);
     }
 
     v.value.set(index, value);

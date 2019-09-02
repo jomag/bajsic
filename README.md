@@ -38,6 +38,8 @@ Currently this is handled by treating `,`, `;` and `_` equally.
 - [VAX Basic User Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY15B-TE_VAX_BASIC_User_Manual_Feb90.pdf) (1990)
 - [VAX Basic Reference Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY16B-TE_VAX_BASIC_Reference_Manual_Feb90.pdf) (1990)
 - [ Let's Build a Compiler, by Jack Crenshaw](https://compilers.iecc.com/crenshaw/) (1989)
+- [A bunch of HP 9000 Basic references](http://bitsavers.informatik.uni-stuttgart.de/pdf/hp/9000_basic/)
+- [This dialect has DEF FN matching Stuga source code](http://bitsavers.informatik.uni-stuttgart.de/pdf/dec/pdp11/rsts/V10/AA-2623D-TC_BASIC_PLUS_Lanuage_Manual_Dec1981.pdf)
 
 ## Q & A
 

@@ -2,9 +2,18 @@ import { StatementType } from './statement';
 import { Keyword } from './lex';
 
 export class RuntimeError extends Error {
-  constructor(message, ...params) {
+  constructor(message, context, program, ...params) {
     super(...params);
     this.message = message;
+    this.setContext(context, program);
+  }
+
+  setContext(context, program) {
+    this.context = context;
+    if (context && program) {
+      this.line = program.lines[context.pc];
+    }
+    this.program = program;
   }
 }
 
