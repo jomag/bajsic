@@ -10,6 +10,7 @@ export const TokenType = {
   IDENTIFIER: 'identifier',
   INT: 'int',
   KEYWORD: 'keyword',
+  DATA_TYPE: 'dataType',
   LPAR: 'lpar',
   LT: 'lt',
   MINUS: 'minus',
@@ -18,11 +19,16 @@ export const TokenType = {
   REMARK: 'remark',
   RPAR: 'rpar',
   SEMICOLON: 'semicolon',
-  SEPARATOR: 'separator',
+  SEPARATOR: 'SEPARATOR',
   STRING: 'string',
+  NOT: 'not',
+  AND: 'and',
+  OR: 'or',
+  XOR: 'xor',
+  NOT: 'not',
 
   // FIXME: I'm not sure about the meaning of underscore
-  //        It's often find in INPUT statements:
+  //        It's often found in INPUT statements:
   //        10 INPUT ""_A$
   UNDERSCORE: 'underscore'
 };
@@ -38,7 +44,43 @@ export const Keyword = {
   RUN: 'RUN',
   GOSUB: 'GOSUB',
   LIST: 'LIST',
-  END: 'END'
+  END: 'END',
+  LET: 'LET',
+  ON: 'ON',
+  OTHERWISE: 'OTHERWISE',
+  FOR: 'FOR',
+  TO: 'TO',
+  NEXT: 'NEXT',
+  INPUT: 'input',
+  CLOSE: 'close',
+  LINE: 'line',
+  OPEN: 'open',
+  OUTPUT: 'output',
+  AS: 'as',
+  FILE: 'file',
+  RESUME: 'resume',
+  MARGIN: 'margin',
+  QUOTE: 'quote',
+  STOP: 'stop',
+  READ: 'read',
+  DATA: 'data',
+  DEF: 'def',
+  PROGRAM: 'program',
+  FUNCTION: 'function',
+  FNEND: 'fnend',
+  CHANGE: 'change',
+  WRITE: 'write',
+  DEBUG: 'debug'
+};
+
+const DataType = {
+  BYTE: 'byte',
+  WORD: 'word',
+  LONG: 'long',
+  SINGLE: 'single',
+  DOUBLE: 'double',
+  STRING: 'string',
+  RFA: 'rfa'
 };
 
 const keywordAliases = {
@@ -48,7 +90,7 @@ const keywordAliases = {
 export class Token {
   constructor(type, value) {
     if (!type) {
-      throw new Error(`Internal error: create token with type: ${type}`)
+      throw new Error(`Internal error: create token with type: ${type}`);
     }
     this.type = type;
     this.value = value;
@@ -126,24 +168,41 @@ export const tokenize = (source, sourceLineNo) => {
     return new Token(TokenType.REMARK, source.substring(j, i));
   };
 
-  const parseIdentifierOrKeyword = () => {
+  const parseWord = () => {
     const j = i++;
     while (i < source.length && nameCharacters.includes(source[i])) i++;
     const value = source.substring(j, i);
 
+    const word = value.toUpperCase();
+
     // Special handling of the REM keyword
-    if (value.toUpperCase() === 'REM') {
+    if (word === 'REM') {
       return parseRemark();
     }
 
-    const keyword = value.toUpperCase();
-
-    if (Object.keys(keywordAliases).includes(keyword)) {
-      return new Token(TokenType.KEYWORD, keywordAliases[keyword]);
+    // Special handling of a few operators, that arguable are keywords,
+    // but have specific token types.
+    switch (word) {
+      case 'AND':
+        return new Token(TokenType.AND);
+      case 'OR':
+        return new Token(TokenType.OR);
+      case 'NOT':
+        return new Token(TokenType.NOT);
+      case 'XOR':
+        return new Token(TokenType.XOR);
     }
 
-    if (Object.keys(Keyword).includes(keyword)) {
-      return new Token(TokenType.KEYWORD, Keyword[keyword]);
+    if (Object.keys(keywordAliases).includes(word)) {
+      return new Token(TokenType.KEYWORD, keywordAliases[word]);
+    }
+
+    if (Object.keys(Keyword).includes(word)) {
+      return new Token(TokenType.KEYWORD, Keyword[word]);
+    }
+
+    if (Object.keys(DataType).includes(word)) {
+      return new Token(TokenType.DATA_TYPE, DataType[word]);
     }
 
     return new Token(TokenType.IDENTIFIER, value);
@@ -178,7 +237,7 @@ export const tokenize = (source, sourceLineNo) => {
       }
 
       if (alpha.includes(c)) {
-        tokens.push(parseIdentifierOrKeyword());
+        tokens.push(parseWord());
         continue;
       }
 

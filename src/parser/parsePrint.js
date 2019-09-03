@@ -1,7 +1,7 @@
-import { popKeyword, popType } from './utils';
-import { parseExpression } from './expression';
+import { popKeyword, popType, popOptionalType } from './utils';
+import { parseOptionalExpression, parseExpression } from './expression';
 import { Keyword, TokenType } from '../lex';
-import { Statement, StatementType } from './';
+import { PrintStatement } from '../statement';
 
 export const parsePrint = tokens => {
   // VAX BASIC Ref: page 462
@@ -10,21 +10,33 @@ export const parsePrint = tokens => {
   let channel = null;
   let list = [];
 
-  if (tokens.length) {
-    if (tokens[0].type === TokenType.HASH) {
-      tokens.shift();
-      channel = parseExpression(tokens);
-      popType(tokens, TokenType.COMMA);
-    }
-
-    while (tokens.length) {
-      const expr = parseExpression(tokens);
-      let separator =
-        tokens.length > 0 &&
-        popType(tokens, [TokenType.COMMA, TokenType.SEMICOLON]);
-      list.push([expr, !(separator && separator.type === TokenType.SEMICOLON)]);
+  if (popOptionalType(tokens, TokenType.HASH)) {
+    channel = parseExpression(tokens);
+    if (!popOptionalType(tokens, TokenType.COMMA)) {
+      return new PrintStatement(channel, []);
     }
   }
 
-  return new Statement(StatementType.PRINT, { channel, list });
+  while (tokens.length) {
+    const expr = parseOptionalExpression(tokens);
+
+    if (!expr) {
+      break;
+    }
+
+    let lineFeed = true;
+    const tok = popOptionalType(tokens, [TokenType.SEMICOLON, TokenType.COMMA]);
+
+    if (tok && tok.type === TokenType.SEMICOLON) {
+      lineFeed = false;
+    }
+
+    list.push([expr, lineFeed]);
+
+    if (!tok) {
+      break;
+    }
+  }
+
+  return new PrintStatement(channel, list);
 };

@@ -1,23 +1,36 @@
 import { TokenType, Keyword } from '../lex';
+
+import { GotoStatement, RemarkStatement, RunStatement } from '../statement';
+
+import { DebugStatement } from '../statements/DebugStatement';
+import { DimStatement } from '../statements/DimStatement';
+import { EndStatement } from '../statements/EndStatement';
+import { GosubStatement } from '../statements/GosubStatement';
+import { IfStatement } from '../statements/ifStatement';
+import { LetStatement } from '../statements/LetStatement';
+import { ReturnStatement } from '../statements/ReturnStatement';
+
 import { parseExpression } from './expression';
+import { parseVar } from './parseVar';
 import { parsePrint } from './parsePrint';
 import { parseList } from './parseList';
-import { popKeyword, popType, expectIdentifier } from './utils';
-
+import { parseOnStatement } from './parseOnStatement';
+import { popKeyword, popType, popOptionalKeyword } from './utils';
+import { parseForStatement } from './parseForStatement';
+import { parseNextStatement } from './parseNextStatement.js';
+import { parseInputStatement } from './parseInputStatement';
+import { parseCloseStatement } from './parseCloseStatement';
+import { parseOpenStatement } from './parseOpenStatement';
+import { parseResumeStatement } from './parseResumeStatement';
+import { parseMarginStatement } from './parseMarginStatement';
+import { parseQuoteStatement } from './parseQuoteStatement';
+import { parseStopStatement } from './parseStopStatement';
+import { parseReadStatement } from './parseReadStatement';
+import { parseDataStatement } from './parseDataStatement';
+import { parseDefStatement } from './parseDefStatement';
+import { parseChangeStatement } from './parseChangeStatement';
+import { parseWriteStatement } from './parseWriteStatement';
 export { parseExpression } from './expression';
-
-export const StatementType = {
-  DIM: 'dim',
-  EMPTY: 'empty',
-  GOSUB: 'gosub',
-  LIST: 'list',
-  PRINT: 'print',
-  REMARK: 'remark',
-  RETURN: 'return',
-  GOTO: 'goto',
-  END: 'end',
-  RUN: 'run'
-};
 
 export class SyntaxError extends Error {
   constructor(message, ...params) {
@@ -29,49 +42,49 @@ export class SyntaxError extends Error {
 const parseDim = tokens => {
   // VAX BASIC Ref: page 244
   // Format: DIM [data-type] name()
-  // Format: LIST, LIST n, LIST n-m, LIST n,n-m,...
+  // FIXME: does not handle types!
 
   const arrays = {};
   let i = 1;
+
+  popKeyword(tokens, Keyword.DIM);
+
   while (i < tokens.length) {
-    if (i > 1) {
-      expectToken(tokens[i], TokenType.COMMA);
-      i++;
-    }
+    const nameToken = popType(tokens, TokenType.IDENTIFIER);
+    const name = nameToken.value;
 
-    expectToken(tokens[i], TokenType.IDENTIFIER);
-    const name = tokens[i].value;
-    i++;
-
-    expectToken(tokens[i], TokenType.LPAR);
-    i++;
-
+    popType(tokens, TokenType.LPAR);
     const dim = [];
 
     while (true) {
-      expectToken(tokens[i], TokenType.INT);
-      dim.push(tokens[i].value);
-      i++;
+      // FIXME: does not handle non-zero based dimensions like DIM A(10 TO 20)
+      const lenToken = popType(tokens, TokenType.INT);
+      const len = lenToken.value;
+      dim.push(len);
 
-      if (tokens[i].type === TokenType.RPAR) {
-        i++;
+      const nextToken = popType(tokens, [TokenType.COMMA, TokenType.RPAR]);
+
+      if (nextToken.type === TokenType.RPAR) {
         break;
       }
-
-      expectToken(tokens[i], TokenType.COMMA);
-      i++;
     }
 
     arrays[name] = dim;
+
+    if (tokens.length) {
+      popType(tokens, TokenType.COMMA);
+    } else {
+      break;
+    }
   }
 
-  return new Statement(StatementType.DIM, arrays);
+  return new DimStatement(arrays);
 };
 
 const parseGoto = tokens => {
   popKeyword(tokens, Keyword.GOTO);
   const dest = popType(tokens, TokenType.INT);
-  return new Statement(StatementType.GOTO, dest.value);
+  return new GotoStatement(dest.value);
 };
 
 const isOperand = tok =>
@@ -85,45 +98,69 @@ const isKeyword = (tok, keyword) =>
   tok.type === TokenType.KEYWORD && tok.value === keyword;
 
 const parseIf = (tokens, line) => {
-  let tok = tokens.shift();
-  expectKeyword(tok, Keyword.IF);
+  popKeyword(tokens, Keyword.IF);
+  const condition = parseExpression(tokens);
+  popKeyword(tokens, Keyword.THEN);
 
-  const statement = {
-    line: line.lineNumber,
-    type: StatementType.IF,
-    condition: [],
-    thenBlock: [],
-    elseBlock: []
-  };
+  const thenStatements = [];
+  const elseStatements = [];
 
-  statement.condition = parseExpression(tokens);
+  // Handle special case with a number following the THEN keyword.
+  // It should be handled as a GOTO:
+  // `IF cond THEN 724` is equal to `IF cond THEN GOTO 724`
+  if (tokens.length) {
+    if (tokens[0].type === TokenType.INT) {
+      const line = tokens.shift();
+      thenStatements.push(new GotoStatement(line.value));
+    } else {
+      // FIXME: handle multiple statements
+      thenStatements.push(parseStatement(tokens));
+    }
+  }
 
-  tok = tokens.shift();
-  expectKeyword(tok, Keyword.THEN);
+  if (tokens.length && isKeyword(tokens[0], Keyword.ELSE)) {
+    popKeyword(tokens, Keyword.ELSE);
+    if (tokens.length && tokens[0].type === TokenType.INT) {
+      const line = tokens.shift();
+      elseStatements.push(new GotoStatement(line.value));
+    } else {
+      // FIXME: handle more than one statement
+      elseStatements.push(parseStatement(tokens));
+    }
+  }
+
+  return new IfStatement(condition, thenStatements, elseStatements);
+};
+
+const parseLet = tokens => {
+  popOptionalKeyword(tokens, Keyword.LET);
+
+  const identifier = parseVar(tokens);
+  popType(tokens, TokenType.EQ);
+  const expr = parseExpression(tokens);
+
+  return new LetStatement(identifier, expr);
 };
 
 const parseReturn = (tokens, line) => {
-  expectKeyword(tokens.shift(), Keyword.RETURN);
-  return {
-    line: line.lineNumber,
-    type: StatementType.RETURN
-  };
+  popKeyword(tokens, Keyword.RETURN);
+  return new ReturnStatement();
 };
 
 const parseGosub = (tokens, line) => {
-  expectKeyword(tokens.shift(), Keyword.GOSUB);
-};
-
-const parseAssignment = (tokens, line) => {
-  expectIdentifier(tokens.shift());
+  popKeyword(tokens, Keyword.GOSUB);
+  const dest = popType(tokens, TokenType.INT);
+  return new GosubStatement(dest.value);
 };
 
 const parseRun = tokens => {
   popKeyword(tokens, Keyword.RUN);
-  if (tokens.length !== 0) {
-    throw new SyntaxError('Expected end of line after run command');
-  }
-  return new Statement(StatementType.RUN);
+  return new RunStatement();
+};
+
+const parseDebugStatement = tokens => {
+  popKeyword(tokens, Keyword.DEBUG);
+  return new DebugStatement();
 };
 
 const parseEnd = tokens => {
@@ -140,61 +177,138 @@ const parseEnd = tokens => {
     blockType = tok.value;
   }
 
-  return new Statement(StatementType.END, blockType);
+  return new EndStatement(blockType);
 };
 
-export class Statement {
-  constructor(type, data) {
-    this.type = type;
-    this.data = data;
-  }
-}
+const parseFnEnd = tokens => {
+  // VAX BASIC Ref: page 245, 4-85
+  // Alias for END FUNCTION
+  popKeyword(tokens, Keyword.FNEND);
+  return new EndStatement(Keyword.FUNCTION);
+};
 
 // Parse statement from tokens
 //
 // This function will mutate the tokens array by
 // removing used tokens from it. The function can
 // then be called again with the remaining tokens.
-export const parse = tokens => {
-  const tok = tokens[0];
+export const parseStatement = tokens => {
+  const parsePrimaryStatement = () => {
+    const tok = tokens[0];
 
-  switch (tok.type) {
-    case TokenType.REMARK:
-      while (tokens.length) {
-        tokens.pop();
-      }
-      return new Statement(StatementType.REMARK);
+    switch (tok.type) {
+      case TokenType.REMARK:
+        while (tokens.pop());
+        return new RemarkStatement();
 
-    case TokenType.KEYWORD:
-      switch (tok.value) {
-        case Keyword.DIM:
-          return parseDim(tokens);
-        case Keyword.GOTO:
-          return parseGoto(tokens);
-        case Keyword.IF:
-          return parseIf(tokens);
-        case Keyword.PRINT:
-          return parsePrint(tokens);
-        case Keyword.RETURN:
-          return parseReturn(tokens);
-        case Keyword.GOSUB:
-          return parseGosub(tokens);
-        case Keyword.LIST:
-          return parseList(tokens);
-        case Keyword.RUN:
-          return parseRun(tokens);
-        case Keyword.END:
-          return parseEnd(tokens);
-        default:
-          throw new SyntaxError(`Unsupported statement keyword: ${tok.value}`);
-      }
+      case TokenType.KEYWORD:
+        switch (tok.value) {
+          case Keyword.DIM:
+            return parseDim(tokens);
+          case Keyword.GOTO:
+            return parseGoto(tokens);
+          case Keyword.IF:
+            return parseIf(tokens);
+          case Keyword.PRINT:
+            return parsePrint(tokens);
+          case Keyword.RETURN:
+            return parseReturn(tokens);
+          case Keyword.GOSUB:
+            return parseGosub(tokens);
+          case Keyword.LIST:
+            return parseList(tokens);
+          case Keyword.RUN:
+            return parseRun(tokens);
+          case Keyword.END:
+            return parseEnd(tokens);
+          case Keyword.LET:
+            return parseLet(tokens);
+          case Keyword.ON:
+            return parseOnStatement(tokens);
+          case Keyword.FOR:
+            return parseForStatement(tokens);
+          case Keyword.NEXT:
+            return parseNextStatement(tokens);
+          case Keyword.INPUT:
+            return parseInputStatement(tokens);
+          case Keyword.OPEN:
+            return parseOpenStatement(tokens);
+          case Keyword.CLOSE:
+            return parseCloseStatement(tokens);
+          case Keyword.RESUME:
+            return parseResumeStatement(tokens);
+          case Keyword.MARGIN:
+            return parseMarginStatement(tokens);
+          case Keyword.QUOTE:
+            return parseQuoteStatement(tokens);
+          case Keyword.STOP:
+            return parseStopStatement(tokens);
+          case Keyword.READ:
+            return parseReadStatement(tokens);
+          case Keyword.DATA:
+            return parseDataStatement(tokens);
+          case Keyword.DEF:
+            return parseDefStatement(tokens);
+          case Keyword.FNEND:
+            return parseFnEnd(tokens);
+          case Keyword.CHANGE:
+            return parseChangeStatement(tokens);
+          case Keyword.WRITE:
+            return parseWriteStatement(tokens);
+          case Keyword.DEBUG:
+            return parseDebugStatement(tokens);
+          default:
+            throw new SyntaxError(
+              `Unsupported statement keyword: ${tok.value}`
+            );
+        }
 
-    case TokenType.IDENTIFIER:
-      return parseAssignment(tokens);
+      case TokenType.IDENTIFIER:
+        return parseLet(tokens);
 
-    default:
-      throw new SyntaxError(
-        `Illegal syntax. First token is "${tok.type}" with value "${tok.value}"`
-      );
+      default:
+        throw new SyntaxError(
+          `Illegal syntax. First token is "${tok.type}" with value "${tok.value}"`
+        );
+    }
+  };
+
+  let statement = parsePrimaryStatement();
+  let modifier = popOptionalKeyword(tokens, [Keyword.IF, Keyword.FOR]);
+
+  while (modifier) {
+    if (modifier.value === Keyword.IF) {
+      const condition = parseExpression(tokens);
+      statement = new IfStatement(condition, [statement], []);
+    }
+
+    if (modifier.value === Keyword.FOR) {
+      // The FOR statement parser can be reused for this
+      // statement modifier, but we need to reinsert the
+      // FOR keyword at start of token list.
+      tokens.unshift(modifier);
+      const forStmt = parseForStatement(tokens);
+      forStmt.statement = statement;
+      statement = forStmt;
+    }
+
+    modifier = popOptionalKeyword(tokens, [Keyword.IF, Keyword.FOR]);
   }
+
+  return statement;
+};
+
+export const parseStatements = tokens => {
+  const statements = [];
+
+  while (tokens.length > 0) {
+    const statement = parseStatement(tokens);
+    statements.push(statement);
+
+    if (tokens.length > 0 && tokens[0].type === TokenType.SEPARATOR) {
+      tokens.shift();
+    }
+  }
+
+  return statements;
 };

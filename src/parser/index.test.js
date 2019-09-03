@@ -1,12 +1,12 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-import { StatementType, parse, parseExpression } from './';
+import { parseStatement } from './';
+import { StatementType } from '../statement';
 import { tokenize, TokenType } from '../lex';
-import { ExprType, ValueType } from '../expr';
 
 const T = text => tokenize(text);
-const P = text => parse(T(text));
+const P = text => parseStatement(T(text));
 
 const tokenToString = tok => {
   switch (tok.type) {
@@ -18,26 +18,53 @@ const tokenToString = tok => {
 };
 
 describe('Parse Statements', () => {
+  describe('DIM', () => {
+    it('handles single, one dimensional array', () => {
+      const s = P('DIM A(5)');
+      expect(s.type).to.equal(StatementType.DIM);
+      expect(s.arrays).to.deep.equal({
+        A: [5]
+      });
+    });
+
+    it('handles single, multi-dimensional array', () => {
+      const s = P('DIM A(5, 10, 15)');
+      expect(s.type).to.equal(StatementType.DIM);
+      expect(s.arrays).to.deep.equal({
+        A: [5, 10, 15]
+      });
+    });
+
+    it('handles multiple, multi-dimensional arrays', () => {
+      const s = P('DIM A(11, 22), B(33, 44)');
+      expect(s.type).to.equal(StatementType.DIM);
+      expect(s.arrays).to.deep.equal({
+        A: [11, 22],
+        B: [33, 44]
+      });
+    });
+  });
+
   describe('LIST', () => {
     it('without lines', () => {
       const s = P('LIST');
       expect(s.type).to.equal(StatementType.LIST);
-      expect(s.data).to.deep.equal([]);
+      expect(s.ranges).to.deep.equal([]);
     });
 
     it('with single line', () => {
       const s = P('LIST 10');
-      expect(s.data).to.deep.equal([[10, 10]]);
+      expect(s.ranges).to.deep.equal([[10, 10]]);
     });
 
     it('with single range', () => {
       const s = P('LIST 20-30');
-      expect(s.data).to.deep.equal([[20, 30]]);
+      expect(s.ranges).to.deep.equal([[20, 30]]);
     });
 
     it('with multiple lines and ranges', () => {
       const s = P('LIST 10,20-30,40,50-60');
-      expect(s.data).to.deep.equal([[10, 10], [20, 30], [40, 40], [50, 60]]);
+      expect(s.ranges).to.deep.equal([[10, 10], [20, 30], [40, 40], [50, 60]]);
     });
   });
 
@@ -50,25 +77,34 @@ describe('Parse Statements', () => {
 
     it('single output', () => {
       const s = P('PRINT 123');
-      expect(s.data.list.length).to.equal(1);
-      expect(s.data.list[0][1]).to.be.true;
+      expect(s.list.length).to.equal(1);
+      expect(s.list[0][1]).to.be.true;
     });
 
     it('single output without linebreak', () => {
       const s = P('PRINT 123;');
-      expect(s.data.list.length).to.equal(1);
-      expect(s.data.list[0][1]).to.be.false;
+      expect(s.list.length).to.equal(1);
+      expect(s.list[0][1]).to.be.false;
     });
 
     it('multiple outputs', () => {
       const s = P('PRINT 123, 234; 345');
-      const res = s.data.list.map(o => o[1]);
+      const res = s.list.map(o => o[1]);
       expect(res).to.deep.equal([true, false, true]);
     });
 
     it('with channel', () => {
       const s = P('PRINT #5, 123');
-      // expect(s.data.channel).to.deep.equal([{ type: TokenType.INT, value: 5 }]);
+      // expect(s.channel).to.deep.equal([{ type: TokenType.INT, value: 5 }]);
+    });
+  });
+
+  describe('IF as statement modifier', () => {
+    it('handle basic case', () => {
+      const s = P('PRINT "ok" IF 2 > 1');
+      expect(s.type).to.equal(StatementType.IF);
+      expect(s.thenStatements.length).to.equal(1);
+      expect(s.thenStatements[0].type).to.equal(StatementType.PRINT);
     });
   });
 });

@@ -5,9 +5,9 @@ import { Context } from '../src/context';
 import { Program } from '../src/program';
 import { Line } from '../src/line';
 import { evaluate } from '../src/evaluate';
-import { Statement, StatementType } from '../src/parser';
 import { Value, ValueType } from '../src/expr';
 import { builtinFunctions } from '../src/function';
+import { RunStatement } from '../src/statement';
 
 const chai = require('chai');
 const expect = chai.expect;
@@ -32,7 +32,7 @@ describe('Integration tests', () => {
 
     const txt = txtLines.join('\n').trim();
 
-    it(`${test}`, () => {
+    it(`${test}`, async () => {
       const program = new Program();
       const context = new Context();
       const functions = builtinFunctions();
@@ -56,7 +56,7 @@ describe('Integration tests', () => {
         next();
       };
 
-      evaluate(new Statement(StatementType.RUN), program, context);
+      await evaluate(new RunStatement(), program, context);
       expect(output.trim()).to.equal(txt);
     });
   }

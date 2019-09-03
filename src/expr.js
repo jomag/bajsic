@@ -8,24 +8,76 @@ export const ExprType = Enum([
   // { type: IDENTIFIER, name: 'variableName' }
   'IDENT',
 
-  // Binary operands: { type: ADD, children: [ <left expr>, <right expr> ] }
+  // Binary operators: { type: ADD, children: [ <left expr>, <right expr> ] }
   'ADD',
   'SUBTRACT',
   'MULTIPLY',
+  'DIVIDE',
 
   // Function call, or array indexation
   'CALL',
 
+  // Relational operators
+  'LT',
+  'LE',
+  'GT',
+  'GE',
+  'NE',
+  'EQ',
+
+  // Logical operators
+  'AND',
+  'OR',
+  'XOR',
+
   // Expression list, for example function arguments
-  'GROUP'
+  'GROUP',
+
+  // Unary operators
+  'UMINUS'
 ]);
 
-export const ValueType = Enum(['INT', 'STRING', 'FUNCTION']);
+/**
+ * @enum {string}
+ */
+export const ValueType = {
+  INT: 'int',
+  STRING: 'string',
+  FUNCTION: 'function',
+  ARRAY: 'array'
+};
 
 export class Value {
   constructor(type, value) {
     this.type = type;
     this.value = value;
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  isNumeric() {
+    return this.type === ValueType.INT;
+  }
+
+  isLessThan(other) {
+    // FIXME: be more correct!
+    return this.value < other.value;
+  }
+
+  add(value) {
+    return new Value(this.type, this.value + value.value);
+  }
+
+  isTrue() {
+    switch (this.type) {
+      case ValueType.INT:
+        return this.value !== 0;
+      default:
+        throw new Error(
+          `Internal error: isTrue not implemented for type ${this.type}`
+        );
+    }
   }
 }
 
@@ -34,6 +86,10 @@ export class Expr {
     this.type = type;
   }
 
+  /**
+   * @param {Context} context
+   * @returns {Promise<Value>}
+   */
   evaluate(context) {
     throw new Error('Evaluation method not implemented!');
   }
@@ -47,7 +103,7 @@ export class ConstExpr extends Expr {
   }
 
   evaluate(context) {
-    return { type: this.valueType, value: this.value };
+    return new Value(this.valueType, this.value);
   }
 
   toString() {
@@ -62,7 +118,23 @@ export class IdentifierExpr extends Expr {
   }
 
   evaluate(context) {
-    return context.get(this.value);
+    const value = this.evaluateIdentifier(context);
+
+    if (value.type === ValueType.FUNCTION) {
+      return value.value.call([], context);
+    }
+
+    return value;
+  }
+
+  evaluateIdentifier(context) {
+    const value = context.get(this.value);
+
+    if (value === undefined) {
+      throw new RuntimeError(`Undeclared variable: ${this.value}`);
+    }
+
+    return value;
   }
 
   toString() {
@@ -84,14 +156,35 @@ export class CallExpr extends Expr {
     return `Call`;
   }
 
-  evaluate(context) {
-    const values = this.children.map(expr => expr.evaluate(context));
+  async evaluate(context) {
+    const funExpr = this.children[0];
+    const args = this.children.slice(1);
 
-    if (values[0].type !== ValueType.FUNCTION) {
-      throw new RuntimeError('Not a function');
+    if (funExpr.type !== ExprType.IDENT) {
+      throw new RuntimeError(
+        'Only single identifier expressions are supported for function expressions'
+      );
     }
 
-    return values[0].value.call(values.slice(1));
+    const fun = funExpr.evaluateIdentifier(context);
+
+    const argValues = [];
+
+    for (const expr of args) {
+      argValues.push(await expr.evaluate(context));
+    }
+
+    if (fun.type === ValueType.ARRAY) {
+      const index = argValues.map(arg => arg.value);
+      console.log('Result: ', fun.value.get(index));
+      return fun.value.get(index);
+    }
+
+    if (fun.type === ValueType.FUNCTION) {
+      return fun.value.call(argValues);
+    }
+
+    throw new RuntimeError(`Not a function or array: ${fun.type}`);
   }
 }
 
@@ -107,10 +200,76 @@ export class AddExpr extends BinaryOperatorExpr {
     super(ExprType.ADD, child1, child2);
   }
 
-  evaluate(context) {
-    const result1 = this.children[0].evaluate(context);
-    const result2 = this.children[1].evaluate(context);
-    return new Value(ValueType.INT, result1.value + result2.value);
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
+
+    if (value1.type === ValueType.STRING && value2.type === ValueType.STRING) {
+      return new Value(ValueType.STRING, value1.value + value2.value);
+    }
+
+    if (value1.isNumeric() && value2.isNumeric()) {
+      // FIXME: should not always result in an INT
+      return new Value(ValueType.INT, value1.value + value2.value);
+    }
+
+    if (value1.type === value2.type) {
+      throw new RuntimeError(
+        `Adding values of type ${value1.type} is not allowed`
+      );
+    } else {
+      throw new RuntimeError(
+        `Adding values of type ${value1.type} and ${value2.type} is not allowed`
+      );
+    }
+  }
+}
+
+export class SubtractExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.SUBTRACT, child1, child2);
+  }
+
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value - value2.value);
+  }
+}
+
+export class DivideExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.DIVIDE, child1, child2);
+  }
+
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value / value2.value);
+  }
+}
+
+export class AndExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.AND, child1, child2);
+  }
+
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value && value2.value);
+  }
+}
+
+export class OrExpr extends BinaryOperatorExpr {
+  constructor(child1, child2) {
+    super(ExprType.OR, child1, child2);
+  }
+
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value || value2.value);
   }
 }
 
@@ -119,9 +278,79 @@ export class MultiplyExpr extends BinaryOperatorExpr {
     super(ExprType.MULTIPLY, child1, child2);
   }
 
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context);
+    const value2 = await this.children[1].evaluate(context);
+    return new Value(ValueType.INT, value1.value * value2.value);
+  }
+}
+
+export class RelationalOperatorExpr extends BinaryOperatorExpr {
+  constructor(exprType, child1, child2) {
+    super(exprType, child1, child2);
+  }
+
+  async evaluate(context) {
+    const value1 = await this.children[0].evaluate(context).value;
+    const value2 = await this.children[1].evaluate(context).value;
+    let result;
+
+    switch (this.type) {
+      case ExprType.EQ:
+        result = value1 === value2;
+        break;
+      case ExprType.LT:
+        result = value1 < value2;
+        break;
+      case ExprType.LE:
+        result = value1 <= value2;
+        break;
+      case ExprType.GT:
+        result = value1 > value2;
+        break;
+      case ExprType.GE:
+        result = value1 >= value2;
+        break;
+      case ExprType.NE:
+        result = value1 !== value2;
+        break;
+      default:
+        throw new RuntimeError('Unhandled relational operator type');
+    }
+
+    return new Value(ValueType.INT, result ? -1 : 0);
+  }
+}
+
+export class UnaryOperatorExpr extends Expr {
+  constructor(exprType, operand) {
+    super(exprType);
+    this.operand = operand;
+  }
+}
+
+export class NotExpr extends UnaryOperatorExpr {
+  constructor(operand) {
+    super(ExprType.NOT, operand);
+  }
+
   evaluate(context) {
-    const result1 = this.children[0].evaluate(context);
-    const result2 = this.children[1].evaluate(context);
-    return new Value(ValueType.INT, result1.value * result2.value);
+    throw new RuntimeError('NOT is not implemented');
+  }
+}
+
+export class UnaryMinusExpr extends UnaryOperatorExpr {
+  constructor(operand) {
+    super(ExprType.UMINUS, operand);
+  }
+
+  async evaluate(context) {
+    const value = await this.operand.evaluate(context);
+
+    if (!value.isNumeric()) {
+      throw new RuntimeError(`Can't negate value of type "${value.type}"`);
+    }
+
+    return new Value(value.type, -value.value);
   }
 }

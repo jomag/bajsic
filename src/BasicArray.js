@@ -1,8 +1,13 @@
+// @ts-check
+
 import { RuntimeError } from './evaluate';
+import { Value, ValueType } from './expr';
 
 export default class BasicArray {
-  // @param type - the data type of the array
-  // @param dimensions - array of dimensions: [[0,100], [10, 20]]
+  /**
+   * @param {ValueType} type - the data type of the array
+   * @param {*} dimensions - array of dimensions like
+   */
   constructor(type, dimensions) {
     this.type = type;
     this.dimensions = dimensions;
@@ -24,14 +29,24 @@ export default class BasicArray {
     return index + path[path.length - 1];
   }
 
+  /**
+   * @param {number} path
+   * @param {Value} value
+   */
   set(path, value) {
+    if (value.type !== this.type) {
+      throw new RuntimeError(
+        `Assigning value of type "${value.type}" to array of type "${this.type}"`
+      );
+    }
+
     const index = this.pathToIndex(path);
-    this.data[index] = value;
+    this.data[index] = value.value;
   }
 
   get(path) {
     const index = this.pathToIndex(path);
-    return this.data[index];
+    return new Value(this.type, this.data[index]);
   }
 
   totalSize() {

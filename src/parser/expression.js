@@ -2,12 +2,21 @@ import { TokenType } from '../lex';
 import { Enum } from '../utils';
 import {
   AddExpr,
+  AndExpr,
+  OrExpr,
   CallExpr,
   ConstExpr,
   IdentifierExpr,
   MultiplyExpr,
-  ValueType
+  ValueType,
+  RelationalOperatorExpr,
+  ExprType,
+  SubtractExpr,
+  DivideExpr,
+  NotExpr,
+  UnaryMinusExpr
 } from '../expr';
+import { RuntimeError } from '../evaluate';
 
 const Operator = Enum([
   'EXP',
@@ -43,7 +52,16 @@ const assoc = {
   [Operator.MUL]: 'L',
   [Operator.DIV]: 'L',
   [Operator.PLUS]: 'L',
-  [Operator.MINUS]: 'L'
+  [Operator.MINUS]: 'L',
+  [Operator.LE]: 'L',
+  [Operator.LT]: 'L',
+  [Operator.GE]: 'L',
+  [Operator.GT]: 'L',
+  [Operator.EQ]: 'L',
+  [Operator.NE]: 'L',
+  [Operator.AND]: 'L',
+  [Operator.OR]: 'L',
+  [Operator.XOR]: 'L'
 };
 
 const token2operator = {
@@ -52,10 +70,24 @@ const token2operator = {
   [TokenType.PLUS]: Operator.PLUS,
   [TokenType.MINUS]: Operator.MINUS,
 
+  [TokenType.EQ]: Operator.EQ,
+  [TokenType.GE]: Operator.GE,
+  [TokenType.GT]: Operator.GT,
+  [TokenType.LE]: Operator.LE,
+  [TokenType.LT]: Operator.LT,
+  [TokenType.NE]: Operator.NE,
+
+  [TokenType.NOT]: Operator.NOT,
+  [TokenType.AND]: Operator.AND,
+  [TokenType.OR]: Operator.OR,
+  [TokenType.XOR]: Operator.XOR,
+
   [TokenType.LPAR]: Operator.LPAR,
   [TokenType.RPAR]: Operator.RPAR,
   [TokenType.COMMA]: Operator.SEPARATOR
 };
+
+const unaryOperators = [Operator.NOT, Operator.UMINUS];
 
 // Operator precedence
 // Reference: VAX Basic Reference, table 1-15 (p. 1-51)
@@ -97,21 +129,23 @@ function assert(cond, message, obj) {
   }
 }
 
-const operands = [TokenType.INT, TokenType.STRING, TokenType.IDENTIFIER];
-const binaryOperators = [
-  TokenType.PLUS,
-  TokenType.MINUS,
-  TokenType.MUL,
-  TokenType.DIV
+const operands = [
+  TokenType.INT,
+  TokenType.FLOAT,
+  TokenType.STRING,
+  TokenType.IDENTIFIER
 ];
 
 const peek = tokens => tokens[tokens.length - 1];
 const isOperand = tokenType => operands.indexOf(tokenType) >= 0;
+const isUnary = op => unaryOperators.includes(op);
 
 const buildOperandExpression = token => {
   switch (token.type) {
     case TokenType.INT:
       return new ConstExpr(ValueType.INT, token.value);
+    case TokenType.FLOAT:
+      return new ConstExpr(ValueType.FLOAT, token.value);
     case TokenType.STRING:
       return new ConstExpr(ValueType.STRING, token.value);
     case TokenType.IDENTIFIER:
@@ -123,24 +157,57 @@ const buildOperandExpression = token => {
   }
 };
 
-const buildOperatorExpr = (operator, child1, child2) => {
+const buildBinaryOperatorExpr = (operator, child1, child2) => {
+  const relOpMap = {
+    [Operator.LT]: ExprType.LT,
+    [Operator.LE]: ExprType.LE,
+    [Operator.GT]: ExprType.GT,
+    [Operator.GE]: ExprType.GE,
+    [Operator.EQ]: ExprType.EQ,
+    [Operator.NE]: ExprType.NE
+  };
+
+  if (Object.keys(relOpMap).indexOf(operator) >= 0) {
+    const exprType = relOpMap[operator];
+    return new RelationalOperatorExpr(exprType, child1, child2);
+  }
+
   switch (operator) {
     case Operator.PLUS:
       return new AddExpr(child1, child2);
+    case Operator.MINUS:
+      return new SubtractExpr(child1, child2);
     case Operator.MUL:
       return new MultiplyExpr(child1, child2);
+    case Operator.DIV:
+      return new DivideExpr(child1, child2);
+    case Operator.AND:
+      return new AndExpr(child1, child2);
+    case Operator.OR:
+      return new OrExpr(child1, child2);
     default:
       throw new Error(
-        `Internal error: can't build binary operator from token: ${JSON.stringify(
-          token
-        )}`
+        `Internal error: can't build binary operator of type: ${operator}`
+      );
+  }
+};
+
+const buildUnaryOperatorExpr = (operator, operand) => {
+  switch (operator) {
+    case Operator.NOT:
+      return new NotExpr(operand);
+    case Operator.UMINUS:
+      return new UnaryMinusExpr(operand);
+    default:
+      throw new Error(
+        `Internal error: can't build unary operator of type: ${operator}`
       );
   }
 };
 
 // Some hints:
 // https://www.klittlepage.com/2013/12/22/twelve-days-2013-shunting-yard-algorithm/
-export const parseExpression = tokens => {
+export const parseOptionalExpression = tokens => {
   const operatorStack = [];
   const exprStack = [];
   const argCountStack = [];
@@ -162,14 +229,24 @@ export const parseExpression = tokens => {
     }
   };
 
-  // for (let tok of tokens) {
-  //    console.log("Token: ", tok)
-  //  }
+  const buildExpr = operator => {
+    if (isUnary(operator)) {
+      const operand = exprStack.pop();
+      exprStack.push(buildUnaryOperatorExpr(operator, operand));
+    } else {
+      const op2 = exprStack.pop();
+      const op1 = exprStack.pop();
+      exprStack.push(buildBinaryOperatorExpr(operator, op1, op2));
+    }
+  };
 
   while (tokens.length > 0) {
     const tok = tokens[0];
+    let op = token2operator[tok.type];
 
-    const op = token2operator[tok.type];
+    if (op === Operator.MINUS && !possibleFunctionCall) {
+      op = Operator.UMINUS;
+    }
 
     // Determine end of expression
     if (op === Operator.SEPARATOR && argCountStack.length === 0) {
@@ -205,14 +282,15 @@ export const parseExpression = tokens => {
       const empty = emptyBracketStack.pop();
 
       while (notOpenBracket()) {
-        const operator = operatorStack.pop();
-        const op2 = exprStack.pop();
-        const op1 = exprStack.pop();
-        exprStack.push(buildOperatorExpr(operator, op1, op2));
+        buildExpr(operatorStack.pop());
       }
 
       if (!operatorStack.length) {
-        throw new SyntaxError('Mismatched paranthesis in expression');
+        // No matching left paranthesis in expression
+        // The closing paranthesis is likely part of the
+        // outer statement, so assume we've reached the end
+        // of the expression.
+        break;
       }
 
       if (peek(operatorStack) === Operator.CALL) {
@@ -225,7 +303,6 @@ export const parseExpression = tokens => {
         const fun = exprStack.pop();
         const call = new CallExpr(fun, args.reverse());
         exprStack.push(call);
-        argCountStack.pop();
       }
 
       possibleFunctionCall = true;
@@ -235,10 +312,7 @@ export const parseExpression = tokens => {
     // Expression separator, typically for functions
     else if (op === Operator.SEPARATOR) {
       while (notOpenBracket()) {
-        const operator = operatorStack.pop();
-        const op2 = exprStack.pop();
-        const op1 = exprStack.pop();
-        exprStack.push(buildOperatorExpr(operator, op1, op2));
+        buildExpr(operatorStack.pop());
       }
 
       argCountStack.push(argCountStack.pop() + 1);
@@ -254,10 +328,7 @@ export const parseExpression = tokens => {
         const c2 = prec[o] === prec[op] && assoc[o] === 'L';
 
         if ((c1 || c2) && o !== TokenType.LPAR) {
-          const operator = operatorStack.pop();
-          const op2 = exprStack.pop();
-          const op1 = exprStack.pop();
-          exprStack.push(buildOperatorExpr(operator, op1, op2));
+          buildExpr(operatorStack.pop());
         } else {
           break;
         }
@@ -271,10 +342,7 @@ export const parseExpression = tokens => {
   }
 
   while (operatorStack.length > 0) {
-    const operator = operatorStack.pop();
-    const op2 = exprStack.pop();
-    const op1 = exprStack.pop();
-    exprStack.push(buildOperatorExpr(operator, op1, op2));
+    buildExpr(operatorStack.pop());
   }
 
   assert(
@@ -283,11 +351,13 @@ export const parseExpression = tokens => {
     operatorStack
   );
 
-  assert(
-    exprStack.length === 1,
-    `Expression stack has length ${exprStack.length}, expected 1`,
-    exprStack
-  );
-
   return exprStack.pop();
+};
+
+export const parseExpression = tokens => {
+  const expr = parseOptionalExpression(tokens);
+  if (!expr) {
+    throw new SyntaxError('Empty expression');
+  }
+  return expr;
 };

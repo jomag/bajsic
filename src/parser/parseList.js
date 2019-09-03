@@ -1,6 +1,6 @@
 import { popKeyword } from './utils';
 import { Keyword, TokenType } from '../lex';
-import { Statement, StatementType } from './';
+import { ListStatement } from '../statement';
 
 export const parseList = tokens => {
   // VAX BASIC Ref: page 109
@@ -64,5 +64,5 @@ export const parseList = tokens => {
 
     append();
   }
-  return new Statement(StatementType.LIST, ranges);
+  return new ListStatement(ranges);
 };
