@@ -72,11 +72,6 @@ async function startInteractiveMode(program, context) {
 function start(argv) {
   const program = new Program();
   const context = new Context();
-  const functions = builtinFunctions();
-
-  for (const name of Object.keys(functions)) {
-    context.assignConst(name, new Value(ValueType.FUNCTION, functions[name]));
-  }
 
   for (let source of argv['_']) {
     const srcOriginal = fs.readFileSync(source, 'utf-8');
@@ -100,6 +95,19 @@ function start(argv) {
         n = n + 1;
       }
     }
+  }
+
+  const functions = builtinFunctions();
+  for (const name of Object.keys(functions)) {
+    context.assignConst(name, new Value(ValueType.FUNCTION, functions[name]));
+  }
+
+  const userFunctions = program.getUserFunctions();
+  for (const name of Object.keys(userFunctions)) {
+    context.assignConst(
+      name,
+      new Value(ValueType.USER_FUNCTION, userFunctions[name])
+    );
   }
 
   startInteractiveMode(program, context);

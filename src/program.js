@@ -1,3 +1,5 @@
+import { DefStatement } from './statements/DefStatement';
+
 export class Program {
   constructor(lines) {
     // Array of lines in sorted order
@@ -32,6 +34,20 @@ export class Program {
     }
   }
 
+  getUserFunctions() {
+    const functions = [];
+
+    for (const line of this.lines) {
+      for (const stmt of line.statements) {
+        if (stmt instanceof DefStatement) {
+          functions[stmt.name] = line.num;
+        }
+      }
+    }
+
+    return functions;
+  }
+
   getLineMap() {
     // FIXME: not tested yet
     if (!this.lineToIndexMap) {
@@ -61,5 +77,10 @@ export class Program {
 
   lineIndexToNumber(idx) {
     return this.lines[idx].num;
+  }
+
+  getLineByNumber(num) {
+    const idx = this.lineNumberToIndex(num);
+    return this.lines[idx];
   }
 }

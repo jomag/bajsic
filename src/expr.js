@@ -44,6 +44,7 @@ export const ValueType = {
   INT: 'int',
   STRING: 'string',
   FUNCTION: 'function',
+  USER_FUNCTION: 'userFunction',
   ARRAY: 'array'
 };
 
@@ -167,7 +168,6 @@ export class CallExpr extends Expr {
     }
 
     const fun = funExpr.evaluateIdentifier(context);
-
     const argValues = [];
 
     for (const expr of args) {
@@ -182,6 +182,9 @@ export class CallExpr extends Expr {
 
     if (fun.type === ValueType.FUNCTION) {
       return fun.value.call(argValues);
+    }
+
+    if (fun.type === ValueType.USER_FUNCTION) {
     }
 
     throw new RuntimeError(`Not a function or array: ${fun.type}`);
