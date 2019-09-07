@@ -1,5 +1,7 @@
 # Bajsic
 
+[![CircleCI](https://circleci.com/gh/jomag/bajsic/tree/master.svg?style=svg)](https://circleci.com/gh/jomag/bajsic/tree/master)
+
 Bajsic is a very, ehm, basic implementation of a BASIC interpreter, somewhat
 compatible with DEC BASIC with the goal of being able to play the classic
 Swedish text adventure _Stugan_.
