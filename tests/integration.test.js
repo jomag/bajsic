@@ -4,10 +4,11 @@ import stream from 'stream';
 import { Context } from '../src/context';
 import { Program } from '../src/program';
 import { Line } from '../src/line';
-import { evaluate } from '../src/evaluate';
+import { evaluateStatement } from '../src/evaluate';
 import { Value, ValueType } from '../src/expr';
 import { builtinFunctions } from '../src/function';
 import { RunStatement } from '../src/statement';
+import { setupEnvironment } from '../src/utils';
 
 const chai = require('chai');
 const expect = chai.expect;
@@ -30,24 +31,11 @@ describe('Integration tests', () => {
       }
     }
 
+    const src = basLines.join('\n');
     const txt = txtLines.join('\n').trim();
 
     it(`${test}`, async () => {
-      const program = new Program();
-      const context = new Context();
-      const functions = builtinFunctions();
-
-      for (let name of Object.keys(functions)) {
-        context.assignConst(
-          name,
-          new Value(ValueType.FUNCTION, functions[name])
-        );
-      }
-
-      for (const src of basLines) {
-        const line = Line.parse(src);
-        program.add(line);
-      }
+      const { program, context } = setupEnvironment(src);
 
       let output = '';
       context.stdout = new stream.Writable({ decodeStrings: false });
@@ -56,7 +44,7 @@ describe('Integration tests', () => {
         next();
       };
 
-      await evaluate(new RunStatement(), program, context);
+      await evaluateStatement(new RunStatement(), program, context);
       expect(output.trim()).to.equal(txt);
     });
   }

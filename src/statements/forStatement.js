@@ -30,7 +30,12 @@ export class ForStatement extends BaseStatement {
       while (nextValue.isLessThan(final)) {
         context.assignVariable(this.name, nextValue);
 
-        const jumpTo = await evaluate(this.statement, program, context);
+        const jumpTo = await evaluateStatement(
+          this.statement,
+          program,
+          context
+        );
+
         if (jumpTo !== undefined) {
           return jumpTo;
         }

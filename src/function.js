@@ -115,6 +115,6 @@ export const builtinFunctions = () => {
     }),
     ['TIME$']: new Function(0, 1, timeDollar),
     ['DATE$']: new Function(0, 1, dateDollar),
-    ['LEN']: new Function(1, 0, len)
+    ['LEN']: new Function(1, 0, len),
   };
 };

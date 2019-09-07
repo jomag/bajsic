@@ -1,5 +1,6 @@
 import { Enum } from './utils';
 import { RuntimeError } from './evaluate';
+import { evaluate } from './eval';
 
 export const ExprType = Enum([
   // { type: CONSTANT, valueType: INT, value: 42 }
@@ -34,7 +35,7 @@ export const ExprType = Enum([
   'GROUP',
 
   // Unary operators
-  'UMINUS'
+  'UMINUS',
 ]);
 
 /**
@@ -45,7 +46,7 @@ export const ValueType = {
   STRING: 'string',
   FUNCTION: 'function',
   USER_FUNCTION: 'userFunction',
-  ARRAY: 'array'
+  ARRAY: 'array',
 };
 
 export class Value {
@@ -88,10 +89,11 @@ export class Expr {
   }
 
   /**
+   * @param {Program} program
    * @param {Context} context
    * @returns {Promise<Value>}
    */
-  evaluate(context) {
+  evaluate(program, context) {
     throw new Error('Evaluation method not implemented!');
   }
 }
@@ -103,7 +105,7 @@ export class ConstExpr extends Expr {
     this.value = value;
   }
 
-  evaluate(context) {
+  evaluate(program, context) {
     return new Value(this.valueType, this.value);
   }
 
@@ -118,8 +120,8 @@ export class IdentifierExpr extends Expr {
     this.value = value;
   }
 
-  evaluate(context) {
-    const value = this.evaluateIdentifier(context);
+  evaluate(program, context) {
+    const value = this.evaluateIdentifier(program, context);
 
     if (value.type === ValueType.FUNCTION) {
       return value.value.call([], context);
@@ -128,7 +130,7 @@ export class IdentifierExpr extends Expr {
     return value;
   }
 
-  evaluateIdentifier(context) {
+  evaluateIdentifier(program, context) {
     const value = context.get(this.value);
 
     if (value === undefined) {
@@ -157,7 +159,7 @@ export class CallExpr extends Expr {
     return `Call`;
   }
 
-  async evaluate(context) {
+  async evaluate(program, context) {
     const funExpr = this.children[0];
     const args = this.children.slice(1);
 
@@ -167,11 +169,11 @@ export class CallExpr extends Expr {
       );
     }
 
-    const fun = funExpr.evaluateIdentifier(context);
+    const fun = funExpr.evaluateIdentifier(program, context);
     const argValues = [];
 
     for (const expr of args) {
-      argValues.push(await expr.evaluate(context));
+      argValues.push(await expr.evaluate(program, context));
     }
 
     if (fun.type === ValueType.ARRAY) {
@@ -185,6 +187,12 @@ export class CallExpr extends Expr {
     }
 
     if (fun.type === ValueType.USER_FUNCTION) {
+      console.log('SHOULD CALL USER FUNCTION ', JSON.stringify(fun));
+      context.push(context.pc);
+      context.pc = program.lineNumberToIndex(fun.value);
+      await evaluate(program, context);
+      context.pop();
+      return new Value(ValueType.INT, 1133);
     }
 
     throw new RuntimeError(`Not a function or array: ${fun.type}`);
@@ -203,9 +211,9 @@ export class AddExpr extends BinaryOperatorExpr {
     super(ExprType.ADD, child1, child2);
   }
 
-  async evaluate(context) {
-    const value1 = await this.children[0].evaluate(context);
-    const value2 = await this.children[1].evaluate(context);
+  async evaluate(program, context) {
+    const value1 = await this.children[0].evaluate(program, context);
+    const value2 = await this.children[1].evaluate(program, context);
 
     if (value1.type === ValueType.STRING && value2.type === ValueType.STRING) {
       return new Value(ValueType.STRING, value1.value + value2.value);
@@ -233,9 +241,9 @@ export class SubtractExpr extends BinaryOperatorExpr {
     super(ExprType.SUBTRACT, child1, child2);
   }
 
-  async evaluate(context) {
-    const value1 = await this.children[0].evaluate(context);
-    const value2 = await this.children[1].evaluate(context);
+  async evaluate(program, context) {
+    const value1 = await this.children[0].evaluate(program, context);
+    const value2 = await this.children[1].evaluate(program, context);
     return new Value(ValueType.INT, value1.value - value2.value);
   }
 }
@@ -245,9 +253,9 @@ export class DivideExpr extends BinaryOperatorExpr {
     super(ExprType.DIVIDE, child1, child2);
   }
 
-  async evaluate(context) {
-    const value1 = await this.children[0].evaluate(context);
-    const value2 = await this.children[1].evaluate(context);
+  async evaluate(program, context) {
+    const value1 = await this.children[0].evaluate(program, context);
+    const value2 = await this.children[1].evaluate(program, context);
     return new Value(ValueType.INT, value1.value / value2.value);
   }
 }
@@ -257,9 +265,9 @@ export class AndExpr extends BinaryOperatorExpr {
     super(ExprType.AND, child1, child2);
   }
 
-  async evaluate(context) {
-    const value1 = await this.children[0].evaluate(context);
-    const value2 = await this.children[1].evaluate(context);
+  async evaluate(program, context) {
+    const value1 = await this.children[0].evaluate(program, context);
+    const value2 = await this.children[1].evaluate(program, context);
     return new Value(ValueType.INT, value1.value && value2.value);
   }
 }
@@ -269,9 +277,9 @@ export class OrExpr extends BinaryOperatorExpr {
     super(ExprType.OR, child1, child2);
   }
 
-  async evaluate(context) {
-    const value1 = await this.children[0].evaluate(context);
-    const value2 = await this.children[1].evaluate(context);
+  async evaluate(program, context) {
+    const value1 = await this.children[0].evaluate(program, context);
+    const value2 = await this.children[1].evaluate(program, context);
     return new Value(ValueType.INT, value1.value || value2.value);
   }
 }
@@ -281,9 +289,9 @@ export class MultiplyExpr extends BinaryOperatorExpr {
     super(ExprType.MULTIPLY, child1, child2);
   }
 
-  async evaluate(context) {
-    const value1 = await this.children[0].evaluate(context);
-    const value2 = await this.children[1].evaluate(context);
+  async evaluate(program, context) {
+    const value1 = await this.children[0].evaluate(program, context);
+    const value2 = await this.children[1].evaluate(program, context);
     return new Value(ValueType.INT, value1.value * value2.value);
   }
 }
@@ -293,9 +301,9 @@ export class RelationalOperatorExpr extends BinaryOperatorExpr {
     super(exprType, child1, child2);
   }
 
-  async evaluate(context) {
-    const value1 = await this.children[0].evaluate(context).value;
-    const value2 = await this.children[1].evaluate(context).value;
+  async evaluate(program, context) {
+    const value1 = await this.children[0].evaluate(program, context).value;
+    const value2 = await this.children[1].evaluate(program, context).value;
     let result;
 
     switch (this.type) {
@@ -337,7 +345,7 @@ export class NotExpr extends UnaryOperatorExpr {
     super(ExprType.NOT, operand);
   }
 
-  evaluate(context) {
+  evaluate(program, context) {
     throw new RuntimeError('NOT is not implemented');
   }
 }
@@ -347,7 +355,7 @@ export class UnaryMinusExpr extends UnaryOperatorExpr {
     super(ExprType.UMINUS, operand);
   }
 
-  async evaluate(context) {
+  async evaluate(program, context) {
     const value = await this.operand.evaluate(context);
 
     if (!value.isNumeric()) {
