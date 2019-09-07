@@ -9,6 +9,7 @@ export class Context {
     this.constants = {};
     this.variables = {};
     this.stack = [];
+    this.debugger = null;
 
     this.options = {
       verbose: false

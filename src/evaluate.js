@@ -77,7 +77,7 @@ const evalMap = {
   [StatementType.RUN]: evalRun
 };
 
-export const evaluate = async (statement, program, context) => {
+export const evaluateStatement = async (statement, program, context) => {
   if (statement.exec) {
     return await statement.exec(program, context);
   }

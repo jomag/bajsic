@@ -94,7 +94,7 @@ class Debugger {
    */
   async cmdContinue(args, program, context) {
     if (args.length !== 0) {
-      io.printError('Usage: next');
+      io.printError('Usage: continue');
       return;
     }
 

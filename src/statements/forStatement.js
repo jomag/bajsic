@@ -1,6 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
 import { Value, ValueType } from '../expr';
-import { evaluate } from '../evaluate';
+import { evaluateStatement } from '../evaluate';
 
 export class ForStatement extends BaseStatement {
   constructor(name, startExpr, finalExpr, stepExpr, untilExpr, whileExpr) {
