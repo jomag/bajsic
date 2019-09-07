@@ -1,5 +1,7 @@
 # Bajsic
 
+[![CircleCI](https://circleci.com/gh/jomag/bajsic/tree/master.svg?style=svg)](https://circleci.com/gh/jomag/bajsic/tree/master)
+
 ## BASIC dialect
 
 I set out to write this interpreter with the single goal of being
