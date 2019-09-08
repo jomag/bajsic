@@ -77,18 +77,19 @@ function start(argv) {
   for (let filename of argv['_']) {
     const source = fs.readFileSync(filename, 'utf-8');
     try {
-      ({ program, context }) = setupEnvironment(source);
+      const env = setupEnvironment(source);
+      program = env.program;
+      context = env.context;
     } catch (e) {
       if (e instanceof SyntaxError) {
-        io.printError(`Line ${n}: ${e.message}`);
+        io.printError(e.message);
         break;
       } else {
-        console.error(`Unexpected error on line ${n}:\n${src}\n`);
         throw e;
       }
     }
   }
-    
+
   startInteractiveMode(program, context);
 }
 

@@ -1,5 +1,6 @@
 import { StatementType } from './statement';
 import { Keyword } from './lex';
+import { evaluate } from './eval';
 
 export class RuntimeError extends Error {
   constructor(message, context, program, ...params) {
@@ -40,7 +41,7 @@ const evalList = (statement, program, context) => {
 const evalPrint = async (statement, program, context) => {
   // FIXME: handle different output channels
   for (const outp of statement.list) {
-    const result = await outp[0].evaluate(context);
+    const result = await outp[0].evaluate(program, context);
     outp[1]
       ? termPrintln(result.value, context)
       : termPrint(result.value, context);
@@ -48,6 +49,8 @@ const evalPrint = async (statement, program, context) => {
 };
 
 const evalRun = async (statement, program, context) => {
+  await evaluate(program, context);
+  /*
   while (true) {
     const line = program.lines[context.pc];
     const next = await line.exec(program, context);
@@ -69,12 +72,13 @@ const evalRun = async (statement, program, context) => {
       }
     }
   }
+  */
 };
 
 const evalMap = {
   [StatementType.LIST]: evalList,
   [StatementType.PRINT]: evalPrint,
-  [StatementType.RUN]: evalRun
+  [StatementType.RUN]: evalRun,
 };
 
 export const evaluateStatement = async (statement, program, context) => {
@@ -85,8 +89,6 @@ export const evaluateStatement = async (statement, program, context) => {
   if (evalMap[statement.type]) {
     return await evalMap[statement.type](statement, program, context);
   }
-
-  console.log(statement);
 
   throw new Error(
     `Evaluation of statement type '${statement.type}' is not implemented`

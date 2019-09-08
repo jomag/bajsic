@@ -13,7 +13,9 @@ export class Program {
 
   add(line) {
     if (!line.num && line.num !== 0) {
-      throw new Error('Attempt to add line without line number to program');
+      throw new SyntaxError(
+        `Attempt to add line without line number to program: ${line.source}`
+      );
     }
 
     // Invalidate the line map

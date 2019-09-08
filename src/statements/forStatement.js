@@ -18,10 +18,10 @@ export class ForStatement extends BaseStatement {
 
   async exec(program, context) {
     if (this.statement) {
-      const start = await this.startExpr.evaluate(context);
-      const final = await this.finalExpr.evaluate(context);
+      const start = await this.startExpr.evaluate(program, context);
+      const final = await this.finalExpr.evaluate(program, context);
       const step = this.stepExpr
-        ? await this.stepExpr.evaluate(context)
+        ? await this.stepExpr.evaluate(program, context)
         : new Value(ValueType.INT, 1);
 
       context.assignVariable(this.name, start);

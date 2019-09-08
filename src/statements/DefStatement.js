@@ -35,6 +35,6 @@ export class DefStatement extends BaseStatement {
   }
 
   exec(program, context) {
-    throw new Error('DEF is not implemented');
+    throw new Error('DEF statement should never be reached');
   }
 }

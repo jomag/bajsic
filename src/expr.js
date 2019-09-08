@@ -105,7 +105,7 @@ export class ConstExpr extends Expr {
     this.value = value;
   }
 
-  evaluate(program, context) {
+  async evaluate(program, context) {
     return new Value(this.valueType, this.value);
   }
 
@@ -126,6 +126,8 @@ export class IdentifierExpr extends Expr {
     if (value.type === ValueType.FUNCTION) {
       return value.value.call([], context);
     }
+
+    // FIXME: handle user functions!
 
     return value;
   }
@@ -178,7 +180,6 @@ export class CallExpr extends Expr {
 
     if (fun.type === ValueType.ARRAY) {
       const index = argValues.map(arg => arg.value);
-      console.log('Result: ', fun.value.get(index));
       return fun.value.get(index);
     }
 
@@ -187,12 +188,35 @@ export class CallExpr extends Expr {
     }
 
     if (fun.type === ValueType.USER_FUNCTION) {
-      console.log('SHOULD CALL USER FUNCTION ', JSON.stringify(fun));
       context.push(context.pc);
-      context.pc = program.lineNumberToIndex(fun.value);
+      context.scope();
+
+      const defLineIndex = program.lineNumberToIndex(fun.value);
+      const defLine = program.lines[defLineIndex];
+
+      if (defLine.statements.length !== 1) {
+        throw new RuntimeError(
+          `DEF FN is not single statement on line ${fun.value}`,
+          context,
+          program
+        );
+      }
+
+      const defStatement = defLine.statements[0];
+      const name = defStatement.name.toUpperCase();
+
+      let n = 0;
+      for (const arg of defStatement.args) {
+        context.assignVariable(arg.name, argValues[n]);
+        n = n + 1;
+      }
+
+      context.pc = program.lineNumberToIndex(fun.value) + 1;
       await evaluate(program, context);
-      context.pop();
-      return new Value(ValueType.INT, 1133);
+      context.pc = context.pop();
+      const scope = context.descope();
+
+      return scope.variables[name];
     }
 
     throw new RuntimeError(`Not a function or array: ${fun.type}`);
@@ -302,8 +326,9 @@ export class RelationalOperatorExpr extends BinaryOperatorExpr {
   }
 
   async evaluate(program, context) {
-    const value1 = await this.children[0].evaluate(program, context).value;
-    const value2 = await this.children[1].evaluate(program, context).value;
+    const v = await this.children[0].evaluate(program, context);
+    const value1 = (await this.children[0].evaluate(program, context)).value;
+    const value2 = (await this.children[1].evaluate(program, context)).value;
     let result;
 
     switch (this.type) {

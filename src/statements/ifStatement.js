@@ -10,7 +10,7 @@ export class IfStatement extends BaseStatement {
   }
 
   async exec(program, context) {
-    const result = await this.conditionExpr.evaluate(context);
+    const result = await this.conditionExpr.evaluate(program, context);
     const block = result.isTrue() ? this.thenStatements : this.elseStatements;
 
     for (let stmt of block || []) {

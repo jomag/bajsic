@@ -21,8 +21,9 @@ export class MarginStatement extends BaseStatement {
    * @param {Context} context
    */
   async exec(program, context) {
-    const channel = this.channel && (await this.channel.evaluate(context));
-    const margin = await this.expr.evaluate(context);
+    const channel =
+      this.channel && (await this.channel.evaluate(program, context));
+    const margin = await this.expr.evaluate(program, context);
     context.options.margin = margin;
   }
 }
