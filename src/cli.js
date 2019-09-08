@@ -11,6 +11,7 @@ import { RuntimeError } from './evaluate';
 import { Value, ValueType } from './expr';
 import { builtinFunctions } from './function';
 import io from './io';
+import { setupEnvironment } from './utils';
 
 const PROMPT = '] ';
 
@@ -18,7 +19,7 @@ export const userInput = async prompt => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: prompt
+    prompt: prompt,
   });
 
   return new Promise((resolve, reject) => {
@@ -70,34 +71,21 @@ async function startInteractiveMode(program, context) {
 }
 
 function start(argv) {
-  const program = new Program();
-  const context = new Context();
-  const functions = builtinFunctions();
+  let program;
+  let context;
 
-  for (const name of Object.keys(functions)) {
-    context.assignConst(name, new Value(ValueType.FUNCTION, functions[name]));
-  }
-
-  for (let source of argv['_']) {
-    const srcOriginal = fs.readFileSync(source, 'utf-8');
-    const srcLines = srcOriginal.split('\n');
-    let n = 0;
-    for (const src of srcLines) {
-      if (src.trim().length > 0) {
-        try {
-          const line = Line.parse(src);
-          program.add(line);
-        } catch (e) {
-          if (e instanceof SyntaxError) {
-            io.printError(`Line ${n}: ${e.message}`);
-            break;
-          } else {
-            console.error(`Unexpected error on line ${n}:\n${src}\n`);
-            throw e;
-          }
-        }
-
-        n = n + 1;
+  for (let filename of argv['_']) {
+    const source = fs.readFileSync(filename, 'utf-8');
+    try {
+      const env = setupEnvironment(source);
+      program = env.program;
+      context = env.context;
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        io.printError(e.message);
+        break;
+      } else {
+        throw e;
       }
     }
   }
@@ -112,7 +100,7 @@ yargs
     yargs => {
       yargs.positional('source', {
         describe: 'filename of basic source to run',
-        type: 'string'
+        type: 'string',
       });
     },
     start

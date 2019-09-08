@@ -1,4 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
+import { Keyword } from '../lex';
+import { RuntimeError } from '../evaluate';
 
 export class EndStatement extends BaseStatement {
   constructor(blockType) {
@@ -10,6 +12,7 @@ export class EndStatement extends BaseStatement {
     switch (this.blockType) {
       case null:
       case Keyword.PROGRAM:
+      case Keyword.FUNCTION: // <-- temporary!
         // Return null to stop program execution
         return null;
 

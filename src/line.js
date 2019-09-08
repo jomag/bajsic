@@ -1,6 +1,6 @@
 import { TokenType, LexicalError, tokenize } from './lex';
 import { SyntaxError, parseStatements } from './parser';
-import { evaluate } from './evaluate';
+import { evaluateStatement } from './evaluate';
 
 export class Line {
   constructor(source, sourceLineNo) {
@@ -46,7 +46,7 @@ export class Line {
 
   async exec(program, context) {
     for (const stmt of this.statements) {
-      const next = await evaluate(stmt, program, context);
+      const next = await evaluateStatement(stmt, program, context);
 
       // If next is undefined, the program should either
       // go to another line or end execution. In either case

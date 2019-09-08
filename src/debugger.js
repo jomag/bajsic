@@ -94,7 +94,7 @@ class Debugger {
    */
   async cmdContinue(args, program, context) {
     if (args.length !== 0) {
-      io.printError('Usage: next');
+      io.printError('Usage: continue');
       return;
     }
 
@@ -155,6 +155,27 @@ class Debugger {
     context.pc += 1;
   }
 
+  /**
+   * @param {string[]} args
+   * @param {Program} program
+   * @param {Context} context
+   */
+  async cmdList(args, program, context) {
+    for (const arg of args) {
+      if (arg.startsWith('u')) {
+        // List user functions
+        io.print('User Functions:');
+        const functions = program.getUserFunctions();
+        for (const name of Object.keys(functions)) {
+          const num = functions[name];
+          const line = program.getLineByNumber(num);
+          io.print(` - ${name}: ${line.source}`);
+        }
+        io.print();
+      }
+    }
+  }
+
   async enter(program, context) {
     while (true) {
       //console.log('Variables:\n', context.variables, '\n');
@@ -174,8 +195,10 @@ class Debugger {
       }
 
       if (cmd.startsWith('b')) {
+        // "breakpoint"
         this.cmdBreakpoint(args, program, context);
       } else if (cmd.startsWith('n')) {
+        // "next"
         let result;
         try {
           result = await this.cmdNext(args, program, context);
@@ -192,6 +215,7 @@ class Debugger {
           break;
         }
       } else if (cmd.startsWith('c')) {
+        // "continue"
         let result;
         try {
           result = await this.cmdContinue(args, program, context);
@@ -208,9 +232,14 @@ class Debugger {
           break;
         }
       } else if (cmd.startsWith('p')) {
+        // "print"
         this.cmdPrint(args, program, context);
       } else if (cmd.startsWith('sk')) {
+        // "skip"
         this.cmdSkip(args, program, context);
+      } else if (cmd.startsWith('l')) {
+        // "list"
+        this.cmdList(args, program, context);
       }
     }
   }

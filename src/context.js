@@ -2,23 +2,40 @@
 import { Value, ValueType } from './expr';
 import { RuntimeError } from './evaluate';
 
+class Scope {
+  constructor() {
+    this.constants = {};
+    this.variables = {};
+  }
+}
+
 export class Context {
   constructor() {
     // Program Counter, points at the current line index
     this.pc = 0;
-    this.constants = {};
-    this.variables = {};
+    this.scopes = [new Scope()];
     this.stack = [];
+    this.debugger = null;
 
     this.options = {
-      verbose: false
+      verbose: false,
     };
 
     // Temporary fix: define ERROR
-    this.variables.ERROR = new Value(ValueType.INT, 0);
+    this.scopes[0].variables.ERROR = new Value(ValueType.INT, 0);
 
     // @ts-ignore
     this.stdout = process.stdout;
+  }
+
+  scope() {
+    const s = new Scope();
+    this.scopes.unshift(s);
+    return s;
+  }
+
+  descope() {
+    return this.scopes.shift();
   }
 
   /**
@@ -40,11 +57,11 @@ export class Context {
   }
 
   assignConst(name, value) {
-    this.constants[name.toUpperCase()] = value;
+    this.scopes[0].constants[name.toUpperCase()] = value;
   }
 
   assignVariable(name, value) {
-    this.variables[name.toUpperCase()] = value;
+    this.scopes[0].variables[name.toUpperCase()] = value;
   }
 
   /**
@@ -53,17 +70,20 @@ export class Context {
    * @param {Value} value
    */
   setArrayItem(name, index, value) {
-    const v = this.variables[name.toUpperCase()];
+    const nm = name.toUpperCase();
 
-    if (!v) {
-      throw new RuntimeError(`${name} is not defined`);
+    for (const scope of this.scopes) {
+      const v = scope.variables[nm];
+
+      if (v.type !== ValueType.ARRAY) {
+        throw new RuntimeError(`${name} is not an array: ${v.type}`);
+      }
+
+      v.value.set(index, value);
+      return;
     }
 
-    if (v.type !== ValueType.ARRAY) {
-      throw new RuntimeError(`${name} is not an array: ${v.type}`);
-    }
-
-    v.value.set(index, value);
+    throw new RuntimeError(`${name} is not defined`);
   }
 
   /**
@@ -71,10 +91,17 @@ export class Context {
    */
   get(name) {
     const nm = name.toUpperCase();
-    const value = this.variables[nm];
-    if (value !== undefined) {
-      return value;
+
+    for (const scope of this.scopes) {
+      const v = scope.variables[nm];
+      if (v !== undefined) {
+        return v;
+      }
+
+      const c = scope.constants[nm];
+      if (c !== undefined) {
+        return c;
+      }
     }
-    return this.constants[nm];
   }
 }

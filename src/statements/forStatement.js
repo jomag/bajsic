@@ -1,6 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
 import { Value, ValueType } from '../expr';
-import { evaluate } from '../evaluate';
+import { evaluateStatement } from '../evaluate';
 
 export class ForStatement extends BaseStatement {
   constructor(name, startExpr, finalExpr, stepExpr, untilExpr, whileExpr) {
@@ -18,10 +18,10 @@ export class ForStatement extends BaseStatement {
 
   async exec(program, context) {
     if (this.statement) {
-      const start = await this.startExpr.evaluate(context);
-      const final = await this.finalExpr.evaluate(context);
+      const start = await this.startExpr.evaluate(program, context);
+      const final = await this.finalExpr.evaluate(program, context);
       const step = this.stepExpr
-        ? await this.stepExpr.evaluate(context)
+        ? await this.stepExpr.evaluate(program, context)
         : new Value(ValueType.INT, 1);
 
       context.assignVariable(this.name, start);
@@ -30,7 +30,12 @@ export class ForStatement extends BaseStatement {
       while (nextValue.isLessThan(final)) {
         context.assignVariable(this.name, nextValue);
 
-        const jumpTo = await evaluate(this.statement, program, context);
+        const jumpTo = await evaluateStatement(
+          this.statement,
+          program,
+          context
+        );
+
         if (jumpTo !== undefined) {
           return jumpTo;
         }

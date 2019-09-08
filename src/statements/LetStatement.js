@@ -23,12 +23,12 @@ export class LetStatement extends BaseStatement {
    * @param {Context} context
    */
   async exec(program, context) {
-    const result = await this.expr.evaluate(context);
+    const result = await this.expr.evaluate(program, context);
 
     if (this.identifier.index) {
       const index = [];
       for (const expr of this.identifier.index) {
-        index.push(await expr.evaluate(context));
+        index.push(await expr.evaluate(program, context));
       }
 
       const numIndex = index.map(value => {
@@ -40,7 +40,6 @@ export class LetStatement extends BaseStatement {
         return value.value;
       });
 
-      console.log('here');
       context.setArrayItem(this.identifier.name, numIndex, result);
     } else {
       context.assignVariable(this.identifier.name, result);

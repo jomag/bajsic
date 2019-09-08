@@ -1,3 +1,5 @@
+import { DefStatement } from './statements/DefStatement';
+
 export class Program {
   constructor(lines) {
     // Array of lines in sorted order
@@ -11,7 +13,9 @@ export class Program {
 
   add(line) {
     if (!line.num && line.num !== 0) {
-      throw new Error('Attempt to add line without line number to program');
+      throw new SyntaxError(
+        `Attempt to add line without line number to program: ${line.source}`
+      );
     }
 
     // Invalidate the line map
@@ -30,6 +34,20 @@ export class Program {
         break;
       }
     }
+  }
+
+  getUserFunctions() {
+    const functions = [];
+
+    for (const line of this.lines) {
+      for (const stmt of line.statements) {
+        if (stmt instanceof DefStatement) {
+          functions[stmt.name] = line.num;
+        }
+      }
+    }
+
+    return functions;
   }
 
   getLineMap() {
@@ -61,5 +79,10 @@ export class Program {
 
   lineIndexToNumber(idx) {
     return this.lines[idx].num;
+  }
+
+  getLineByNumber(num) {
+    const idx = this.lineNumberToIndex(num);
+    return this.lines[idx];
   }
 }
