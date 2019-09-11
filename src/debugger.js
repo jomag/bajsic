@@ -1,7 +1,9 @@
 // @ts-check
 
-import readline from 'readline';
-import process from 'process';
+// @ts-ignore
+// import readline from 'readline';
+// @ts-ignore
+// import process from 'process';
 
 import { Program } from './program';
 import { Context } from './context';
@@ -9,6 +11,7 @@ import { RuntimeError } from './evaluate';
 import io, { printError } from './io';
 
 export const userInput = async prompt => {
+  /*
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -21,6 +24,7 @@ export const userInput = async prompt => {
       resolve(input);
     });
   });
+  */
 };
 
 const PROMPT = 'dbg> ';
