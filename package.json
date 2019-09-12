@@ -2,7 +2,8 @@
   "name": "bajsic",
   "version": "0.0.1",
   "description": "Basic interpreter implemented in JavaScript",
-  "main": "src/index.js",
+  "main": "./src/index.js",
+  "types": "./types/index.d.ts",
   "scripts": {
     "start": "node -r esm src/cli.js",
     "test": "mocha -r esm \"./**/*.test.js\""
