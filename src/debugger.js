@@ -9,25 +9,16 @@ import { Program } from './program';
 import { Context } from './context';
 import { RuntimeError } from './evaluate';
 import io, { printError } from './io';
-
-export const userInput = async prompt => {
-  /*
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: prompt
-  });
-
-  return new Promise((resolve, reject) => {
-    rl.question(prompt, input => {
-      rl.close();
-      resolve(input);
-    });
-  });
-  */
-};
+import { input } from './shell';
+import { Line } from './line';
+import { evaluate } from './eval';
 
 const PROMPT = 'dbg> ';
+
+export const userInput = async (context, prompt) => {
+  context.outputStream.write(PROMPT);
+  return await input(context.inputStream);
+};
 
 class Debugger {
   constructor() {
@@ -56,77 +47,6 @@ class Debugger {
     } else {
       io.print(`Adding breakpoint on line ${line}`);
       this.breakpoints.push(line);
-    }
-  }
-
-  /**
-   * @param {string[]} args
-   * @param {Program} program
-   * @param {Context} context
-   */
-  async cmdNext(args, program, context) {
-    if (args.length !== 0) {
-      io.printError('Usage: next');
-      return;
-    }
-
-    const line = program.lines[context.pc];
-    const next = await line.exec(program, context);
-
-    if (next === null) {
-      return null;
-    }
-
-    if (next !== undefined) {
-      const lineIndex = program.lineNumberToIndex(next);
-      if (lineIndex === undefined) {
-        throw new RuntimeError(`Undefined line number: ${next}`);
-      }
-      context.pc = lineIndex;
-    } else {
-      context.pc = context.pc + 1;
-      if (context.pc >= program.lines.length) {
-        return null;
-      }
-    }
-  }
-
-  /**
-   * @param {string[]} args
-   * @param {Program} program
-   * @param {Context} context
-   */
-  async cmdContinue(args, program, context) {
-    if (args.length !== 0) {
-      io.printError('Usage: continue');
-      return;
-    }
-
-    while (true) {
-      const line = program.lines[context.pc];
-
-      if (this.breakpoints.includes(line.num)) {
-        return;
-      }
-
-      const next = await line.exec(program, context);
-
-      if (next === null) {
-        return null;
-      }
-
-      if (next !== undefined) {
-        const lineIndex = program.lineNumberToIndex(next);
-        if (lineIndex === undefined) {
-          throw new RuntimeError(`Undefined line number: ${next}`);
-        }
-        context.pc = lineIndex;
-      } else {
-        context.pc = context.pc + 1;
-        if (context.pc >= program.lines.length) {
-          return null;
-        }
-      }
     }
   }
 
@@ -180,70 +100,74 @@ class Debugger {
     }
   }
 
+  /**
+   * @param {Line} line
+   * @returns {boolean}
+   */
+
+  /**
+   * @param {Program} program
+   * @param {Context} context
+   */
   async enter(program, context) {
-    while (true) {
-      //console.log('Variables:\n', context.variables, '\n');
-      const line = program.lines[context.pc];
-      io.print(`Next line:\n ${line.source}`);
+    let stepping = true;
 
-      let cmd = await userInput(PROMPT);
-      cmd = cmd
-        .trim()
-        .split(' ')
-        .filter(Boolean);
-      const args = cmd.slice(1);
-      cmd = cmd[0];
-
-      if (!cmd) {
-        cmd = 'next';
+    const shouldBreak = line => {
+      if (stepping) {
+        return true;
       }
 
-      if (cmd.startsWith('b')) {
-        // "breakpoint"
-        this.cmdBreakpoint(args, program, context);
-      } else if (cmd.startsWith('n')) {
-        // "next"
-        let result;
-        try {
-          result = await this.cmdNext(args, program, context);
-        } catch (e) {
-          if (e instanceof RuntimeError) {
-            e.setContext(context, program);
-            io.printRuntimeError(e);
-          } else {
-            throw e;
-          }
-        }
+      if (this.breakpoints.includes(line.num)) {
+        return true;
+      }
 
-        if (result === null) {
-          break;
-        }
-      } else if (cmd.startsWith('c')) {
-        // "continue"
-        let result;
-        try {
-          result = await this.cmdContinue(args, program, context);
-        } catch (e) {
-          if (e instanceof RuntimeError) {
-            e.setContext(context, program);
-            io.printRuntimeError(e);
-          } else {
-            throw e;
-          }
-        }
+      return false;
+    };
 
-        if (result === null) {
-          break;
+    while (true) {
+      const line = program.lines[context.pc];
+      let evaluateNext = true;
+
+      if (shouldBreak(line)) {
+        evaluateNext = false;
+        stepping = true;
+
+        io.print(`Next line:\n ${line.source}`);
+
+        let cmd = await userInput(context, PROMPT);
+
+        cmd = cmd
+          .trim()
+          .split(' ')
+          .filter(Boolean);
+
+        const args = cmd.slice(1);
+        cmd = cmd[0] || 'next';
+
+        if (cmd.startsWith('b')) {
+          // Break - Insert breakpoint at current line or by argument
+          this.cmdBreakpoint(args, program, context);
+        } else if (cmd.startsWith('n')) {
+          // Next - Step one line
+          evaluateNext = true;
+        } else if (cmd.startsWith('c')) {
+          // Continue - Run until end of program or breakpoint
+          stepping = false;
+          evaluateNext = true;
+        } else if (cmd.startsWith('p')) {
+          // "print"
+          this.cmdPrint(args, program, context);
+        } else if (cmd.startsWith('sk')) {
+          // "skip"
+          this.cmdSkip(args, program, context);
+        } else if (cmd.startsWith('l')) {
+          // "list"
+          this.cmdList(args, program, context);
         }
-      } else if (cmd.startsWith('p')) {
-        // "print"
-        this.cmdPrint(args, program, context);
-      } else if (cmd.startsWith('sk')) {
-        // "skip"
-        this.cmdSkip(args, program, context);
-      } else if (cmd.startsWith('l')) {
-        // "list"
-        this.cmdList(args, program, context);
+      }
+
+      if (evaluateNext) {
+        await evaluate(program, context, true);
       }
     }
   }

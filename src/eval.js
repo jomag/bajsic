@@ -1,7 +1,16 @@
 import { RuntimeError } from './evaluate';
 
-export const evaluate = async (program, context) => {
-  while (true) {
+/**
+ * @param {Program} program
+ * @param {Context} context
+ * @param {number?} lines - number of lines to evaluate
+ */
+export const evaluate = async (program, context, single) => {
+  let first = true;
+
+  while (!single || first) {
+    first = false;
+
     const line = program.lines[context.pc];
     const nextLine = await line.exec(program, context);
 

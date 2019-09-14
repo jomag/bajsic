@@ -1,5 +1,7 @@
 declare module 'bajsic' {
-  declare class Program {}
+  declare class Program {
+    loadFromString(source: string, context: Context): void;
+  }
 
   declare class Stream extends EventEmitter {
     write(data: string): void;
@@ -14,7 +16,7 @@ declare module 'bajsic' {
   }
 
   declare function setupEnvironment(
-    source: string
+    source?: string
   ): {
     program: Program;
     context: Context;

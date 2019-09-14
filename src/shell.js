@@ -3,29 +3,50 @@ import { RuntimeError } from './evaluate';
 
 const PROMPT = '] ';
 
-const input = async stream => {
+export const input = async stream => {
   return new Promise((resolve, reject) => {
     stream.once('data', () => resolve(stream.read()));
   });
 };
 
 export async function shell(program, context) {
+  const printError = err => {
+    let msg;
+
+    if (err instanceof RuntimeError) {
+      if (err.line) {
+        msg = `Runtime error on line ${err.line.num}: ${err.message}`;
+        if (msg.length > 80) {
+          msg = `Runtime error on line ${err.line.num}:\n  ${err.message}`;
+        }
+        msg += `\n=> ${err.line.source} <=`;
+      } else {
+        msg = err.message;
+      }
+    } else if (typeof err === 'string') {
+      msg = err;
+    } else {
+      msg = err.message;
+    }
+
+    if (context.errorStream) {
+      context.errorStream.write(`${msg}\n`);
+    } else {
+      console.error(msg);
+    }
+  };
+
   while (true) {
     context.outputStream.write(PROMPT);
     const text = await input(context.inputStream);
-    console.log(`USE RINPUT: [${text}]`);
 
     let line;
 
     try {
       line = Line.parse(text.trim());
     } catch (e) {
-      if (e instanceof SyntaxError) {
-        io.printError(e.message);
-        return;
-      } else {
-        throw e;
-      }
+      printError(e);
+      continue;
     }
 
     if (line.statements.length === 0) {
@@ -42,7 +63,11 @@ export async function shell(program, context) {
             io.printRuntimeError(e);
             return;
           } else {
-            throw e;
+            printError('There was an unhandled error:');
+            printError(e);
+            printError(JSON.stringify(e.stack, null, 2));
+            console.log(e.stack);
+            console.trace();
           }
         }
       } else {
