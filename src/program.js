@@ -1,4 +1,6 @@
 import { DefStatement } from './statements/DefStatement';
+import { Line } from './line';
+import { Value, ValueType } from './expr';
 
 export class Program {
   constructor(lines) {
@@ -84,5 +86,23 @@ export class Program {
   getLineByNumber(num) {
     const idx = this.lineNumberToIndex(num);
     return this.lines[idx];
+  }
+
+  loadFromString(source, context) {
+    const lines = source.split('\n');
+
+    for (const line of lines) {
+      if (line.trim().length > 0) {
+        this.add(Line.parse(line));
+      }
+    }
+
+    const userFunctions = this.getUserFunctions();
+    for (const name of Object.keys(userFunctions)) {
+      context.assignConst(
+        name,
+        new Value(ValueType.USER_FUNCTION, userFunctions[name])
+      );
+    }
   }
 }

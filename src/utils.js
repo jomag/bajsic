@@ -22,20 +22,7 @@ export const setupEnvironment = source => {
   }
 
   if (source) {
-    const lines = source.split('\n');
-    for (const line of lines) {
-      if (line.trim().length > 0) {
-        program.add(Line.parse(line));
-      }
-    }
-
-    const userFunctions = program.getUserFunctions();
-    for (const name of Object.keys(userFunctions)) {
-      context.assignConst(
-        name,
-        new Value(ValueType.USER_FUNCTION, userFunctions[name])
-      );
-    }
+    program.loadFromString(source, context);
   }
 
   return { program, context };

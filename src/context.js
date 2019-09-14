@@ -16,9 +16,11 @@ export class Context {
     this.scopes = [new Scope()];
     this.stack = [];
     this.debugger = null;
+    this.inputStream = undefined;
+    this.outputStream = undefined;
 
     this.options = {
-      verbose: false,
+      verbose: false
     };
 
     // Temporary fix: define ERROR

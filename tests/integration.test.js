@@ -1,8 +1,8 @@
 import fs from 'fs';
-import stream from 'stream';
 
 import { Context } from '../src/context';
 import { Program } from '../src/program';
+import { Stream } from '../src/stream';
 import { Line } from '../src/line';
 import { evaluateStatement } from '../src/evaluate';
 import { Value, ValueType } from '../src/expr';
@@ -38,11 +38,11 @@ describe('Integration tests', () => {
       const { program, context } = setupEnvironment(src);
 
       let output = '';
-      context.stdout = new stream.Writable({ decodeStrings: false });
-      context.stdout._write = (chunk, enc, next) => {
-        output = output + chunk;
-        next();
-      };
+
+      context.outputStream = new Stream();
+      context.outputStream.on('data', data => {
+        output = output + data;
+      });
 
       await evaluateStatement(new RunStatement(), program, context);
       expect(output.trim()).to.equal(txt);
