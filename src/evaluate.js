@@ -76,7 +76,7 @@ const evalRun = async (statement, program, context) => {
 const evalMap = {
   [StatementType.LIST]: evalList,
   [StatementType.PRINT]: evalPrint,
-  [StatementType.RUN]: evalRun
+  [StatementType.RUN]: evalRun,
 };
 
 export const evaluateStatement = async (statement, program, context) => {
