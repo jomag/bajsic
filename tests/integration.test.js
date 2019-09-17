@@ -23,6 +23,8 @@ describe('Integration tests', () => {
     const txtLines = [];
     let dst = basLines;
 
+    const skip = lines[0] && lines[0].trim() === '--- skip ---'
+
     for (let line of lines) {
       if (line.slice(0, 3) === '---') {
         dst = txtLines;
@@ -34,7 +36,12 @@ describe('Integration tests', () => {
     const src = basLines.join('\n');
     const txt = txtLines.join('\n').trim();
 
-    it(`${test}`, async () => {
+    it(`${test}`, async function () {
+      if (skip) {
+        this.skip();
+        return;
+      }
+
       const { program, context } = setupEnvironment(src);
 
       let output = '';

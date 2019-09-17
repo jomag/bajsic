@@ -1,3 +1,4 @@
+--- skip ---
 10 DIM arrayChanges(6)
 20 ABCD = "ABCD"
 30 CHANGE ABCD TO arrayChanges
