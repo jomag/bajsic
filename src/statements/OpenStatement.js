@@ -1,7 +1,9 @@
 import { BaseStatement, StatementType } from '../statement';
-import { Enum } from '../utils';
 
-export const OpenMode = Enum(['INPUT', 'OUTPUT']);
+export const OpenMode = {
+  INPUT: 'INPUT',
+  OUTPUT: 'OUTPUT'
+};
 
 export class OpenStatement extends BaseStatement {
   constructor(filename, channel) {

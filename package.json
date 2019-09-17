@@ -6,18 +6,24 @@
   "types": "./types/index.d.ts",
   "scripts": {
     "start": "node -r esm src/cli.js",
-    "test": "mocha -r esm \"./**/*.test.js\""
+    "test": "mocha -r esm \"./**/*.test.js\"",
+    "coverage": "nyc --reporter=text mocha -r esm \"./**/*.test.js\""
   },
   "author": "Jonatan Magnusson",
   "license": "ISC",
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^6.1.4"
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.1"
   },
   "dependencies": {
     "chalk": "^2.4.2",
     "esm": "^3.2.25",
     "moment": "^2.24.0",
     "yargs": "^13.2.4"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "singleQuote": true
   }
 }

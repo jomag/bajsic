@@ -1,42 +1,41 @@
-import { Enum } from './utils';
 import { RuntimeError } from './evaluate';
 import { evaluate } from './eval';
 
-export const ExprType = Enum([
+export const ExprType = {
   // { type: CONSTANT, valueType: INT, value: 42 }
-  'CONST',
+  CONST: 'CONST',
 
   // { type: IDENTIFIER, name: 'variableName' }
-  'IDENT',
+  IDENT: 'IDENT',
 
   // Binary operators: { type: ADD, children: [ <left expr>, <right expr> ] }
-  'ADD',
-  'SUBTRACT',
-  'MULTIPLY',
-  'DIVIDE',
+  ADD: 'ADD',
+  SUBTRACT: 'SUBTRACT',
+  MULTIPLY: 'MULTIPLY',
+  DIVIDE: 'DIVIDE',
 
   // Function call, or array indexation
-  'CALL',
+  CALL: 'CALL',
 
   // Relational operators
-  'LT',
-  'LE',
-  'GT',
-  'GE',
-  'NE',
-  'EQ',
+  LT: 'LT',
+  LE: 'LE',
+  GT: 'GT',
+  GE: 'GE',
+  NE: 'NE',
+  EQ: 'EQ',
 
   // Logical operators
-  'AND',
-  'OR',
-  'XOR',
+  AND: 'AND',
+  OR: 'OR',
+  XOR: 'XOR',
 
   // Expression list, for example function arguments
-  'GROUP',
+  GROUP: 'GROUP',
 
   // Unary operators
-  'UMINUS',
-]);
+  UMINUS: 'UMINUS'
+};
 
 /**
  * @enum {string}
@@ -46,7 +45,7 @@ export const ValueType = {
   STRING: 'string',
   FUNCTION: 'function',
   USER_FUNCTION: 'userFunction',
-  ARRAY: 'array',
+  ARRAY: 'array'
 };
 
 export class Value {

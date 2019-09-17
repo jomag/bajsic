@@ -2,15 +2,6 @@ import { Program } from './program';
 import { Context } from './context';
 import { builtinFunctions } from './function';
 import { Value, ValueType } from './expr';
-import { Line } from './line';
-
-export function Enum(values) {
-  const obj = values.reduce((o, val) => {
-    o[val] = val;
-    return o;
-  }, {});
-  return Object.freeze(obj);
-}
 
 export const setupEnvironment = source => {
   const program = new Program();
