@@ -34,7 +34,7 @@ export const ExprType = {
   GROUP: 'GROUP',
 
   // Unary operators
-  UMINUS: 'UMINUS'
+  UMINUS: 'UMINUS',
 };
 
 /**
@@ -45,7 +45,7 @@ export const ValueType = {
   STRING: 'string',
   FUNCTION: 'function',
   USER_FUNCTION: 'userFunction',
-  ARRAY: 'array'
+  ARRAY: 'array',
 };
 
 export class Value {
