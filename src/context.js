@@ -20,7 +20,7 @@ export class Context {
     this.outputStream = undefined;
 
     this.options = {
-      verbose: false
+      verbose: false,
     };
 
     // Temporary fix: define ERROR

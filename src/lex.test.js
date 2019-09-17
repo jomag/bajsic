@@ -17,7 +17,7 @@ describe('Lexical Analyzer', () => {
     expect(tokenize(line)).to.deep.equal([
       { type: TokenType.INT, value: 1 },
       { type: TokenType.INT, value: 25 },
-      { type: TokenType.INT, value: 13542 }
+      { type: TokenType.INT, value: 13542 },
     ]);
   });
 
@@ -25,7 +25,7 @@ describe('Lexical Analyzer', () => {
     const line = '1.0 3.14';
     expect(tokenize(line)).to.deep.equal([
       { type: TokenType.FLOAT, value: 1 },
-      { type: TokenType.FLOAT, value: 3.14 }
+      { type: TokenType.FLOAT, value: 3.14 },
     ]);
   });
 
@@ -34,7 +34,7 @@ describe('Lexical Analyzer', () => {
     const result = tokenize(line);
     expect(result).to.deep.equal([
       { type: TokenType.INT, value: 5000 },
-      { type: TokenType.REMARK, value: 'This is a comment' }
+      { type: TokenType.REMARK, value: 'This is a comment' },
     ]);
   });
 
@@ -43,7 +43,7 @@ describe('Lexical Analyzer', () => {
     const result = tokenize(line);
     expect(result).to.deep.equal([
       { type: TokenType.INT, value: 5000 },
-      { type: TokenType.REMARK, value: 'This is a comment' }
+      { type: TokenType.REMARK, value: 'This is a comment' },
     ]);
   });
 
@@ -53,7 +53,7 @@ describe('Lexical Analyzer', () => {
     expect(result).to.deep.equal([
       { type: TokenType.IDENTIFIER, value: 'a' },
       { type: TokenType.IDENTIFIER, value: 'Ab' },
-      { type: TokenType.IDENTIFIER, value: 'ab123' }
+      { type: TokenType.IDENTIFIER, value: 'ab123' },
     ]);
   });
 
@@ -64,12 +64,12 @@ describe('Lexical Analyzer', () => {
       { type: TokenType.INT, value: 42 },
       { type: TokenType.KEYWORD, value: Keyword.DIM },
       { type: TokenType.IDENTIFIER, value: 'foo' },
-      { type: TokenType.KEYWORD, value: Keyword.DIM }
+      { type: TokenType.KEYWORD, value: Keyword.DIM },
     ]);
   });
 
   it('handles single character tokens', () => {
-    const line = '(),\\<>=';
+    const line = '( ) , \\ < > =';
     const result = tokenize(line);
     expect(result.map(t => t.type)).to.deep.equal([
       TokenType.LPAR,
@@ -78,7 +78,17 @@ describe('Lexical Analyzer', () => {
       TokenType.SEPARATOR,
       TokenType.LT,
       TokenType.GT,
-      TokenType.EQ
+      TokenType.EQ,
+    ]);
+  });
+
+  it('handles two-character tokens', () => {
+    const line = '<><=>=';
+    const result = tokenize(line);
+    expect(result.map(t => t.type)).to.deep.equal([
+      TokenType.NE,
+      TokenType.LE,
+      TokenType.GE,
     ]);
   });
 
@@ -89,7 +99,7 @@ describe('Lexical Analyzer', () => {
       { type: TokenType.INT, value: 3000 },
       { type: TokenType.STRING, value: '' },
       { type: TokenType.STRING, value: '+' },
-      { type: TokenType.STRING, value: 'hello there' }
+      { type: TokenType.STRING, value: 'hello there' },
     ]);
   });
 

@@ -226,6 +226,16 @@ export class CallExpr extends Expr {
 export class BinaryOperatorExpr extends Expr {
   constructor(exprType, child1, child2) {
     super(exprType);
+
+    if (!child1 || !child2) {
+      throw new Error(
+        `Internal error: created binary operator with falsy children:\n` +
+          `Expression type: ${exprType}\n` +
+          `Child 1: ${JSON.stringify(child1)}\n` +
+          `Child 2: ${JSON.stringify(child2)}`
+      );
+    }
+
     this.children = [child1, child2];
   }
 }
@@ -326,29 +336,41 @@ export class RelationalOperatorExpr extends BinaryOperatorExpr {
   }
 
   async evaluate(program, context) {
-    const v = await this.children[0].evaluate(program, context);
-    const value1 = (await this.children[0].evaluate(program, context)).value;
-    const value2 = (await this.children[1].evaluate(program, context)).value;
+    const op1 = await this.children[0].evaluate(program, context);
+    const op2 = await this.children[1].evaluate(program, context);
+
+    if (!op1) {
+      throw new Error(
+        `Internal error: left operand of relational operator is ${op1}`
+      );
+    }
+
+    if (!op2) {
+      throw new RuntimeError(
+        `Internal error: left operand of relational operator is ${op1}`
+      );
+    }
+
     let result;
 
     switch (this.type) {
       case ExprType.EQ:
-        result = value1 === value2;
+        result = op1.value === op2.value;
         break;
       case ExprType.LT:
-        result = value1 < value2;
+        result = op1.value < op2.value;
         break;
       case ExprType.LE:
-        result = value1 <= value2;
+        result = op1.value <= op2.value;
         break;
       case ExprType.GT:
-        result = value1 > value2;
+        result = op1.value > op2.value;
         break;
       case ExprType.GE:
-        result = value1 >= value2;
+        result = op1.value >= op2.value;
         break;
       case ExprType.NE:
-        result = value1 !== value2;
+        result = op1.value !== op2.value;
         break;
       default:
         throw new RuntimeError('Unhandled relational operator type');

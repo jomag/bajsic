@@ -30,6 +30,7 @@ import { parseDataStatement } from './parseDataStatement';
 import { parseDefStatement } from './parseDefStatement';
 import { parseChangeStatement } from './parseChangeStatement';
 import { parseWriteStatement } from './parseWriteStatement';
+import { parseIfStatement } from './parseIfStatement';
 export { parseExpression } from './expression';
 
 export class SyntaxError extends Error {
@@ -94,43 +95,6 @@ const isOperand = tok =>
   tok.type === TokenType.STRING;
 
 const isOperator = tok => tok.type === TokenType.LT;
-const isKeyword = (tok, keyword) =>
-  tok.type === TokenType.KEYWORD && tok.value === keyword;
-
-const parseIf = (tokens, line) => {
-  popKeyword(tokens, Keyword.IF);
-  const condition = parseExpression(tokens);
-  popKeyword(tokens, Keyword.THEN);
-
-  const thenStatements = [];
-  const elseStatements = [];
-
-  // Handle special case with a number following the THEN keyword.
-  // It should be handled as a GOTO:
-  // `IF cond THEN 724` is equal to `IF cond THEN GOTO 724`
-  if (tokens.length) {
-    if (tokens[0].type === TokenType.INT) {
-      const line = tokens.shift();
-      thenStatements.push(new GotoStatement(line.value));
-    } else {
-      // FIXME: handle multiple statements
-      thenStatements.push(parseStatement(tokens));
-    }
-  }
-
-  if (tokens.length && isKeyword(tokens[0], Keyword.ELSE)) {
-    popKeyword(tokens, Keyword.ELSE);
-    if (tokens.length && tokens[0].type === TokenType.INT) {
-      const line = tokens.shift();
-      elseStatements.push(new GotoStatement(line.value));
-    } else {
-      // FIXME: handle more than one statement
-      elseStatements.push(parseStatement(tokens));
-    }
-  }
-
-  return new IfStatement(condition, thenStatements, elseStatements);
-};
 
 const parseLet = tokens => {
   popOptionalKeyword(tokens, Keyword.LET);
@@ -208,7 +172,7 @@ export const parseStatement = tokens => {
           case Keyword.GOTO:
             return parseGoto(tokens);
           case Keyword.IF:
-            return parseIf(tokens);
+            return parseIfStatement(tokens);
           case Keyword.PRINT:
             return parsePrint(tokens);
           case Keyword.RETURN:

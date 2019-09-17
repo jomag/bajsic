@@ -108,6 +108,19 @@ const len = args => {
   return new Value(ValueType.INT, args[0].value.length);
 };
 
+const leftDollar = args => {
+  validateValueType(args[0], ValueType.STRING);
+  validateValueType(args[1], ValueType.INT);
+
+  const n = args[1].value;
+
+  if (n >= 0) {
+    return new Value(ValueType.STRING, args[0].value.slice(0, n));
+  } else {
+    return new Value(ValueType.STRING, args[0].value);
+  }
+};
+
 export const builtinFunctions = () => {
   return {
     sin: new Function(1, 0, ([angle]) => {
@@ -116,5 +129,6 @@ export const builtinFunctions = () => {
     ['TIME$']: new Function(0, 1, timeDollar),
     ['DATE$']: new Function(0, 1, dateDollar),
     ['LEN']: new Function(1, 0, len),
+    ['LEFT$']: new Function(2, 0, leftDollar),
   };
 };

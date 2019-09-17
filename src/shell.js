@@ -5,7 +5,7 @@ const PROMPT = '] ';
 
 export const input = async stream => {
   return new Promise((resolve, reject) => {
-    stream.once('data', () => resolve(stream.read()));
+    stream.once('data', data => resolve(data));
   });
 };
 
@@ -60,14 +60,15 @@ export async function shell(program, context) {
         } catch (e) {
           if (e instanceof RuntimeError) {
             e.setContext(context, program);
-            io.printRuntimeError(e);
+            printError(e);
             return;
           } else {
-            printError('There was an unhandled error:');
+            printError(`There was an unhandled error:`);
             printError(e);
             printError(JSON.stringify(e.stack, null, 2));
             console.log(e.stack);
             console.trace();
+            printError(`Context: line index ${context.pc}`);
           }
         }
       } else {

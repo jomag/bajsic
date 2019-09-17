@@ -14,7 +14,7 @@ import {
   SubtractExpr,
   DivideExpr,
   NotExpr,
-  UnaryMinusExpr
+  UnaryMinusExpr,
 } from '../expr';
 import { RuntimeError } from '../evaluate';
 
@@ -44,7 +44,7 @@ const Operator = Enum([
   'LPAR',
   'RPAR',
   'SEPARATOR',
-  'CALL'
+  'CALL',
 ]);
 
 // Operator associativity (left/right)
@@ -61,7 +61,7 @@ const assoc = {
   [Operator.NE]: 'L',
   [Operator.AND]: 'L',
   [Operator.OR]: 'L',
-  [Operator.XOR]: 'L'
+  [Operator.XOR]: 'L',
 };
 
 const token2operator = {
@@ -84,7 +84,7 @@ const token2operator = {
 
   [TokenType.LPAR]: Operator.LPAR,
   [TokenType.RPAR]: Operator.RPAR,
-  [TokenType.COMMA]: Operator.SEPARATOR
+  [TokenType.COMMA]: Operator.SEPARATOR,
 };
 
 const unaryOperators = [Operator.NOT, Operator.UMINUS];
@@ -119,7 +119,7 @@ const prec = {
   [Operator.OR]: 9,
   [Operator.XOR]: 9,
   [Operator.IMP]: 10,
-  [Operator.EQV]: 11
+  [Operator.EQV]: 11,
 };
 
 function assert(cond, message, obj) {
@@ -133,7 +133,7 @@ const operands = [
   TokenType.INT,
   TokenType.FLOAT,
   TokenType.STRING,
-  TokenType.IDENTIFIER
+  TokenType.IDENTIFIER,
 ];
 
 const peek = tokens => tokens[tokens.length - 1];
@@ -164,7 +164,7 @@ const buildBinaryOperatorExpr = (operator, child1, child2) => {
     [Operator.GT]: ExprType.GT,
     [Operator.GE]: ExprType.GE,
     [Operator.EQ]: ExprType.EQ,
-    [Operator.NE]: ExprType.NE
+    [Operator.NE]: ExprType.NE,
   };
 
   if (Object.keys(relOpMap).indexOf(operator) >= 0) {
