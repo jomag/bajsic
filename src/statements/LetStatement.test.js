@@ -24,7 +24,10 @@ describe('LetStatement', () => {
     const context = new Context();
     context.assignVariable(
       'v',
-      new Value(ValueType.ARRAY, new BasicArray(ValueType.STRING, [3, 3]))
+      new Value(
+        ValueType.ARRAY,
+        new BasicArray(ValueType.STRING, [[0, 3], [0, 3]])
+      )
     );
 
     const stmt = new LetStatement(
@@ -34,9 +37,10 @@ describe('LetStatement', () => {
       ]),
       new ConstExpr(ValueType.STRING, 'Penguin!')
     );
-    await stmt.exec(undefined, context);
 
+    await stmt.exec(undefined, context);
     const v = context.scopes[0].variables.V.value;
+
     expect(v.get([1, 2])).to.deep.equal({
       type: ValueType.STRING,
       value: 'Penguin!',

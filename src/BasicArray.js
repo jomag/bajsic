@@ -6,7 +6,7 @@ import { Value, ValueType } from './expr';
 export default class BasicArray {
   /**
    * @param {ValueType} type - the data type of the array
-   * @param {*} dimensions - array of dimensions like
+   * @param {*} dimensions - array of dimensions
    */
   constructor(type, dimensions) {
     this.type = type;

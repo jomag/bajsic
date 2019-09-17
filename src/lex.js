@@ -4,7 +4,10 @@ export const TokenType = {
   COMMENT: 'comment',
   DIV: 'div',
   EQ: 'eq',
+  APPROX_EQ: 'approx_eq',
+  NE: 'ne',
   FLOAT: 'float',
+  GE: 'ge',
   GT: 'gt',
   HASH: 'hash',
   IDENTIFIER: 'identifier',
@@ -12,6 +15,7 @@ export const TokenType = {
   KEYWORD: 'keyword',
   DATA_TYPE: 'dataType',
   LPAR: 'lpar',
+  LE: 'le',
   LT: 'lt',
   MINUS: 'minus',
   MUL: 'mul',
@@ -30,7 +34,7 @@ export const TokenType = {
   // FIXME: I'm not sure about the meaning of underscore
   //        It's often found in INPUT statements:
   //        10 INPUT ""_A$
-  UNDERSCORE: 'underscore'
+  UNDERSCORE: 'underscore',
 };
 
 export const Keyword = {
@@ -70,7 +74,7 @@ export const Keyword = {
   FNEND: 'fnend',
   CHANGE: 'change',
   WRITE: 'write',
-  DEBUG: 'debug'
+  DEBUG: 'debug',
 };
 
 const DataType = {
@@ -80,11 +84,11 @@ const DataType = {
   SINGLE: 'single',
   DOUBLE: 'double',
   STRING: 'string',
-  RFA: 'rfa'
+  RFA: 'rfa',
 };
 
 const keywordAliases = {
-  DIMENSION: Keyword.DIM
+  DIMENSION: Keyword.DIM,
 };
 
 export class Token {
@@ -114,6 +118,12 @@ export const tokenize = (source, sourceLineNo) => {
   const remarkChar = "'";
   const nameCharacters = alphaNumeric + '$%';
   const tokens = [];
+  const twoCharacterToken = {
+    ['<>']: TokenType.NE,
+    ['<=']: TokenType.LE,
+    ['>=']: TokenType.GE,
+    ['==']: TokenType.APPROX_EQ,
+  };
   const singleCharacterToken = {
     [',']: TokenType.COMMA,
     ['(']: TokenType.LPAR,
@@ -129,7 +139,7 @@ export const tokenize = (source, sourceLineNo) => {
     [':']: TokenType.COLON,
     [';']: TokenType.SEMICOLON,
     ['_']: TokenType.UNDERSCORE,
-    ['#']: TokenType.HASH
+    ['#']: TokenType.HASH,
   };
   let i = 0;
 
@@ -244,6 +254,15 @@ export const tokenize = (source, sourceLineNo) => {
       if (c === '"') {
         tokens.push(parseString());
         continue;
+      }
+
+      if (i + 1 < source.length) {
+        const cc = source.slice(i, i + 2);
+        if (Object.keys(twoCharacterToken).includes(cc)) {
+          tokens.push(new Token(twoCharacterToken[cc]));
+          i += 2;
+          continue;
+        }
       }
 
       if (Object.keys(singleCharacterToken).includes(c)) {

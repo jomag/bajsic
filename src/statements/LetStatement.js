@@ -1,11 +1,11 @@
 // @ts-check
 
 import Var from '../Var';
-import { Expr, ValueType } from '../expr';
+import { Expr } from '../expr';
 import { Program } from '../program';
 import { Context } from '../context';
 import { BaseStatement, StatementType } from '../statement';
-import { RuntimeError } from '../evaluate';
+import { assignIdentifierValue } from './utils';
 
 export class LetStatement extends BaseStatement {
   /**
@@ -24,25 +24,6 @@ export class LetStatement extends BaseStatement {
    */
   async exec(program, context) {
     const result = await this.expr.evaluate(program, context);
-
-    if (this.identifier.index) {
-      const index = [];
-      for (const expr of this.identifier.index) {
-        index.push(await expr.evaluate(program, context));
-      }
-
-      const numIndex = index.map(value => {
-        if (value.type !== ValueType.INT) {
-          throw new RuntimeError(
-            'Only numeric values are allowed as array index'
-          );
-        }
-        return value.value;
-      });
-
-      context.setArrayItem(this.identifier.name, numIndex, result);
-    } else {
-      context.assignVariable(this.identifier.name, result);
-    }
+    await assignIdentifierValue(program, context, this.identifier, result);
   }
 }

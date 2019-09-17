@@ -47,30 +47,8 @@ const evalPrint = async (statement, program, context) => {
 };
 
 const evalRun = async (statement, program, context) => {
+  context.pc = 0;
   await evaluate(program, context);
-  /*
-  while (true) {
-    const line = program.lines[context.pc];
-    const next = await line.exec(program, context);
-
-    if (next === null) {
-      break;
-    }
-
-    if (next !== undefined) {
-      const lineIndex = program.lineNumberToIndex(next);
-      if (lineIndex === undefined) {
-        throw new RuntimeError(`Undefined line number: ${next}`);
-      }
-      context.pc = lineIndex;
-    } else {
-      context.pc = context.pc + 1;
-      if (context.pc >= program.lines.length) {
-        break;
-      }
-    }
-  }
-  */
 };
 
 const evalMap = {

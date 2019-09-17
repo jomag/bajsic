@@ -40,6 +40,9 @@ export const popType = (tokens, type) => {
   return tok;
 };
 
+export const isKeyword = (tok, keyword) =>
+  tok.type === TokenType.KEYWORD && tok.value === keyword;
+
 export const expectKeyword = (tok, keyword) => {
   const kws = Array.isArray(keyword) ? keyword : [keyword];
 

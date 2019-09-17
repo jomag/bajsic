@@ -2,12 +2,12 @@ import {
   popType,
   popKeyword,
   popOptionalType,
-  popOptionalKeyword
+  popOptionalKeyword,
 } from './utils';
 import { Keyword, TokenType } from '../lex';
 import {
   InputStatement,
-  InputLineStatement
+  InputLineStatement,
 } from '../statements/inputStatement';
 import { parseExpression } from './expression';
 import { parseVar } from './parseVar';
@@ -32,10 +32,12 @@ export const parseInputStatement = tokens => {
     tok = popOptionalType(tokens, TokenType.STRING);
 
     if (tok) {
+      str = tok.value;
+
       const lineFeedToken = popType(tokens, [
         TokenType.COMMA,
         TokenType.SEMICOLON,
-        TokenType.UNDERSCORE
+        TokenType.UNDERSCORE,
       ]);
 
       lineFeed = lineFeedToken.value !== TokenType.COMMA;
@@ -46,7 +48,7 @@ export const parseInputStatement = tokens => {
     list.push({
       str,
       lineFeed,
-      identifier
+      identifier,
     });
 
     if (!popOptionalType(tokens, [TokenType.COMMA, TokenType.SEMICOLON])) {

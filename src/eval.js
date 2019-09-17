@@ -15,6 +15,7 @@ export const evaluate = async (program, context, single) => {
     const nextLine = await line.exec(program, context);
 
     if (nextLine === null) {
+      context.pc = 0;
       break;
     }
 
