@@ -1,5 +1,4 @@
 import { TokenType } from '../lex';
-import { Enum } from '../utils';
 import {
   AddExpr,
   AndExpr,
@@ -16,36 +15,35 @@ import {
   NotExpr,
   UnaryMinusExpr,
 } from '../expr';
-import { RuntimeError } from '../evaluate';
 
-const Operator = Enum([
-  'EXP',
-  'UMINUS',
-  'UPLUS',
-  'MUL',
-  'DIV',
-  'PLUS',
-  'MINUS',
-  'CONCAT',
-  'NOT',
-  'AND',
-  'OR',
-  'XOR',
-  'IMP',
-  'EQV',
-  'EQ',
-  'GE',
-  'GT',
-  'LE',
-  'LT',
-  'NE',
-  'STREQ',
+const Operator = {
+  EXP: 'EXP',
+  UMINUS: 'UMINUS',
+  UPLUS: 'UPLUS',
+  MUL: 'MUL',
+  DIV: 'DIV',
+  PLUS: 'PLUS',
+  MINUS: 'MINUS',
+  CONCAT: 'CONCAT',
+  NOT: 'NOT',
+  AND: 'AND',
+  OR: 'OR',
+  XOR: 'XOR',
+  IMP: 'IMP',
+  EQV: 'EQV',
+  EQ: 'EQ',
+  GE: 'GE',
+  GT: 'GT',
+  LE: 'LE',
+  LT: 'LT',
+  NE: 'NE',
+  STREQ: 'STREQ',
 
-  'LPAR',
-  'RPAR',
-  'SEPARATOR',
-  'CALL',
-]);
+  LPAR: 'LPAR',
+  RPAR: 'RPAR',
+  SEPARATOR: 'SEPARATOR',
+  CALL: 'CALL',
+};
 
 // Operator associativity (left/right)
 const assoc = {
