@@ -46,19 +46,21 @@ export const ValueType = {
   FUNCTION: 'function',
   USER_FUNCTION: 'userFunction',
   ARRAY: 'array',
+  FOR_ITERATOR: 'for',
 };
 
 export class Value {
-  constructor(type, value) {
+  constructor(type, value, data) {
     this.type = type;
     this.value = value;
+    this.data = data;
   }
 
   /**
    * @returns {boolean}
    */
   isNumeric() {
-    return this.type === ValueType.INT;
+    return this.type === ValueType.INT || this.type === ValueType.FOR_ITERATOR;
   }
 
   isLessThan(other) {
