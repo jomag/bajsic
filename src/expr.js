@@ -34,7 +34,7 @@ export const ExprType = {
   GROUP: 'GROUP',
 
   // Unary operators
-  UMINUS: 'UMINUS'
+  UMINUS: 'UMINUS',
 };
 
 /**
@@ -45,10 +45,14 @@ export const ValueType = {
   STRING: 'string',
   FUNCTION: 'function',
   USER_FUNCTION: 'userFunction',
-  ARRAY: 'array'
+  ARRAY: 'array',
 };
 
 export class Value {
+  /**
+   * @param {ValueType} type
+   * @param {*} value
+   */
   constructor(type, value) {
     this.type = type;
     this.value = value;

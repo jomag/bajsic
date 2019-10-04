@@ -5,7 +5,7 @@
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
   "scripts": {
-    "start": "node -r esm src/cli.js",
+    "start": "node --inspect -r esm src/cli.js",
     "test": "mocha -r esm \"./**/*.test.js\"",
     "coverage": "nyc --reporter=text mocha -r esm \"./**/*.test.js\""
   },

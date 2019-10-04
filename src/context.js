@@ -14,6 +14,7 @@ export class Context {
     // Program Counter, points at the current line index
     this.pc = 0;
     this.scopes = [new Scope()];
+    this.forStack = [];
     this.stack = [];
     this.debugger = null;
     this.inputStream = undefined;
@@ -28,6 +29,14 @@ export class Context {
 
     // @ts-ignore
     this.stdout = process.stdout;
+  }
+
+  pushForLoop(data) {
+    this.forStack.push(data);
+  }
+
+  popForLoop() {
+    return this.forStack.pop();
   }
 
   scope() {
@@ -77,12 +86,14 @@ export class Context {
     for (const scope of this.scopes) {
       const v = scope.variables[nm];
 
-      if (v.type !== ValueType.ARRAY) {
-        throw new RuntimeError(`${name} is not an array: ${v.type}`);
-      }
+      if (v !== undefined) {
+        if (v.type !== ValueType.ARRAY) {
+          throw new RuntimeError(`${name} is not an array: ${v.type}`);
+        }
 
-      v.value.set(index, value);
-      return;
+        v.value.set(index, value);
+        return;
+      }
     }
 
     throw new RuntimeError(`${name} is not defined`);
