@@ -82,7 +82,6 @@ export class Context {
    */
   setArrayItem(name, index, value) {
     const nm = name.toUpperCase();
-    console.log(`ENTER SET ARRAY ITEM ${name}(${index}) = ${value}`);
 
     for (const scope of this.scopes) {
       const v = scope.variables[nm];
