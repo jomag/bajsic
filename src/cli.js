@@ -1,13 +1,7 @@
 import yargs from 'yargs';
 import readline from 'readline';
-import chalk from 'chalk';
 import fs from 'fs';
 
-// import { SyntaxError } from './parser';
-import { Program } from './program';
-import { Context } from './context';
-import { Value, ValueType } from './expr';
-import { builtinFunctions } from './function';
 import io from './io';
 import { setupEnvironment } from './utils';
 import { Stream } from './stream';
@@ -17,7 +11,7 @@ export const userInput = async prompt => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: prompt
+    prompt: prompt,
   });
 
   return new Promise((resolve, reject) => {
@@ -27,8 +21,6 @@ export const userInput = async prompt => {
     });
   });
 };
-
-function setupStreams(context) {}
 
 function start(argv) {
   let program;
@@ -74,7 +66,7 @@ yargs
     yargs => {
       yargs.positional('source', {
         describe: 'filename of basic source to run',
-        type: 'string'
+        type: 'string',
       });
     },
     start

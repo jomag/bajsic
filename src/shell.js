@@ -1,5 +1,5 @@
 import { Line } from './line';
-import { RuntimeError } from './evaluate';
+import { RuntimeError } from './error';
 
 const PROMPT = '] ';
 

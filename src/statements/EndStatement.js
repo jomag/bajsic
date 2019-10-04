@@ -1,6 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
 import { Keyword } from '../lex';
-import { RuntimeError } from '../evaluate';
+import { RuntimeError } from '../error';
 
 export class EndStatement extends BaseStatement {
   constructor(blockType) {

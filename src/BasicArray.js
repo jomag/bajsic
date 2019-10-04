@@ -1,6 +1,6 @@
 // @ts-check
 
-import { RuntimeError } from './evaluate';
+import { RuntimeError } from './error';
 import { Value, ValueType } from './expr';
 
 export default class BasicArray {
@@ -30,7 +30,7 @@ export default class BasicArray {
   }
 
   /**
-   * @param {number} path
+   * @param {number[]} path
    * @param {Value} value
    */
   set(path, value) {

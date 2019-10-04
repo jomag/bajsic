@@ -1,5 +1,9 @@
-import { RuntimeError } from './evaluate';
-import { evaluate } from './eval';
+import { RuntimeError, InternalError } from './error';
+import { Program } from './program';
+import { BasicFunction } from './BasicFunction';
+import { Context } from './context';
+import { UserFunction } from './UserFunction';
+import BasicArray from './BasicArray';
 
 export const ExprType = {
   // { type: CONSTANT, valueType: INT, value: 42 }
@@ -43,9 +47,6 @@ export const ExprType = {
 export const ValueType = {
   INT: 'int',
   STRING: 'string',
-  FUNCTION: 'function',
-  USER_FUNCTION: 'userFunction',
-  ARRAY: 'array',
 };
 
 export class Value {
@@ -79,9 +80,7 @@ export class Value {
       case ValueType.INT:
         return this.value !== 0;
       default:
-        throw new Error(
-          `Internal error: isTrue not implemented for type ${this.type}`
-        );
+        throw new InternalError(`isTrue not implemented for type ${this.type}`);
     }
   }
 }
@@ -123,26 +122,22 @@ export class IdentifierExpr extends Expr {
     this.value = value;
   }
 
-  evaluate(program, context) {
-    const value = this.evaluateIdentifier(program, context);
-
-    if (value.type === ValueType.FUNCTION) {
-      return value.value.call([], context);
-    }
-
+  async evaluate(program, context) {
     // FIXME: handle user functions!
+    const name = this.value;
 
-    return value;
-  }
-
-  evaluateIdentifier(program, context) {
-    const value = context.get(this.value);
-
-    if (value === undefined) {
-      throw new RuntimeError(`Undeclared variable: ${this.value}`);
+    const sub = context.getSubscripted(name);
+    if (sub && sub instanceof BasicFunction) {
+      return await sub.call([], program, context);
     }
 
-    return value;
+    const v = context.get(name);
+
+    if (v) {
+      return v;
+    }
+
+    throw new RuntimeError(`${name} is not declared`);
   }
 
   toString() {
@@ -174,55 +169,35 @@ export class CallExpr extends Expr {
       );
     }
 
-    const fun = funExpr.evaluateIdentifier(program, context);
     const argValues = [];
-
     for (const expr of args) {
       argValues.push(await expr.evaluate(program, context));
     }
 
-    if (fun.type === ValueType.ARRAY) {
+    const name = funExpr.value;
+
+    const sub = context.getSubscripted(name);
+
+    if (!sub) {
+      throw new RuntimeError(`${name} is not a function or array`);
+    }
+
+    if (sub instanceof BasicFunction) {
+      return await sub.call(argValues, program, context);
+    }
+
+    if (sub instanceof UserFunction) {
+      return await sub.call(argValues, program, context);
+    }
+
+    if (sub instanceof BasicArray) {
       const index = argValues.map(arg => arg.value);
-      return fun.value.get(index);
+      return sub.get(index);
     }
 
-    if (fun.type === ValueType.FUNCTION) {
-      return fun.value.call(argValues);
-    }
-
-    if (fun.type === ValueType.USER_FUNCTION) {
-      context.push(context.pc);
-      context.scope();
-
-      const defLineIndex = program.lineNumberToIndex(fun.value);
-      const defLine = program.lines[defLineIndex];
-
-      if (defLine.statements.length !== 1) {
-        throw new RuntimeError(
-          `DEF FN is not single statement on line ${fun.value}`,
-          context,
-          program
-        );
-      }
-
-      const defStatement = defLine.statements[0];
-      const name = defStatement.name.toUpperCase();
-
-      let n = 0;
-      for (const arg of defStatement.args) {
-        context.assignVariable(arg.name, argValues[n]);
-        n = n + 1;
-      }
-
-      context.pc = program.lineNumberToIndex(fun.value) + 1;
-      await evaluate(program, context);
-      context.pc = context.pop();
-      const scope = context.descope();
-
-      return scope.variables[name];
-    }
-
-    throw new RuntimeError(`Not a function or array: ${fun.type}`);
+    throw new InternalError(
+      `${name} is not a function, user function or array`
+    );
   }
 }
 

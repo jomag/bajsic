@@ -1,11 +1,26 @@
 // @ts-check
 import { Value, ValueType } from './expr';
-import { RuntimeError } from './evaluate';
+import { RuntimeError } from './error';
+import BasicArray from './BasicArray';
+import { BasicFunction } from './BasicFunction';
+import { UserFunction } from './UserFunction';
 
 class Scope {
   constructor() {
+    /** @type {{ [name: string]: Value}} */
     this.constants = {};
+
+    /** @type {{ [name: string]: Value}} */
     this.variables = {};
+
+    /** @type {{ [name: string]: BasicArray }} */
+    this.arrays = {};
+
+    /** @type {{ [name: string]: BasicFunction }} */
+    this.functions = {};
+
+    /** @type {{ [name: string]: UserFunction }} */
+    this.userFunctions = {};
   }
 }
 
@@ -77,6 +92,30 @@ export class Context {
 
   /**
    * @param {string} name
+   * @param {BasicArray} value
+   */
+  assignArray(name, value) {
+    this.scopes[0].arrays[name.toUpperCase()] = value;
+  }
+
+  /**
+   * @param {string} name
+   * @param {BasicFunction} value
+   */
+  assignFunction(name, value) {
+    this.scopes[0].functions[name.toUpperCase()] = value;
+  }
+
+  /**
+   * @param {string} name
+   * @param {UserFunction} value
+   */
+  assignUserFunction(name, value) {
+    this.scopes[0].userFunctions[name.toUpperCase()] = value;
+  }
+
+  /**
+   * @param {string} name
    * @param {number[]} index
    * @param {Value} value
    */
@@ -84,14 +123,10 @@ export class Context {
     const nm = name.toUpperCase();
 
     for (const scope of this.scopes) {
-      const v = scope.variables[nm];
+      const v = scope.arrays[nm];
 
       if (v !== undefined) {
-        if (v.type !== ValueType.ARRAY) {
-          throw new RuntimeError(`${name} is not an array: ${v.type}`);
-        }
-
-        v.value.set(index, value);
+        v.set(index, value);
         return;
       }
     }
@@ -100,6 +135,7 @@ export class Context {
   }
 
   /**
+   * Returns the variable or constant with the given name
    * @param {string} name
    */
   get(name) {
@@ -114,6 +150,45 @@ export class Context {
       const c = scope.constants[nm];
       if (c !== undefined) {
         return c;
+      }
+    }
+  }
+
+  /**
+   * Returns array, function or user function with the given name
+   * @param {string} name
+   */
+  getSubscripted(name) {
+    const nm = name.toUpperCase();
+
+    for (const scope of this.scopes) {
+      const userFun = scope.userFunctions[nm];
+      if (userFun) {
+        return userFun;
+      }
+
+      const fun = scope.functions[nm];
+      if (fun) {
+        return fun;
+      }
+
+      const array = scope.arrays[nm];
+      if (array) {
+        return array;
+      }
+    }
+  }
+
+  /**
+   * @param {string} name
+   */
+  getArray(name) {
+    const nm = name.toUpperCase();
+
+    for (const scope of this.scopes) {
+      const array = scope.arrays[nm];
+      if (array) {
+        return array;
       }
     }
   }

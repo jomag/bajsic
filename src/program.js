@@ -1,6 +1,7 @@
 import { DefStatement } from './statements/DefStatement';
 import { Line } from './line';
 import { Value, ValueType } from './expr';
+import { UserFunction } from './UserFunction';
 
 export class Program {
   constructor(lines) {
@@ -44,7 +45,7 @@ export class Program {
     for (const line of this.lines) {
       for (const stmt of line.statements) {
         if (stmt instanceof DefStatement) {
-          functions[stmt.name] = line.num;
+          functions[stmt.name] = new UserFunction(line.num);
         }
       }
     }
@@ -99,10 +100,7 @@ export class Program {
 
     const userFunctions = this.getUserFunctions();
     for (const name of Object.keys(userFunctions)) {
-      context.assignConst(
-        name,
-        new Value(ValueType.USER_FUNCTION, userFunctions[name])
-      );
+      context.assignUserFunction(name, userFunctions[name]);
     }
   }
 }

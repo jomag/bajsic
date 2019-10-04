@@ -22,12 +22,9 @@ describe('LetStatement', () => {
 
   it('assigns value to array index', async () => {
     const context = new Context();
-    context.assignVariable(
+    context.assignArray(
       'v',
-      new Value(
-        ValueType.ARRAY,
-        new BasicArray(ValueType.STRING, [[0, 3], [0, 3]])
-      )
+      new BasicArray(ValueType.STRING, [[0, 3], [0, 3]])
     );
 
     const stmt = new LetStatement(
@@ -39,7 +36,7 @@ describe('LetStatement', () => {
     );
 
     await stmt.exec(undefined, context);
-    const v = context.scopes[0].variables.V.value;
+    const v = context.scopes[0].arrays.V;
 
     expect(v.get([1, 2])).to.deep.equal({
       type: ValueType.STRING,
