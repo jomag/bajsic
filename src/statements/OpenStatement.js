@@ -2,7 +2,7 @@ import { BaseStatement, StatementType } from '../statement';
 
 export const OpenMode = {
   INPUT: 'INPUT',
-  OUTPUT: 'OUTPUT'
+  OUTPUT: 'OUTPUT',
 };
 
 export class OpenStatement extends BaseStatement {
@@ -12,7 +12,7 @@ export class OpenStatement extends BaseStatement {
     this.channel = channel;
   }
 
-  exec(program, context) {
+  exec() {
     throw new Error('OPEN is not implemented');
   }
 }

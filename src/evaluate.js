@@ -1,11 +1,5 @@
 import { StatementType } from './statement';
-import { Keyword } from './lex';
 import { evaluate } from './eval';
-
-const termPrintln = (value, context) => {
-  context.stdout.write(value.toString());
-  context.stdout.write('\n');
-};
 
 const evalList = (statement, program, context) => {
   if (statement.ranges.length === 0) {
@@ -24,14 +18,14 @@ const evalPrint = async (statement, program, context) => {
   // FIXME: handle different output channels
   for (const outp of statement.list) {
     const result = await outp[0].evaluate(program, context);
-    outp[1]
-      ? context.outputStream.write(`${result.value}\n`)
-      : context.outputStream.write(`${result.value}`);
+    context.outputStream.write(
+      outp[1] ? `${result.value}\n` : `${result.value}`
+    );
   }
 };
 
 const evalRun = async (statement, program, context) => {
-  context.pc = 0;
+  context.prepare(program);
   await evaluate(program, context);
 };
 
@@ -43,11 +37,11 @@ const evalMap = {
 
 export const evaluateStatement = async (statement, program, context) => {
   if (statement.exec) {
-    return await statement.exec(program, context);
+    return statement.exec(program, context);
   }
 
   if (evalMap[statement.type]) {
-    return await evalMap[statement.type](statement, program, context);
+    return evalMap[statement.type](statement, program, context);
   }
 
   throw new Error(

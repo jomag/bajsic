@@ -1,0 +1,52 @@
+{
+  "env": {
+    // "browser": true,
+    // "es6": true,
+    // "node": true,
+    "mocha": true
+  },
+  "extends": ["airbnb-base", "plugin:jsdoc/recommended", "prettier"],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    "import/prefer-default-export": 0,
+    "max-classes-per-file": 0,
+    "jsdoc/require-param-description": 0,
+    "jsdoc/require-returns-description": 0,
+    "no-unused-vars": ["error", { "args": "after-used" }],
+
+    // Allow for-of loops as they are efficient and readable.
+    "no-restricted-syntax": 0,
+
+    // for-loops that await on async operations are the
+    // most readable way to run async operations in series.
+    "no-await-in-loop": 0,
+
+    // Some classes that extend and overrides methods in a base class
+    // do not need to reference "this".
+    "class-methods-use-this": 0,
+
+    // We may way to enable this at a later stage, but currently
+    // we rely too much on console output, not streams.
+    "no-console": 0,
+
+    // Personal preference
+    "no-plusplus": 0,
+
+    // In most cases it's fine to leave out return statement if a
+    // function is supposed to return undefined in some situations
+    "consistent-return": 0,
+
+    // Chai and Yargs, among others, breaks this rule. With Chai
+    // it wrongly detects `expect(foo).to.be.true` to be an unused
+    // expression as it does not end with a function call.
+    "no-unused-expressions": 0
+  },
+  "plugins": ["jsdoc"]
+}

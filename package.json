@@ -6,13 +6,19 @@
   "types": "./types/index.d.ts",
   "scripts": {
     "start": "node --inspect -r esm src/cli.js",
-    "test": "mocha -r esm \"./**/*.test.js\"",
-    "coverage": "nyc --reporter=text mocha -r esm \"./**/*.test.js\""
+    "test": "mocha -r esm \"./src/**/*.test.js\" ./tests/*.test.js",
+    "lint": "eslint \"tests/**/*.js\" \"src/**/*.js\"",
+    "coverage": "nyc --reporter=text mocha -r esm \"./src/**/*.test.js\" ./tests/*.test.js"
   },
   "author": "Jonatan Magnusson",
   "license": "ISC",
   "devDependencies": {
     "chai": "^4.2.0",
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsdoc": "^15.9.10",
     "mocha": "^6.1.4",
     "nyc": "^14.1.1"
   },

@@ -1,9 +1,11 @@
 import { isKeyword, popKeyword, popOptionalType } from './utils';
 import { Keyword, TokenType } from '../lex';
 import { parseExpression } from './expression';
-import { parseStatement } from './index';
 import { IfStatement } from '../statements/ifStatement';
 import { GotoStatement } from '../statement';
+
+// eslint-disable-next-line import/no-cycle
+import { parseStatement } from './index';
 
 export const parseIfStatement = tokens => {
   popKeyword(tokens, Keyword.IF);

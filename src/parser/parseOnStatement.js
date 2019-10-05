@@ -21,7 +21,7 @@ export const parseOnStatement = tokens => {
   const targets = [];
   let otherwise;
 
-  while (true) {
+  for (;;) {
     const target = popType(tokens, TokenType.INT);
     targets.push(target.value);
     if (tokens.length && tokens[0].type === TokenType.COMMA) {
@@ -37,7 +37,7 @@ export const parseOnStatement = tokens => {
 
   if (action.value === Keyword.GOTO) {
     return new OnGotoStatement(expr, targets, otherwise);
-  } else {
-    return new OnGosubStatement(expr, targets, otherwise);
   }
+
+  return new OnGosubStatement(expr, targets, otherwise);
 };

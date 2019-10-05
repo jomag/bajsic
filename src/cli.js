@@ -9,9 +9,9 @@ import { shell } from './shell';
 
 export const userInput = async prompt => {
   const rl = readline.createInterface({
+    prompt,
     input: process.stdin,
     output: process.stdout,
-    prompt: prompt,
   });
 
   return new Promise((resolve, reject) => {
@@ -22,13 +22,14 @@ export const userInput = async prompt => {
   });
 };
 
-function start(argv) {
+const start = argv => {
   let program;
   let context;
   let source = '';
 
-  for (let filename of argv['_']) {
-    source += fs.readFileSync(filename, 'utf-8') + '\n';
+  for (const filename of argv._) {
+    source += fs.readFileSync(filename, 'utf-8');
+    source += '\n';
   }
 
   try {
@@ -51,20 +52,21 @@ function start(argv) {
 
   context.outputStream = new Stream();
   context.outputStream.on('data', () => {
-    const data = context.outputStream.read();
+    context.outputStream.read();
   });
 
   context.outputStream.on('data', data => process.stdout.write(data));
 
   shell(program, context);
-}
+};
 
+// eslint-disable-next-line no-unused-expressions
 yargs
   .command(
     '*',
     'start bajsic interpreter',
-    yargs => {
-      yargs.positional('source', {
+    args => {
+      args.positional('source', {
         describe: 'filename of basic source to run',
         type: 'string',
       });

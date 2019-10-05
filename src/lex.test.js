@@ -1,7 +1,6 @@
-const chai = require('chai');
-const expect = chai.expect;
-
-import { tokenize, TokenType, Keyword, LexicalError } from './lex';
+import { expect } from 'chai';
+import { tokenize, TokenType, Keyword } from './lex';
+import { LexicalError } from './error';
 
 describe('Lexical Analyzer', () => {
   it('handles empty lines', () => {

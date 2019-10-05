@@ -1,6 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
 import BasicArray from '../BasicArray';
-import { ValueType } from '../expr';
+import { ValueType } from '../Value';
 import { Context } from '../context';
 import { Program } from '../program';
 

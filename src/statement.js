@@ -26,7 +26,7 @@ export const StatementType = {
   DEBUG: 'debug',
   LET: 'let',
   NEXT: 'next',
-  RESUME: 'resume'
+  RESUME: 'resume',
 };
 
 export class BaseStatement {
@@ -55,7 +55,7 @@ export class GotoStatement extends BaseStatement {
     this.destination = destination;
   }
 
-  exec(program, context) {
+  exec() {
     return this.destination;
   }
 }
@@ -71,7 +71,9 @@ export class RemarkStatement extends BaseStatement {
     super(StatementType.REMARK);
   }
 
-  exec(program, context) {}
+  exec() {
+    // Does nothing at runtime
+  }
 }
 
 export class ListStatement extends BaseStatement {

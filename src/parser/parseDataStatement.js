@@ -1,18 +1,16 @@
-import { popKeyword, popOptionalType } from './utils';
-import { Keyword, TokenType } from '../lex';
+import { popKeyword, popOptionalType, valueFromToken } from './utils';
+import { Keyword, TokenType, Token } from '../lex';
 import { DataStatement } from '../statements/DataStatement';
-import { valueFromToken } from './utils';
-import { Value } from '../expr';
-import { Token } from '../lex';
 
 /**
  * @param {Token[]} tokens
+ * @returns {DataStatement}
  */
 export const parseDataStatement = tokens => {
   popKeyword(tokens, Keyword.DATA);
   const list = [];
 
-  while (true) {
+  for (;;) {
     // Should pop literals from tokens...
     const tok = popOptionalType(tokens, [
       TokenType.INT,

@@ -1,10 +1,12 @@
 import { RuntimeError, InternalError } from './error';
-import { Program } from './program';
 import { BasicFunction } from './BasicFunction';
-import { Context } from './context';
 import { UserFunction } from './UserFunction';
 import BasicArray from './BasicArray';
+import { Value, ValueType } from './Value';
 
+/**
+ * @enum {string}
+ */
 export const ExprType = {
   // { type: CONSTANT, valueType: INT, value: 42 }
   CONST: 'CONST',
@@ -33,6 +35,7 @@ export const ExprType = {
   AND: 'AND',
   OR: 'OR',
   XOR: 'XOR',
+  NOT: 'NOT',
 
   // Expression list, for example function arguments
   GROUP: 'GROUP',
@@ -41,62 +44,12 @@ export const ExprType = {
   UMINUS: 'UMINUS',
 };
 
-/**
- * @enum {string}
- */
-export const ValueType = {
-  INT: 'int',
-  STRING: 'string',
-  FLOAT: 'float',
-};
-
-export class Value {
-  /**
-   * @param {ValueType} type
-   * @param {*} value
-   */
-  constructor(type, value) {
-    this.type = type;
-    this.value = value;
-  }
-
-  /**
-   * @returns {boolean}
-   */
-  isNumeric() {
-    return this.type === ValueType.INT;
-  }
-
-  isLessThan(other) {
-    // FIXME: be more correct!
-    return this.value < other.value;
-  }
-
-  add(value) {
-    return new Value(this.type, this.value + value.value);
-  }
-
-  isTrue() {
-    switch (this.type) {
-      case ValueType.INT:
-        return this.value !== 0;
-      default:
-        throw new InternalError(`isTrue not implemented for type ${this.type}`);
-    }
-  }
-}
-
 export class Expr {
   constructor(type) {
     this.type = type;
   }
 
-  /**
-   * @param {Program} program
-   * @param {Context} context
-   * @returns {Promise<Value>}
-   */
-  evaluate(program, context) {
+  evaluate() {
     throw new Error('Evaluation method not implemented!');
   }
 }
@@ -108,7 +61,7 @@ export class ConstExpr extends Expr {
     this.value = value;
   }
 
-  async evaluate(program, context) {
+  async evaluate() {
     return new Value(this.valueType, this.value);
   }
 
@@ -129,7 +82,7 @@ export class IdentifierExpr extends Expr {
 
     const sub = context.getSubscripted(name);
     if (sub && sub instanceof BasicFunction) {
-      return await sub.call([], program, context);
+      return sub.call([], program, context);
     }
 
     const v = context.get(name);
@@ -184,11 +137,11 @@ export class CallExpr extends Expr {
     }
 
     if (sub instanceof BasicFunction) {
-      return await sub.call(argValues, program, context);
+      return sub.call(argValues, program, context);
     }
 
     if (sub instanceof UserFunction) {
-      return await sub.call(argValues, program, context);
+      return sub.call(argValues, program, context);
     }
 
     if (sub instanceof BasicArray) {
@@ -310,10 +263,6 @@ export class MultiplyExpr extends BinaryOperatorExpr {
 }
 
 export class RelationalOperatorExpr extends BinaryOperatorExpr {
-  constructor(exprType, child1, child2) {
-    super(exprType, child1, child2);
-  }
-
   async evaluate(program, context) {
     const op1 = await this.children[0].evaluate(program, context);
     const op2 = await this.children[1].evaluate(program, context);
@@ -371,7 +320,7 @@ export class NotExpr extends UnaryOperatorExpr {
     super(ExprType.NOT, operand);
   }
 
-  evaluate(program, context) {
+  evaluate() {
     throw new RuntimeError('NOT is not implemented');
   }
 }

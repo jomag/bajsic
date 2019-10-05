@@ -6,7 +6,7 @@ export class CloseStatement extends BaseStatement {
     this.channel = channel;
   }
 
-  exec(program, context) {
+  exec() {
     throw new Error('CLOSE is not implemented');
   }
 }

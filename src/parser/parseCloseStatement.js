@@ -5,10 +5,9 @@ import { CloseStatement } from '../statements/CloseStatement';
 
 export const parseCloseStatement = tokens => {
   popKeyword(tokens, Keyword.CLOSE);
-  let channel;
 
   popOptionalType(tokens, TokenType.HASH);
-  channel = parseExpression(tokens);
+  const channel = parseExpression(tokens);
 
   return new CloseStatement(channel);
 };

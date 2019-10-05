@@ -1,14 +1,15 @@
-import { Line } from './line';
 import { RuntimeError } from './error';
+import { Program } from './program';
+import { Context } from './context';
+import { parseLine } from './parser';
+import io from './io';
 
 const PROMPT = '] ';
 
-export const input = async stream => {
-  return new Promise((resolve, reject) => {
-    stream.once('data', data => resolve(data));
-  });
-};
-
+/**
+ * @param {Program} program
+ * @param {Context} context
+ */
 export async function shell(program, context) {
   const printError = err => {
     let msg;
@@ -36,16 +37,18 @@ export async function shell(program, context) {
     }
   };
 
-  while (true) {
+  for (;;) {
     context.outputStream.write(PROMPT);
-    const text = await input(context.inputStream);
+    const text = await io.input(context.inputStream);
 
     let line;
 
     try {
-      line = Line.parse(text.trim());
+      line = parseLine(text.trim());
     } catch (e) {
       printError(e);
+
+      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -53,27 +56,25 @@ export async function shell(program, context) {
       if (line.num !== undefined) {
         console.error(`FIXME: should delete line ${line.lineNo}`);
       }
-    } else {
-      if (line.num === undefined) {
-        try {
-          await line.exec(program, context);
-        } catch (e) {
-          if (e instanceof RuntimeError) {
-            e.setContext(context, program);
-            printError(e);
-            return;
-          } else {
-            printError(`There was an unhandled error:`);
-            printError(e);
-            printError(JSON.stringify(e.stack, null, 2));
-            console.log(e.stack);
-            console.trace();
-            printError(`Context: line index ${context.pc}`);
-          }
+    } else if (line.num === undefined) {
+      try {
+        await line.exec(program, context);
+      } catch (e) {
+        if (e instanceof RuntimeError) {
+          e.setContext(context, program);
+          printError(e);
+          return;
         }
-      } else {
-        program.add(line);
+
+        printError(`There was an unhandled error:`);
+        printError(e);
+        printError(JSON.stringify(e.stack, null, 2));
+        console.log(e.stack);
+        console.trace();
+        printError(`Context: line index ${context.pc}`);
       }
+    } else {
+      program.add(line);
     }
   }
 }

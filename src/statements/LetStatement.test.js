@@ -1,11 +1,10 @@
+import { expect } from 'chai';
 import Var from '../Var';
 import { Context } from '../context';
-import { ConstExpr, ValueType, Value } from '../expr';
+import { ConstExpr } from '../expr';
+import { ValueType } from '../Value';
 import { LetStatement } from './LetStatement';
 import BasicArray from '../BasicArray';
-
-const chai = require('chai');
-const expect = chai.expect;
 
 describe('LetStatement', () => {
   it('assigns value to variable', async () => {

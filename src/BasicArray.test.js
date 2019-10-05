@@ -1,7 +1,5 @@
-const chai = require('chai');
-const expect = chai.expect;
-
-import { Value, ValueType } from './expr';
+import { expect } from 'chai';
+import { Value, ValueType } from './Value';
 import BasicArray from './BasicArray';
 
 describe('BasicArray', () => {
@@ -28,10 +26,12 @@ describe('BasicArray', () => {
       const data = ['a', 'b', 'c', 'd'];
 
       for (let j = 0; j < 5; j++) {
+        // eslint-disable-next-line
         data.forEach((c, i) => a.set([j, i], new Value(ValueType.INT, c)));
       }
 
       for (let j = 0; j < 5; j++) {
+        // eslint-disable-next-line
         data.forEach((c, i) => {
           const item = a.get([j, i]);
           expect(item.value).to.equal(c);

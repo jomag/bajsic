@@ -1,3 +1,18 @@
+export class LexicalError extends Error {
+  constructor(message, column, ...params) {
+    super(...params);
+    this.message = message;
+    this.column = column;
+  }
+}
+
+export class SyntaxError extends Error {
+  constructor(message, ...params) {
+    super(...params);
+    this.message = message;
+  }
+}
+
 export class RuntimeError extends Error {
   constructor(message, context, program, ...params) {
     super(...params);
@@ -32,7 +47,12 @@ export class InternalError extends Error {
 
 export class OutOfDataError extends RuntimeError {
   constructor(context, program) {
-    super('Out Of Data Error');
-    this.setContext(context, program);
+    super('Out Of Data Error', context, program);
+  }
+}
+
+export class NextWithoutForError extends RuntimeError {
+  constructor(context, program) {
+    super('Next Without For Error', context, program);
   }
 }

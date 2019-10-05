@@ -1,7 +1,7 @@
 import { BaseStatement, StatementType } from '../statement';
-import { input as inputStreamInput } from '../shell';
+import io from '../io';
 import { assignIdentifierValue } from './utils';
-import { Value, ValueType } from '../expr';
+import { Value, ValueType } from '../Value';
 
 export class InputStatement extends BaseStatement {
   constructor(channel, list) {
@@ -20,7 +20,7 @@ export class InputStatement extends BaseStatement {
 
       context.outputStream.write(prompt);
 
-      const inp = await inputStreamInput(context.inputStream);
+      const inp = await io.input(context.inputStream);
 
       await assignIdentifierValue(
         program,

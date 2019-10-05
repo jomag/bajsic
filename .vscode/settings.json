@@ -3,6 +3,5 @@
     "javascript.preferences.quoteStyle": "single",
     "prettier.singleQuote": true,
     "editor.formatOnSave": true,
-    "editor.tabSize": 2,
-    "javascript.implicitProjectConfig.checkJs": true
+    "editor.tabSize": 2
 }

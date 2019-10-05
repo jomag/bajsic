@@ -7,7 +7,7 @@ export class WriteStatement extends BaseStatement {
     this.data = data;
   }
 
-  exec(program, context) {
+  exec() {
     throw new Error('WRITE is not implemented');
   }
 }

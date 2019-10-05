@@ -1,5 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
-import { Value, ValueType } from '../expr';
+import { Value, ValueType } from '../Value';
+import { NextWithoutForError } from '../error';
 
 export class NextStatement extends BaseStatement {
   constructor(name) {
@@ -8,22 +9,23 @@ export class NextStatement extends BaseStatement {
   }
 
   exec(program, context) {
-    while (true) {
+    for (;;) {
       const info = context.popForLoop();
 
       if (!info) {
-        break;
+        throw new NextWithoutForError(context, program);
       }
 
-      if (info.name === this.name) {
+      if (info && info.name === this.name) {
         const val = context.get(this.name);
         let ival = val.value;
-        ival = ival + info.step;
+        ival += info.step;
         context.assignVariable(this.name, new Value(ValueType.INT, ival));
         if (ival <= info.final) {
           context.pushForLoop(info);
           return info.entry;
         }
+        break;
       }
     }
   }

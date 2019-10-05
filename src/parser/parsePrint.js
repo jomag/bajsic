@@ -1,4 +1,4 @@
-import { popKeyword, popType, popOptionalType } from './utils';
+import { popKeyword, popOptionalType } from './utils';
 import { parseOptionalExpression, parseExpression } from './expression';
 import { Keyword, TokenType } from '../lex';
 import { PrintStatement } from '../statement';
@@ -8,7 +8,7 @@ export const parsePrint = tokens => {
   // Format: PRINT, PRINT expr, PRINT #channel, expr
   popKeyword(tokens, Keyword.PRINT);
   let channel = null;
-  let list = [];
+  const list = [];
 
   if (popOptionalType(tokens, TokenType.HASH)) {
     channel = parseExpression(tokens);

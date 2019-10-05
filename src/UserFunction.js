@@ -1,4 +1,5 @@
 import { evaluate } from './eval';
+import { RuntimeError } from './error';
 
 export class UserFunction {
   constructor(lineNumber) {
@@ -26,11 +27,14 @@ export class UserFunction {
     let n = 0;
     for (const arg of defStatement.args) {
       context.assignVariable(arg.name, args[n]);
-      n = n + 1;
+      n += 1;
     }
 
+    // eslint-disable-next-line no-param-reassign
     context.pc = program.lineNumberToIndex(this.lineNumber) + 1;
     await evaluate(program, context);
+
+    // eslint-disable-next-line no-param-reassign
     context.pc = context.pop();
     const scope = context.descope();
 

@@ -13,7 +13,7 @@ export class QuoteStatement extends BaseStatement {
     this.channel = channel;
   }
 
-  exec(program, context) {
+  exec() {
     throw new Error('QUOTE is not implemented');
   }
 }
