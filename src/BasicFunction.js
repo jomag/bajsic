@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { RuntimeError } from './error';
+import { RuntimeError, IllegalFunctionCallError } from './error';
 import { Value, ValueType } from './Value';
 
 export class BasicFunction {
@@ -44,6 +44,12 @@ const twoDigits = n => (n > 9 ? `${n}` : `0${n}`);
 const validateValueType = (value, type) => {
   if (value.type !== type) {
     throw new RuntimeError(`Expected value of type ${type}, got ${value.type}`);
+  }
+};
+
+const validateNumber = value => {
+  if (!value.isNumeric()) {
+    throw new RuntimeError(`Expected numeric value, got ${value.type}`);
   }
 };
 
@@ -119,6 +125,89 @@ const leftDollar = args => {
   return new Value(ValueType.STRING, args[0].value);
 };
 
+const intFun = args => {
+  validateNumber(args[0]);
+  return new Value(ValueType.INT, Math.floor(args[0].value));
+};
+
+const rndFun = () => {
+  // RND should ignore the single, optional argument.
+  return new Value(ValueType.FLOAT, Math.random());
+};
+
+const chrFun = args => {
+  validateNumber(args[0]);
+  const i = Math.floor(args[0].value);
+  return new Value(ValueType.STRING, String.fromCharCode(i));
+};
+
+const rightFun = args => {
+  // Once again, the ref and both Stuga, C64 BASIC and GWBASIC differ
+  // According to ref, this function should return all characters
+  // from the nth until end of string. All other implementations
+  // returns the n rightmost characters of the string.
+  validateValueType(args[0], ValueType.STRING);
+  validateNumber(args[1]);
+  const str = args[0].value;
+  const i = Math.floor(args[1].value);
+  return new Value(
+    ValueType.STRING,
+    str.length > i ? str.substr(str.length - i) : str
+  );
+};
+
+const midFun = args => {
+  const [strVal, startVal, lenVal] = args;
+  validateValueType(strVal, ValueType.STRING);
+  validateNumber(startVal);
+  validateNumber(lenVal);
+  const [str, start, length] = [strVal.value, startVal.value, lenVal.value];
+  const sub = str.slice(start - 1, start - 1 + length);
+  return new Value(ValueType.STRING, sub);
+};
+
+const instrFun = args => {
+  // The ref says three arguments are required, but stuga.bas does
+  // not use the start index. So this implementation accepts either.
+  /* eslint-disable prefer-destructuring */
+  let start;
+  let str;
+  let substr;
+
+  if (args.length === 2) {
+    start = 1;
+    str = args[0];
+    substr = args[1];
+  } else {
+    start = args[0];
+    str = args[1];
+    substr = args[2];
+    validateNumber(start);
+    start = Math.floor(start.value);
+  }
+
+  validateValueType(str, ValueType.STRING);
+  validateValueType(substr, ValueType.STRING);
+
+  if (start < 1) {
+    throw new IllegalFunctionCallError('Start index must be 1 or higher');
+  }
+
+  let pos = 0;
+
+  if (!substr.value) {
+    pos = 1;
+  } else {
+    pos = str.value.indexOf(substr.value, start - 1) + 1;
+  }
+
+  if (pos < start) {
+    pos = 0;
+  }
+
+  return new Value(ValueType.INT, pos);
+};
+
 export const builtinFunctions = () => {
   return {
     sin: new BasicFunction(1, 0, ([angle]) => {
@@ -128,5 +217,11 @@ export const builtinFunctions = () => {
     DATE$: new BasicFunction(0, 1, dateDollar),
     LEN: new BasicFunction(1, 0, len),
     LEFT$: new BasicFunction(2, 0, leftDollar),
+    INT: new BasicFunction(1, 0, intFun),
+    RND: new BasicFunction(0, 1, rndFun),
+    CHR$: new BasicFunction(1, 0, chrFun),
+    INSTR: new BasicFunction(2, 1, instrFun),
+    RIGHT$: new BasicFunction(2, 0, rightFun),
+    MID$: new BasicFunction(3, 0, midFun),
   };
 };

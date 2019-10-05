@@ -91,7 +91,9 @@ export class IdentifierExpr extends Expr {
       return v;
     }
 
-    throw new RuntimeError(`${name} is not declared`);
+    // This BASIC dialect defaults undeclared variables
+    // to integer of value 0.
+    return new Value(ValueType.INT, 0);
   }
 
   toString() {

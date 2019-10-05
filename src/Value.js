@@ -23,7 +23,7 @@ export class Value {
    * @returns {boolean}
    */
   isNumeric() {
-    return this.type === ValueType.INT;
+    return this.type === ValueType.INT || this.type === ValueType.FLOAT;
   }
 
   isLessThan(other) {
