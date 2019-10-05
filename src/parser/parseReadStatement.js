@@ -1,18 +1,21 @@
 import { parseVar } from './parseVar';
 import { popKeyword, popOptionalType } from './utils';
-import { Keyword, TokenType } from '../lex';
+import { Keyword, TokenType, Token } from '../lex';
 import { ReadStatement } from '../statements/ReadStatement';
 
+/**
+ * @param {Token[]} tokens
+ */
 export const parseReadStatement = tokens => {
   popKeyword(tokens, Keyword.READ);
-  const varList = [];
+  const list = [];
 
   while (true) {
-    varList.push(parseVar(tokens));
+    list.push(parseVar(tokens));
     if (!popOptionalType(tokens, TokenType.COMMA)) {
       break;
     }
   }
 
-  return new ReadStatement(varList);
+  return new ReadStatement(list);
 };

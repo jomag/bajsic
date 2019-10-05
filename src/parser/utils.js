@@ -1,4 +1,5 @@
-import { TokenType } from '../lex';
+import { Token, TokenType } from '../lex';
+import { Value, ValueType } from '../expr';
 
 export const expectLineLength = (tokens, length) => {
   if (tokens.length > length) {
@@ -113,4 +114,21 @@ export const popIdentifier = tokens => {
     throw new SyntaxError(`Expected identifier token, found ${tok.type}`);
   }
   return tok.value;
+};
+
+/**
+ * @param {Token} tok
+ * @returns {Value}
+ */
+export const valueFromToken = tok => {
+  switch (tok.type) {
+    case TokenType.FLOAT:
+      return new Value(ValueType.FLOAT, tok.value);
+    case TokenType.INT:
+      return new Value(ValueType.INT, tok.value);
+    case TokenType.STRING:
+      return new Value(ValueType.STRING, tok.value);
+    default:
+      throw new SyntaxError('Invalid value');
+  }
 };

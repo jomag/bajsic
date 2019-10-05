@@ -2,6 +2,7 @@ import { DefStatement } from './statements/DefStatement';
 import { Line } from './line';
 import { Value, ValueType } from './expr';
 import { UserFunction } from './UserFunction';
+import { DataStatement } from './statements/DataStatement';
 
 export class Program {
   constructor(lines) {
@@ -89,6 +90,33 @@ export class Program {
     return this.lines[idx];
   }
 
+  /**
+   * @param {Context} context
+   */
+  prepare(context) {
+    const userFunctions = this.getUserFunctions();
+    for (const name of Object.keys(userFunctions)) {
+      context.assignUserFunction(name, userFunctions[name]);
+    }
+
+    // Build data blocks
+    const data = [];
+    for (const line of this.lines) {
+      for (const stmt of line.statements) {
+        if (stmt instanceof DataStatement) {
+          data.push(...stmt.list);
+        }
+      }
+    }
+
+    context.data = data;
+    context.dataIndex = 0;
+  }
+
+  /**
+   * @param {string} source
+   * @param {Context} context
+   */
   loadFromString(source, context) {
     const lines = source.split('\n');
 
@@ -98,9 +126,6 @@ export class Program {
       }
     }
 
-    const userFunctions = this.getUserFunctions();
-    for (const name of Object.keys(userFunctions)) {
-      context.assignUserFunction(name, userFunctions[name]);
-    }
+    this.prepare(context);
   }
 }

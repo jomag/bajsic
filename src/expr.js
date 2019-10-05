@@ -47,6 +47,7 @@ export const ExprType = {
 export const ValueType = {
   INT: 'int',
   STRING: 'string',
+  FLOAT: 'float',
 };
 
 export class Value {

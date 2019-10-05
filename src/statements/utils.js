@@ -14,6 +14,7 @@ export const assignIdentifierValue = async (
 ) => {
   if (identifier.index) {
     const index = [];
+
     for (const expr of identifier.index) {
       index.push(await expr.evaluate(program, context));
     }
