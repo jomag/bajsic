@@ -56,3 +56,9 @@ export class NextWithoutForError extends RuntimeError {
     super('Next Without For Error', context, program);
   }
 }
+
+export class IllegalFunctionCallError extends RuntimeError {
+  constructor(message, context, program) {
+    super(`Illegal Function Call: ${message}`, context, program);
+  }
+}
