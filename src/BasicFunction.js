@@ -1,8 +1,8 @@
 import moment from 'moment';
-import { RuntimeError } from './evaluate';
+import { RuntimeError } from './error';
 import { Value, ValueType } from './expr';
 
-class Function {
+export class BasicFunction {
   /**
    * @param {number} argCount - number of required arguments
    * @param {number} optArgCount - number of extra, optional arguments
@@ -14,7 +14,7 @@ class Function {
     this.fun = fun;
   }
 
-  call(args, context) {
+  call(args, program, context) {
     if (this.optArgCount) {
       if (
         args.length < this.argCount ||
@@ -123,12 +123,12 @@ const leftDollar = args => {
 
 export const builtinFunctions = () => {
   return {
-    sin: new Function(1, 0, ([angle]) => {
+    sin: new BasicFunction(1, 0, ([angle]) => {
       return new Value(ValueType.INT, Math.sin(angle.value));
     }),
-    ['TIME$']: new Function(0, 1, timeDollar),
-    ['DATE$']: new Function(0, 1, dateDollar),
-    ['LEN']: new Function(1, 0, len),
-    ['LEFT$']: new Function(2, 0, leftDollar),
+    ['TIME$']: new BasicFunction(0, 1, timeDollar),
+    ['DATE$']: new BasicFunction(0, 1, dateDollar),
+    ['LEN']: new BasicFunction(1, 0, len),
+    ['LEFT$']: new BasicFunction(2, 0, leftDollar),
   };
 };

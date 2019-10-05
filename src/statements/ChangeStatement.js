@@ -1,8 +1,14 @@
 import { BaseStatement, StatementType } from '../statement';
-import { Value, ValueType } from '../expr';
-import { RuntimeError } from '../evaluate';
+import { Value, ValueType, ExprType } from '../expr';
+import { RuntimeError } from '../error';
 
 export class ChangeStatement extends BaseStatement {
+  /**
+   * The from-expression must be either a variable name,
+   * pointing to an array or a string, or a string value.
+   * @param {Expr} fromExpr
+   * @param {*} toName
+   */
   constructor(fromExpr, toName) {
     super(StatementType.CHANGE);
     this.fromExpr = fromExpr;
@@ -10,10 +16,21 @@ export class ChangeStatement extends BaseStatement {
   }
 
   exec(program, context) {
-    const fromValue = this.fromExpr.evaluate(program, context);
+    let fromArray;
+    let fromString;
 
-    if (fromValue.type === ValueType.STRING) {
-      const str = fromValue.value;
+    if (this.fromExpr.type === ExprType.IDENT) {
+      const name = this.fromExpr.value;
+      fromArray = context.getArray(name);
+      if (!fromArray) {
+        fromString = context.get(name);
+      }
+    } else if (this.fromExpr.type === ExprType.CONST) {
+      fromString = this.fromExpr.value;
+    }
+
+    if (fromString && fromString.type === ValueType.STRING) {
+      const str = fromString.value;
       context.setArrayItem(
         this.toName,
         [0],
@@ -26,24 +43,25 @@ export class ChangeStatement extends BaseStatement {
           new Value(ValueType.INT, str.charCodeAt(i))
         );
       }
-    } else if (fromValue.type === ValueType.ARRAY) {
+      return;
+    }
+
+    if (fromArray) {
       // fromValue is an int array, where the first value is the
       // number of characters, and the remaining is characters in
       // ascii code. This array should be converted to a string.
-      const basicArray = fromValue.value;
-      const count = basicArray.get([0]).value;
+      const count = fromArray.get([0]).value;
       let str = '';
 
       for (let i = 0; i < count; i++) {
-        const n = basicArray.get([i + 1]);
+        const n = fromArray.get([i + 1]);
         str = str + String.fromCharCode(n.value);
       }
 
       context.assignVariable(this.toName, new Value(ValueType.STRING, str));
-    } else {
-      throw new RuntimeError(
-        `Invalid type in CHANGE statement: ${fromValue.type}`
-      );
+      return;
     }
+
+    throw new RuntimeError('Invalid source expression in CHANGE statement');
   }
 }

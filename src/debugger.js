@@ -7,8 +7,7 @@
 
 import { Program } from './program';
 import { Context } from './context';
-import { RuntimeError } from './evaluate';
-import io, { printError } from './io';
+import io from './io';
 import { input } from './shell';
 import { Line } from './line';
 import { evaluate } from './eval';

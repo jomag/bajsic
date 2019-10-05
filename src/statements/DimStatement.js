@@ -1,8 +1,8 @@
 import { BaseStatement, StatementType } from '../statement';
 import BasicArray from '../BasicArray';
-import { Value, ValueType } from '../expr';
-import io from '../io';
-import { RuntimeError } from '../evaluate';
+import { ValueType } from '../expr';
+import { Context } from '../context';
+import { Program } from '../program';
 
 export class DimStatement extends BaseStatement {
   constructor(arrays) {
@@ -10,6 +10,10 @@ export class DimStatement extends BaseStatement {
     this.arrays = arrays;
   }
 
+  /**
+   * @param {Program} program
+   * @param {Context} context
+   */
   exec(program, context) {
     for (const name of Object.keys(this.arrays)) {
       console.warn('DimStatement always use type "number"');
@@ -23,10 +27,7 @@ export class DimStatement extends BaseStatement {
         dataType = ValueType.INT;
       }
 
-      context.assignVariable(
-        name,
-        new Value(ValueType.ARRAY, new BasicArray(dataType, this.arrays[name]))
-      );
+      context.assignArray(name, new BasicArray(dataType, this.arrays[name]));
     }
   }
 }

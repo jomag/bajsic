@@ -1,4 +1,4 @@
-import { RuntimeError } from '../evaluate';
+import { RuntimeError } from '../error';
 import { Value, ValueType } from '../expr';
 import Var from '../Var';
 

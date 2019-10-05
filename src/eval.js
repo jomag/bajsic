@@ -1,4 +1,4 @@
-import { RuntimeError } from './evaluate';
+import { RuntimeError } from './error';
 
 /**
  * @param {Program} program

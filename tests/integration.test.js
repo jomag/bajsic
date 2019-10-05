@@ -1,12 +1,7 @@
 import fs from 'fs';
 
-import { Context } from '../src/context';
-import { Program } from '../src/program';
 import { Stream } from '../src/stream';
-import { Line } from '../src/line';
 import { evaluateStatement } from '../src/evaluate';
-import { Value, ValueType } from '../src/expr';
-import { builtinFunctions } from '../src/function';
 import { RunStatement } from '../src/statement';
 import { setupEnvironment } from '../src/utils';
 
@@ -23,7 +18,7 @@ describe('Integration tests', () => {
     const txtLines = [];
     let dst = basLines;
 
-    const skip = lines[0] && lines[0].trim() === '--- skip ---'
+    const skip = lines[0] && lines[0].trim() === '--- skip ---';
 
     for (let line of lines) {
       if (line.slice(0, 3) === '---') {
@@ -36,7 +31,7 @@ describe('Integration tests', () => {
     const src = basLines.join('\n');
     const txt = txtLines.join('\n').trim();
 
-    it(`${test}`, async function () {
+    it(`${test}`, async function() {
       if (skip) {
         this.skip();
         return;

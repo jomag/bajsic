@@ -1,7 +1,6 @@
 import { Program } from './program';
 import { Context } from './context';
-import { builtinFunctions } from './function';
-import { Value, ValueType } from './expr';
+import { builtinFunctions } from './BasicFunction';
 
 export const setupEnvironment = source => {
   const program = new Program();
@@ -9,7 +8,7 @@ export const setupEnvironment = source => {
   const builtins = builtinFunctions();
 
   for (let name of Object.keys(builtins)) {
-    context.assignConst(name, new Value(ValueType.FUNCTION, builtins[name]));
+    context.assignFunction(name, builtins[name]);
   }
 
   if (source) {
