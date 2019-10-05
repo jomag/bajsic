@@ -2,14 +2,9 @@ import { RuntimeError } from './error';
 import { Program } from './program';
 import { Context } from './context';
 import { parseLine } from './parser';
+import io from './io';
 
 const PROMPT = '] ';
-
-export const input = async stream => {
-  return new Promise(resolve => {
-    stream.once('data', data => resolve(data));
-  });
-};
 
 /**
  * @param {Program} program
@@ -44,7 +39,7 @@ export async function shell(program, context) {
 
   for (;;) {
     context.outputStream.write(PROMPT);
-    const text = await input(context.inputStream);
+    const text = await io.input(context.inputStream);
 
     let line;
 

@@ -9,14 +9,13 @@
 import { Program } from './program';
 import { Context } from './context';
 import io from './io';
-import { input } from './shell';
 import { evaluate } from './eval';
 
 const PROMPT = 'dbg> ';
 
 export const userInput = async (context, prompt) => {
   context.outputStream.write(prompt);
-  return input(context.inputStream);
+  return io.input(context.inputStream);
 };
 
 class Debugger {

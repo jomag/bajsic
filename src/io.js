@@ -8,6 +8,12 @@ const printError = text => {
   console.error(chalk.redBright(text));
 };
 
+const input = async stream => {
+  return new Promise(resolve => {
+    stream.once('data', data => resolve(data));
+  });
+};
+
 /**
  * @param {Error} e
  */
@@ -28,4 +34,5 @@ export default {
   print,
   printError,
   printRuntimeError,
+  input,
 };
