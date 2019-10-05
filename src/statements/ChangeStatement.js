@@ -62,9 +62,6 @@ export class ChangeStatement extends BaseStatement {
       return;
     }
 
-    console.log(this.fromExpr);
-    console.log('fromArray', fromArray);
-    console.log('fromString', fromString);
     throw new RuntimeError('Invalid source expression in CHANGE statement');
   }
 }
