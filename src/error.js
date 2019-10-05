@@ -29,3 +29,10 @@ export class InternalError extends Error {
     this.program = program;
   }
 }
+
+export class OutOfDataError extends RuntimeError {
+  constructor(context, program) {
+    super('Out Of Data Error');
+    this.setContext(context, program);
+  }
+}

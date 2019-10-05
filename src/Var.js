@@ -1,6 +1,6 @@
 // @ts-check
 
-// Var is used to reference a variable in assignment
+// Var is used to reference a variable in assignment, READ
 // and INPUT statements. A Var is either a variable
 // name, or a name plus index into a single or multi-
 // dimensional array:
@@ -11,8 +11,9 @@
 //
 // Note that the Var class is *not* used in expressions
 // as there's no way to differentiate between a function
-// call and an index in an array:
+// call and an index in an array.
 import { Expr } from './expr';
+import { InternalError } from './error';
 
 export default class Var {
   /**

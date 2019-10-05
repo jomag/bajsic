@@ -1,6 +1,6 @@
 // @ts-check
 import { Value, ValueType } from './expr';
-import { RuntimeError } from './error';
+import { RuntimeError, OutOfDataError } from './error';
 import BasicArray from './BasicArray';
 import { BasicFunction } from './BasicFunction';
 import { UserFunction } from './UserFunction';
@@ -35,6 +35,12 @@ export class Context {
     this.inputStream = undefined;
     this.outputStream = undefined;
 
+    /** @type {Value[]} */
+    this.data = [];
+
+    /** @type {number} */
+    this.dataIndex = 0;
+
     this.options = {
       verbose: false,
     };
@@ -44,6 +50,14 @@ export class Context {
 
     // @ts-ignore
     this.stdout = process.stdout;
+  }
+
+  getData() {
+    if (this.dataIndex >= this.data.length) {
+      throw new OutOfDataError();
+    }
+
+    return this.data[this.dataIndex++];
   }
 
   pushForLoop(data) {
