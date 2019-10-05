@@ -1,7 +1,7 @@
 // @ts-check
 
 import { RuntimeError } from './error';
-import { Value, ValueType } from './expr';
+import { Value, ValueType } from './Value';
 
 export default class BasicArray {
   /**
@@ -23,7 +23,7 @@ export default class BasicArray {
 
     for (let i = 0; i < path.length - 1; i++) {
       const dim = this.dimensions[i];
-      index = index + (dim[1] - dim[0]) * path[i];
+      index += (dim[1] - dim[0]) * path[i];
     }
 
     return index + path[path.length - 1];

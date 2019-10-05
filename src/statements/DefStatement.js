@@ -34,7 +34,7 @@ export class DefStatement extends BaseStatement {
     this.args = args;
   }
 
-  exec(program, context) {
+  exec() {
     throw new Error('DEF statement should never be reached');
   }
 }

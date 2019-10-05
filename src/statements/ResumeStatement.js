@@ -6,7 +6,7 @@ export class ResumeStatement extends BaseStatement {
     this.target = target;
   }
 
-  exec(program, context) {
+  exec() {
     throw new Error('RESUME is not implemented');
   }
 }

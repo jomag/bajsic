@@ -1,21 +1,11 @@
-const chai = require('chai');
-const expect = chai.expect;
+import { expect } from 'chai';
 
-import { parseStatement } from './';
+import { parseStatement } from '.';
 import { StatementType } from '../statement';
-import { tokenize, TokenType } from '../lex';
+import { tokenize } from '../lex';
 
 const T = text => tokenize(text);
 const P = text => parseStatement(T(text));
-
-const tokenToString = tok => {
-  switch (tok.type) {
-    case TokenType.INT:
-      return tok.value.toString();
-    default:
-      return tok.type;
-  }
-};
 
 describe('Parse Statements', () => {
   describe('DIM', () => {
@@ -23,7 +13,7 @@ describe('Parse Statements', () => {
       const s = P('DIM A(5)');
       expect(s.type).to.equal(StatementType.DIM);
       expect(s.arrays).to.deep.equal({
-        A: [5]
+        A: [5],
       });
     });
 
@@ -31,7 +21,7 @@ describe('Parse Statements', () => {
       const s = P('DIM A(5, 10, 15)');
       expect(s.type).to.equal(StatementType.DIM);
       expect(s.arrays).to.deep.equal({
-        A: [5, 10, 15]
+        A: [5, 10, 15],
       });
     });
 
@@ -40,7 +30,7 @@ describe('Parse Statements', () => {
       expect(s.type).to.equal(StatementType.DIM);
       expect(s.arrays).to.deep.equal({
         A: [11, 22],
-        B: [33, 44]
+        B: [33, 44],
       });
     });
   });
@@ -93,8 +83,8 @@ describe('Parse Statements', () => {
       expect(res).to.deep.equal([true, false, true]);
     });
 
-    it('with channel', () => {
-      const s = P('PRINT #5, 123');
+    it.skip('with channel', () => {
+      // const s = P('PRINT #5, 123');
       // expect(s.channel).to.deep.equal([{ type: TokenType.INT, value: 5 }]);
     });
   });

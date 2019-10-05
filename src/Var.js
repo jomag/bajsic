@@ -13,7 +13,6 @@
 // as there's no way to differentiate between a function
 // call and an index in an array.
 import { Expr } from './expr';
-import { InternalError } from './error';
 
 export default class Var {
   /**

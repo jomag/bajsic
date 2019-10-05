@@ -1,11 +1,13 @@
 import { BaseStatement, StatementType } from '../statement';
-import { Value, ValueType, ExprType } from '../expr';
+import { ExprType, Expr } from '../expr';
+import { Value, ValueType } from '../Value';
 import { RuntimeError } from '../error';
 
 export class ChangeStatement extends BaseStatement {
   /**
    * The from-expression must be either a variable name,
    * pointing to an array or a string, or a string value.
+   *
    * @param {Expr} fromExpr
    * @param {*} toName
    */
@@ -55,7 +57,7 @@ export class ChangeStatement extends BaseStatement {
 
       for (let i = 0; i < count; i++) {
         const n = fromArray.get([i + 1]);
-        str = str + String.fromCharCode(n.value);
+        str += String.fromCharCode(n.value);
       }
 
       context.assignVariable(this.toName, new Value(ValueType.STRING, str));

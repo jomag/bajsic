@@ -7,7 +7,7 @@ export class OnGotoStatement extends BaseOnStatement {
   }
 
   async exec(program, context) {
-    const result = await this.expr.evaluate(program, context);
+    await this.expr.evaluate(program, context);
     console.warn('OnGotoStatement.exec is only a stub');
   }
 }

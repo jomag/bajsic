@@ -1,17 +1,15 @@
 import fs from 'fs';
+import { expect } from 'chai';
 
 import { Stream } from '../src/stream';
 import { evaluateStatement } from '../src/evaluate';
 import { RunStatement } from '../src/statement';
 import { setupEnvironment } from '../src/utils';
 
-const chai = require('chai');
-const expect = chai.expect;
-
 const tests = fs.readdirSync(__dirname).filter(name => name.endsWith('.bas'));
 
 describe('Integration tests', () => {
-  for (let test of tests) {
+  for (const test of tests) {
     const content = fs.readFileSync(`${__dirname}/${test}`, 'utf-8');
     const lines = content.split('\n');
     const basLines = [];
@@ -23,11 +21,12 @@ describe('Integration tests', () => {
     let expectError;
     let receivedError;
 
-    for (let line of lines) {
+    for (const line of lines) {
       // Example: --- throws: "Out Of Memory" ---
       const throwMatch = line.match(/---+\s*throws:\s*"(.*)"/);
 
       if (throwMatch) {
+        // eslint-disable-next-line prefer-destructuring
         expectError = throwMatch[1];
       } else if (line.slice(0, 3) === '---') {
         dst = txtLines;
@@ -39,19 +38,18 @@ describe('Integration tests', () => {
     const src = basLines.join('\n');
     const txt = txtLines.join('\n').trim();
 
-    it(`${test}`, async function() {
+    it(`${test}`, async () => {
       if (skip) {
         this.skip();
         return;
       }
 
       const { program, context } = setupEnvironment(src);
-
       let output = '';
 
       context.outputStream = new Stream();
       context.outputStream.on('data', data => {
-        output = output + data;
+        output += data;
       });
 
       try {
@@ -65,6 +63,7 @@ describe('Integration tests', () => {
       }
 
       if (expectError) {
+        expect(receivedError).to.not.be.undefined;
         expect(expectError).to.equal(receivedError.message);
       }
 

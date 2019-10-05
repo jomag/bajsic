@@ -8,7 +8,7 @@ export class EndStatement extends BaseStatement {
     this.blockType = blockType;
   }
 
-  exec(program, context) {
+  exec() {
     switch (this.blockType) {
       case null:
       case Keyword.PROGRAM:

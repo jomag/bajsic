@@ -5,7 +5,7 @@ export class StopStatement extends BaseStatement {
     super(StatementType.STOP);
   }
 
-  exec(program, context) {
+  exec() {
     throw new Error('STOP is not implemented');
   }
 }

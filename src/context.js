@@ -1,11 +1,20 @@
 // @ts-check
-import { Value, ValueType } from './expr';
+import { Value, ValueType } from './Value';
 import { RuntimeError, OutOfDataError } from './error';
 import BasicArray from './BasicArray';
 import { BasicFunction } from './BasicFunction';
 import { UserFunction } from './UserFunction';
+import { DataStatement } from './statements/DataStatement';
+import { DefStatement } from './statements/DefStatement';
+import { Program } from './program';
 
 class Scope {
+  // FIXME:
+  // There is a problem in that the "proper" notation, object.<string, Value>,
+  // is not correctly interpreted by VS Code, while this TypeScript-ish syntax
+  // is, even though it's supposedly invalid JSDoc syntax.
+  /* eslint-disable jsdoc/valid-types */
+
   constructor() {
     /** @type {{ [name: string]: Value}} */
     this.constants = {};
@@ -50,6 +59,34 @@ export class Context {
 
     // @ts-ignore
     this.stdout = process.stdout;
+  }
+
+  /**
+   * @param {Program} program
+   */
+  prepare(program) {
+    this.pc = 0;
+
+    for (const line of program.lines) {
+      for (const stmt of line.statements) {
+        if (stmt instanceof DefStatement) {
+          this.assignUserFunction(stmt.name, new UserFunction(line.num));
+        }
+      }
+    }
+
+    // Build data blocks
+    const data = [];
+    for (const line of program.lines) {
+      for (const stmt of line.statements) {
+        if (stmt instanceof DataStatement) {
+          data.push(...stmt.list);
+        }
+      }
+    }
+
+    this.data = data;
+    this.dataIndex = 0;
   }
 
   getData() {
@@ -149,8 +186,10 @@ export class Context {
   }
 
   /**
-   * Returns the variable or constant with the given name
+   * Returns the value of the variable or constant with the given name
+   *
    * @param {string} name
+   * @returns {Value}
    */
   get(name) {
     const nm = name.toUpperCase();
@@ -170,7 +209,9 @@ export class Context {
 
   /**
    * Returns array, function or user function with the given name
+   *
    * @param {string} name
+   * @returns {BasicFunction | UserFunction | BasicArray}
    */
   getSubscripted(name) {
     const nm = name.toUpperCase();
@@ -195,6 +236,7 @@ export class Context {
 
   /**
    * @param {string} name
+   * @returns {BasicArray}
    */
   getArray(name) {
     const nm = name.toUpperCase();

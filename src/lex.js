@@ -1,3 +1,5 @@
+import { LexicalError } from './error';
+
 export const TokenType = {
   COLON: 'colon',
   COMMA: 'comma',
@@ -29,7 +31,6 @@ export const TokenType = {
   AND: 'and',
   OR: 'or',
   XOR: 'xor',
-  NOT: 'not',
 
   // FIXME: I'm not sure about the meaning of underscore
   //        It's often found in INPUT statements:
@@ -101,45 +102,37 @@ export class Token {
   }
 }
 
-export class LexicalError extends Error {
-  constructor(message, column, ...params) {
-    super(...params);
-    this.message = message;
-    this.column = column;
-  }
-}
-
-export const tokenize = (source, sourceLineNo) => {
+export const tokenize = source => {
   const space = ' \t';
   const numeric = '0123456789';
   const lowerAlpha = 'abcdefghijklmnopqrstuvwxyz';
   const alpha = lowerAlpha + lowerAlpha.toUpperCase();
   const alphaNumeric = alpha + numeric;
   const remarkChar = "'";
-  const nameCharacters = alphaNumeric + '$%';
+  const nameCharacters = `${alphaNumeric}$%`;
   const tokens = [];
   const twoCharacterToken = {
-    ['<>']: TokenType.NE,
-    ['<=']: TokenType.LE,
-    ['>=']: TokenType.GE,
-    ['==']: TokenType.APPROX_EQ,
+    '<>': TokenType.NE,
+    '<=': TokenType.LE,
+    '>=': TokenType.GE,
+    '==': TokenType.APPROX_EQ,
   };
   const singleCharacterToken = {
-    [',']: TokenType.COMMA,
-    ['(']: TokenType.LPAR,
-    [')']: TokenType.RPAR,
-    ['\\']: TokenType.SEPARATOR,
-    ['<']: TokenType.LT,
-    ['=']: TokenType.EQ,
-    ['>']: TokenType.GT,
-    ['+']: TokenType.PLUS,
-    ['-']: TokenType.MINUS,
-    ['*']: TokenType.MUL,
-    ['/']: TokenType.DIV,
-    [':']: TokenType.COLON,
-    [';']: TokenType.SEMICOLON,
-    ['_']: TokenType.UNDERSCORE,
-    ['#']: TokenType.HASH,
+    ',': TokenType.COMMA,
+    '(': TokenType.LPAR,
+    ')': TokenType.RPAR,
+    '\\': TokenType.SEPARATOR,
+    '<': TokenType.LT,
+    '=': TokenType.EQ,
+    '>': TokenType.GT,
+    '+': TokenType.PLUS,
+    '-': TokenType.MINUS,
+    '*': TokenType.MUL,
+    '/': TokenType.DIV,
+    ':': TokenType.COLON,
+    ';': TokenType.SEMICOLON,
+    _: TokenType.UNDERSCORE,
+    '#': TokenType.HASH,
   };
   let i = 0;
 
@@ -166,7 +159,7 @@ export const tokenize = (source, sourceLineNo) => {
       i++;
     }
 
-    const value = type === TokenType.INT ? parseInt(sub) : parseFloat(sub);
+    const value = type === TokenType.INT ? parseInt(sub, 10) : parseFloat(sub);
     return { type, value };
   };
 
@@ -201,6 +194,8 @@ export const tokenize = (source, sourceLineNo) => {
         return new Token(TokenType.NOT);
       case 'XOR':
         return new Token(TokenType.XOR);
+      default:
+        break;
     }
 
     if (Object.keys(keywordAliases).includes(word)) {
@@ -231,6 +226,7 @@ export const tokenize = (source, sourceLineNo) => {
   };
 
   while (i < source.length) {
+    /* eslint-disable no-continue */
     skipSpace();
 
     if (i < source.length) {

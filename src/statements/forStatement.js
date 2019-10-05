@@ -1,16 +1,6 @@
 import { BaseStatement, StatementType } from '../statement';
-import { Value, ValueType } from '../expr';
+import { Value, ValueType } from '../Value';
 import { evaluateStatement } from '../evaluate';
-
-class ForStackEntry {
-  constructor(varName, from, to, step, line) {
-    this.varName = varName;
-    this.from = from;
-    this.to = to;
-    this.step = step;
-    this.line = line;
-  }
-}
 
 export class ForStatement extends BaseStatement {
   constructor(name, startExpr, finalExpr, stepExpr, untilExpr, whileExpr) {
@@ -62,5 +52,7 @@ export class ForStatement extends BaseStatement {
         entry: program.lineIndexToNumber(context.pc + 1),
       });
     }
+
+    return undefined;
   }
 }

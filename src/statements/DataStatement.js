@@ -1,5 +1,5 @@
 import { BaseStatement, StatementType } from '../statement';
-import { Value } from '../expr';
+import { Value } from '../Value';
 
 export class DataStatement extends BaseStatement {
   /**
@@ -12,7 +12,7 @@ export class DataStatement extends BaseStatement {
     this.list = list;
   }
 
-  exec(program, context) {
+  exec() {
     // Does nothing at runtime
   }
 }

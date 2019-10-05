@@ -13,11 +13,13 @@ export class IfStatement extends BaseStatement {
     const result = await this.conditionExpr.evaluate(program, context);
     const block = result.isTrue() ? this.thenStatements : this.elseStatements;
 
-    for (let stmt of block || []) {
+    for (const stmt of block || []) {
       const jumpTo = await evaluateStatement(stmt, program, context);
       if (jumpTo !== undefined) {
         return jumpTo;
       }
     }
+
+    return undefined;
   }
 }

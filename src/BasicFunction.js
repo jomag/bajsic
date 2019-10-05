@@ -1,12 +1,12 @@
 import moment from 'moment';
 import { RuntimeError } from './error';
-import { Value, ValueType } from './expr';
+import { Value, ValueType } from './Value';
 
 export class BasicFunction {
   /**
    * @param {number} argCount - number of required arguments
    * @param {number} optArgCount - number of extra, optional arguments
-   * @param {function} fun - the JavaScript function
+   * @param {Function} fun - the JavaScript function
    */
   constructor(argCount, optArgCount, fun) {
     this.argCount = argCount;
@@ -25,12 +25,10 @@ export class BasicFunction {
             this.optArgCount} arguments, got ${args.length}`
         );
       }
-    } else {
-      if (args.length !== this.argCount) {
-        throw new RuntimeError(
-          `Expected ${this.argCount} arguments, got ${args.length}`
-        );
-      }
+    } else if (args.length !== this.argCount) {
+      throw new RuntimeError(
+        `Expected ${this.argCount} arguments, got ${args.length}`
+      );
     }
 
     return this.fun(args, context);
@@ -85,7 +83,7 @@ const timeDollar = args => {
 };
 
 const dateDollar = args => {
-  let dateArg = args[0];
+  const dateArg = args[0];
   let date;
 
   if (dateArg) {
@@ -116,9 +114,9 @@ const leftDollar = args => {
 
   if (n >= 0) {
     return new Value(ValueType.STRING, args[0].value.slice(0, n));
-  } else {
-    return new Value(ValueType.STRING, args[0].value);
   }
+
+  return new Value(ValueType.STRING, args[0].value);
 };
 
 export const builtinFunctions = () => {
@@ -126,9 +124,9 @@ export const builtinFunctions = () => {
     sin: new BasicFunction(1, 0, ([angle]) => {
       return new Value(ValueType.INT, Math.sin(angle.value));
     }),
-    ['TIME$']: new BasicFunction(0, 1, timeDollar),
-    ['DATE$']: new BasicFunction(0, 1, dateDollar),
-    ['LEN']: new BasicFunction(1, 0, len),
-    ['LEFT$']: new BasicFunction(2, 0, leftDollar),
+    TIME$: new BasicFunction(0, 1, timeDollar),
+    DATE$: new BasicFunction(0, 1, dateDollar),
+    LEN: new BasicFunction(1, 0, len),
+    LEFT$: new BasicFunction(2, 0, leftDollar),
   };
 };

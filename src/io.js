@@ -1,13 +1,16 @@
 import chalk from 'chalk';
 
-export const print = text => {
+const print = text => {
   console.log(text === undefined ? '' : text);
 };
 
-export const printError = text => {
+const printError = text => {
   console.error(chalk.redBright(text));
 };
 
+/**
+ * @param {Error} e
+ */
 function printRuntimeError(e) {
   if (e.line) {
     let msg = `Runtime error on line ${e.line.num}: ${e.message}`;
@@ -24,5 +27,5 @@ function printRuntimeError(e) {
 export default {
   print,
   printError,
-  printRuntimeError
+  printRuntimeError,
 };

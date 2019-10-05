@@ -1,7 +1,7 @@
 import { BaseStatement, StatementType } from '../statement';
 import { input as inputStreamInput } from '../shell';
 import { assignIdentifierValue } from './utils';
-import { Value, ValueType } from '../expr';
+import { Value, ValueType } from '../Value';
 
 export class InputStatement extends BaseStatement {
   constructor(channel, list) {

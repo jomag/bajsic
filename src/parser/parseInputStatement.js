@@ -16,7 +16,7 @@ export const parseInputStatement = tokens => {
   popKeyword(tokens, Keyword.INPUT);
   let channel;
   let tok;
-  let list = [];
+  const list = [];
 
   const isLineInput = !!popOptionalKeyword(tokens, Keyword.LINE);
 

@@ -1,9 +1,3 @@
-import { DefStatement } from './statements/DefStatement';
-import { Line } from './line';
-import { Value, ValueType } from './expr';
-import { UserFunction } from './UserFunction';
-import { DataStatement } from './statements/DataStatement';
-
 export class Program {
   constructor(lines) {
     // Array of lines in sorted order
@@ -12,7 +6,9 @@ export class Program {
     // Map of line number to line index
     this.lineToIndexMap = undefined;
 
-    lines && lines.map(line => this.add(line));
+    if (lines) {
+      lines.map(line => this.add(line));
+    }
   }
 
   add(line) {
@@ -43,26 +39,7 @@ export class Program {
   getUserFunctions() {
     const functions = [];
 
-    for (const line of this.lines) {
-      for (const stmt of line.statements) {
-        if (stmt instanceof DefStatement) {
-          functions[stmt.name] = new UserFunction(line.num);
-        }
-      }
-    }
-
     return functions;
-  }
-
-  getLineMap() {
-    // FIXME: not tested yet
-    if (!this.lineToIndexMap) {
-      this.lineToIndexMap = this.lines.reduce((m, line, i) => {
-        m[line.num] = i;
-        return m;
-      }, {});
-    }
-    return this.lineMap;
   }
 
   getRange(from, to) {
@@ -79,6 +56,8 @@ export class Program {
         return i;
       }
     }
+
+    return undefined;
   }
 
   lineIndexToNumber(idx) {
@@ -88,44 +67,5 @@ export class Program {
   getLineByNumber(num) {
     const idx = this.lineNumberToIndex(num);
     return this.lines[idx];
-  }
-
-  /**
-   * @param {Context} context
-   */
-  prepare(context) {
-    const userFunctions = this.getUserFunctions();
-    for (const name of Object.keys(userFunctions)) {
-      context.assignUserFunction(name, userFunctions[name]);
-    }
-
-    // Build data blocks
-    const data = [];
-    for (const line of this.lines) {
-      for (const stmt of line.statements) {
-        if (stmt instanceof DataStatement) {
-          data.push(...stmt.list);
-        }
-      }
-    }
-
-    context.data = data;
-    context.dataIndex = 0;
-  }
-
-  /**
-   * @param {string} source
-   * @param {Context} context
-   */
-  loadFromString(source, context) {
-    const lines = source.split('\n');
-
-    for (const line of lines) {
-      if (line.trim().length > 0) {
-        this.add(Line.parse(line));
-      }
-    }
-
-    this.prepare(context);
   }
 }

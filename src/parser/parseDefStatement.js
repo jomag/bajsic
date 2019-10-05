@@ -3,7 +3,7 @@ import {
   popIdentifier,
   popOptionalType,
   popType,
-  popOptionalDataType
+  popOptionalDataType,
 } from './utils';
 import { Keyword, TokenType } from '../lex';
 import { DefStatement } from '../statements/DefStatement';
@@ -11,11 +11,11 @@ import { DefStatement } from '../statements/DefStatement';
 export const parseDefStatement = tokens => {
   popKeyword(tokens, Keyword.DEF);
   const dataType = popOptionalDataType(tokens);
-  const name = popIdentifier(tokens);
+  const functionName = popIdentifier(tokens);
   const args = [];
 
   if (popOptionalType(tokens, TokenType.LPAR)) {
-    while (true) {
+    for (;;) {
       const type = popOptionalDataType(tokens);
       const name = popIdentifier(tokens);
       args.push({ type, name });
@@ -26,5 +26,5 @@ export const parseDefStatement = tokens => {
     }
   }
 
-  return new DefStatement(dataType, name, args);
+  return new DefStatement(dataType, functionName, args);
 };

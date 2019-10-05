@@ -1,4 +1,7 @@
-import { TokenType, Keyword } from '../lex';
+import { TokenType, Keyword, tokenize } from '../lex';
+import { Program } from '../program';
+import { Line } from '../line';
+import { LexicalError } from '../error';
 
 import { GotoStatement, RemarkStatement, RunStatement } from '../statement';
 
@@ -17,7 +20,7 @@ import { parseList } from './parseList';
 import { parseOnStatement } from './parseOnStatement';
 import { popKeyword, popType, popOptionalKeyword } from './utils';
 import { parseForStatement } from './parseForStatement';
-import { parseNextStatement } from './parseNextStatement.js';
+import { parseNextStatement } from './parseNextStatement';
 import { parseInputStatement } from './parseInputStatement';
 import { parseCloseStatement } from './parseCloseStatement';
 import { parseOpenStatement } from './parseOpenStatement';
@@ -30,15 +33,11 @@ import { parseDataStatement } from './parseDataStatement';
 import { parseDefStatement } from './parseDefStatement';
 import { parseChangeStatement } from './parseChangeStatement';
 import { parseWriteStatement } from './parseWriteStatement';
-import { parseIfStatement } from './parseIfStatement';
-export { parseExpression } from './expression';
 
-export class SyntaxError extends Error {
-  constructor(message, ...params) {
-    super(...params);
-    this.message = message;
-  }
-}
+// eslint-disable-next-line import/no-cycle
+import { parseIfStatement } from './parseIfStatement';
+
+export { parseExpression } from './expression';
 
 const parseDim = tokens => {
   // VAX BASIC Ref: page 244
@@ -46,10 +45,11 @@ const parseDim = tokens => {
   // FIXME: does not handle types!
 
   const arrays = {};
-  let i = 1;
+  const i = 1;
 
   popKeyword(tokens, Keyword.DIM);
 
+  // FIXME: need some cleanup. "i" is always 1.
   while (i < tokens.length) {
     const nameToken = popType(tokens, TokenType.IDENTIFIER);
     const name = nameToken.value;
@@ -57,7 +57,7 @@ const parseDim = tokens => {
     popType(tokens, TokenType.LPAR);
     const dim = [];
 
-    while (true) {
+    for (;;) {
       // FIXME: does not handle non-zero based dimensions like DIM A(10 TO 20)
       const lenToken = popType(tokens, TokenType.INT);
       const len = lenToken.value;
@@ -88,14 +88,6 @@ const parseGoto = tokens => {
   return new GotoStatement(dest.value);
 };
 
-const isOperand = tok =>
-  tok.type === TokenType.IDENTIFIER ||
-  tok.type === TokenType.INT ||
-  tok.type === TokenType.FLOAT ||
-  tok.type === TokenType.STRING;
-
-const isOperator = tok => tok.type === TokenType.LT;
-
 const parseLet = tokens => {
   popOptionalKeyword(tokens, Keyword.LET);
 
@@ -106,12 +98,12 @@ const parseLet = tokens => {
   return new LetStatement(identifier, expr);
 };
 
-const parseReturn = (tokens, line) => {
+const parseReturn = tokens => {
   popKeyword(tokens, Keyword.RETURN);
   return new ReturnStatement();
 };
 
-const parseGosub = (tokens, line) => {
+const parseGosub = tokens => {
   popKeyword(tokens, Keyword.GOSUB);
   const dest = popType(tokens, TokenType.INT);
   return new GosubStatement(dest.value);
@@ -275,4 +267,61 @@ export const parseStatements = tokens => {
   }
 
   return statements;
+};
+
+/**
+ * @param {string} source
+ * @param {number} sourceLineNo
+ * @returns {Line}
+ */
+export const parseLine = (source, sourceLineNo) => {
+  const line = new Line(source, sourceLineNo);
+
+  // Lexical analyze
+  let tokens;
+  try {
+    tokens = tokenize(source, sourceLineNo);
+  } catch (e) {
+    if (e instanceof LexicalError) {
+      e.code = source;
+      e.line = sourceLineNo;
+    }
+    throw e;
+  }
+
+  // Handle initial line number token
+  if (tokens.length > 0 && tokens[0].type === TokenType.INT) {
+    line.num = tokens[0].value;
+    tokens.shift();
+  }
+
+  try {
+    line.statements = parseStatements(tokens);
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      e.code = source;
+      e.lineNumber = sourceLineNo;
+    }
+    throw e;
+  }
+
+  return line;
+};
+
+/**
+ * @param {string} source
+ * @returns {Program}
+ */
+export const parse = source => {
+  const program = new Program();
+
+  const lines = source.split('\n');
+
+  for (const line of lines) {
+    if (line.trim().length > 0) {
+      program.add(parseLine(line));
+    }
+  }
+
+  return program;
 };

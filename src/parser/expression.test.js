@@ -1,18 +1,18 @@
+import { expect } from 'chai';
+
 import { parseExpression } from './expression';
 import { Token, TokenType } from '../lex';
 import {
   ConstExpr,
-  ValueType,
   CallExpr,
   AddExpr,
   MultiplyExpr,
   ExprType,
   IdentifierExpr,
-  UnaryMinusExpr
+  UnaryMinusExpr,
 } from '../expr';
 
-const chai = require('chai');
-const expect = chai.expect;
+import { ValueType } from '../Value';
 
 const {
   INT,
@@ -23,10 +23,10 @@ const {
   STRING,
   COMMA,
   NOT,
-  MINUS
+  MINUS,
 } = TokenType;
 
-function printExprTree(expr, indent) {
+const printExprTree = (expr, indent) => {
   const indent2 = indent || '';
 
   if (expr === undefined) {
@@ -38,37 +38,36 @@ function printExprTree(expr, indent) {
     `${indent2}${expr.type} ${expr.value !== undefined ? expr.value : ''}`
   );
   if (expr.children) {
-    for (let child of expr.children || []) {
-      printExprTree(child, indent2 + '--');
+    for (const child of expr.children || []) {
+      printExprTree(child, `${indent2}--`);
     }
   }
-}
+};
 
-function compareExpressions(expr1, expr2) {
-  function printDiff() {
+const compareExpressions = (expr1, expr2) => {
+  const printDiff = () => {
     console.log('First expression:');
     printExprTree(expr1, '');
     console.log('Second expression:');
     printExprTree(expr2, '');
-  }
+  };
 
   if (expr1.type !== expr2.type) {
     printDiff();
     throw new Error(`Type differs: ${expr1.type} vs ${expr2.type}`);
   }
 
-  switch (expr1.type) {
-    case ExprType.CONST:
-      if (expr1.valueType !== expr2.valueType) {
-        printDiff();
-        throw new Error(
-          `Value type differs: ${expr1.valueType} vs ${expr2.vakueType}`
-        );
-      }
-      if (expr1.value !== expr2.value) {
-        printDiff();
-        throw new Error(`Value differs: ${expr1.value} vs ${expr2.value}`);
-      }
+  if (expr1.type === ExprType.CONST) {
+    if (expr1.valueType !== expr2.valueType) {
+      printDiff();
+      throw new Error(
+        `Value type differs: ${expr1.valueType} vs ${expr2.vakueType}`
+      );
+    }
+    if (expr1.value !== expr2.value) {
+      printDiff();
+      throw new Error(`Value differs: ${expr1.value} vs ${expr2.value}`);
+    }
   }
 
   if (expr1.children || expr2.children) {
@@ -80,7 +79,7 @@ function compareExpressions(expr1, expr2) {
     }
     const children = expr1.children.map((child1, i) => [
       child1,
-      expr2.children[i]
+      expr2.children[i],
     ]);
     const result = children.every(pair => compareExpressions(pair[0], pair[1]));
 
@@ -92,7 +91,7 @@ function compareExpressions(expr1, expr2) {
   }
 
   return true;
-}
+};
 
 describe('Parse Expressions', () => {
   it('should parse single operand expression', () => {
@@ -116,7 +115,7 @@ describe('Parse Expressions', () => {
     const tokens = [
       new Token(INT, 4),
       new Token(TokenType.MUL),
-      new Token(INT, 6)
+      new Token(INT, 6),
     ];
     const expr = parseExpression(tokens);
     const expected = new MultiplyExpr(
@@ -133,7 +132,7 @@ describe('Parse Expressions', () => {
       new Token(TokenType.PLUS),
       new Token(INT, 2),
       new Token(TokenType.MUL),
-      new Token(INT, 3)
+      new Token(INT, 3),
     ];
     const expr = parseExpression(tokens);
     const expected = new AddExpr(
@@ -153,7 +152,7 @@ describe('Parse Expressions', () => {
       new Token(TokenType.MUL),
       new Token(INT, 2),
       new Token(TokenType.PLUS),
-      new Token(INT, 3)
+      new Token(INT, 3),
     ];
     const expr = parseExpression(tokens);
     const expected = new AddExpr(
@@ -171,11 +170,11 @@ describe('Parse Expressions', () => {
       new Token(IDENTIFIER, 'hello'),
       new Token(LPAR),
       new Token(STRING, 'world'),
-      new Token(RPAR)
+      new Token(RPAR),
     ];
     const expr = parseExpression(tokens);
     const expected = new CallExpr(new IdentifierExpr('hello'), [
-      new ConstExpr(ValueType.STRING, 'world')
+      new ConstExpr(ValueType.STRING, 'world'),
     ]);
     expect(compareExpressions(expr, expected)).to.be.true;
   });
@@ -184,7 +183,7 @@ describe('Parse Expressions', () => {
     const tokens = [
       new Token(IDENTIFIER, 'hello'),
       new Token(LPAR),
-      new Token(RPAR)
+      new Token(RPAR),
     ];
     const expr = parseExpression(tokens);
     const expected = new CallExpr(new IdentifierExpr('hello'), []);
@@ -200,13 +199,13 @@ describe('Parse Expressions', () => {
       new Token(INT, 2),
       new Token(COMMA),
       new Token(INT, 3),
-      new Token(RPAR)
+      new Token(RPAR),
     ];
     const expr = parseExpression(tokens);
     const expected = new CallExpr(new IdentifierExpr('MAX'), [
       new ConstExpr(ValueType.INT, 1),
       new ConstExpr(ValueType.INT, 2),
-      new ConstExpr(ValueType.INT, 3)
+      new ConstExpr(ValueType.INT, 3),
     ]);
     expect(compareExpressions(expr, expected)).to.be.true;
   });
@@ -219,18 +218,18 @@ describe('Parse Expressions', () => {
       new Token(LPAR),
       new Token(IDENTIFIER, 'C'),
       new Token(RPAR),
-      new Token(RPAR)
+      new Token(RPAR),
     ];
     const expr = parseExpression(tokens);
     const expected = new CallExpr(new IdentifierExpr('A'), [
-      new CallExpr(new IdentifierExpr('B'), [new IdentifierExpr('C')])
+      new CallExpr(new IdentifierExpr('B'), [new IdentifierExpr('C')]),
     ]);
     expect(compareExpressions(expr, expected)).to.be.true;
   });
 
   it('should handle "NOT" operator', () => {
     const tokens = [new Token(NOT), new Token(INT, 0)];
-    const expr = parseExpression(tokens);
+    parseExpression(tokens);
   });
 
   it('should handle unary minus operator', () => {

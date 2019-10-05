@@ -7,7 +7,6 @@ import {
   ConstExpr,
   IdentifierExpr,
   MultiplyExpr,
-  ValueType,
   RelationalOperatorExpr,
   ExprType,
   SubtractExpr,
@@ -15,6 +14,8 @@ import {
   NotExpr,
   UnaryMinusExpr,
 } from '../expr';
+
+import { ValueType } from '../Value';
 
 const Operator = {
   EXP: 'EXP',
@@ -120,12 +121,12 @@ const prec = {
   [Operator.EQV]: 11,
 };
 
-function assert(cond, message, obj) {
+const assert = (cond, message, obj) => {
   if (!cond) {
     const msg = obj ? `${message} (${JSON.stringify(obj, null, 2)})` : message;
     throw new SyntaxError(msg);
   }
-}
+};
 
 const operands = [
   TokenType.INT,

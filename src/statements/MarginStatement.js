@@ -1,5 +1,3 @@
-// @ts-check
-
 import { BaseStatement, StatementType } from '../statement';
 import { Expr } from '../expr';
 import { Context } from '../context';
@@ -21,9 +19,12 @@ export class MarginStatement extends BaseStatement {
    * @param {Context} context
    */
   async exec(program, context) {
+    // eslint-disable-next-line no-unused-vars
     const channel =
       this.channel && (await this.channel.evaluate(program, context));
     const margin = await this.expr.evaluate(program, context);
+
+    // eslint-disable-next-line no-param-reassign
     context.options.margin = margin;
   }
 }

@@ -12,7 +12,7 @@ export class Stream extends EventEmitter {
     // true - there are consumer of data, and the stream is not paused
     this.flowing = null;
 
-    this.on('newListener', topic => {
+    this.on('newListener', () => {
       if (this.flowing === null) {
         this.flowing = true;
       }

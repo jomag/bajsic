@@ -1,12 +1,13 @@
 import { popKeyword } from './utils';
 import { Keyword, TokenType } from '../lex';
 import { ListStatement } from '../statement';
+import { SyntaxError } from '../error';
 
 export const parseList = tokens => {
   // VAX BASIC Ref: page 109
   // Format: LIST, LIST n, LIST n-m, LIST n,n-m,...
   popKeyword(tokens, Keyword.LIST);
-  let ranges = [];
+  const ranges = [];
 
   if (tokens.length) {
     let from = null;
@@ -21,7 +22,7 @@ export const parseList = tokens => {
         ranges.push([from, to]);
       } else {
         if (from === null) {
-          new SyntaxError('Missing line number');
+          throw new SyntaxError('Missing line number');
         }
         ranges.push([from, from]);
       }

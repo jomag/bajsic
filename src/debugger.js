@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 // @ts-check
 
 // @ts-ignore
@@ -9,14 +10,13 @@ import { Program } from './program';
 import { Context } from './context';
 import io from './io';
 import { input } from './shell';
-import { Line } from './line';
 import { evaluate } from './eval';
 
 const PROMPT = 'dbg> ';
 
 export const userInput = async (context, prompt) => {
-  context.outputStream.write(PROMPT);
-  return await input(context.inputStream);
+  context.outputStream.write(prompt);
+  return input(context.inputStream);
 };
 
 class Debugger {
@@ -81,9 +81,8 @@ class Debugger {
   /**
    * @param {string[]} args
    * @param {Program} program
-   * @param {Context} context
    */
-  async cmdList(args, program, context) {
+  async cmdList(args, program) {
     for (const arg of args) {
       if (arg.startsWith('u')) {
         // List user functions
@@ -98,11 +97,6 @@ class Debugger {
       }
     }
   }
-
-  /**
-   * @param {Line} line
-   * @returns {boolean}
-   */
 
   /**
    * @param {Program} program
@@ -123,7 +117,7 @@ class Debugger {
       return false;
     };
 
-    while (true) {
+    for (;;) {
       const line = program.lines[context.pc];
       let evaluateNext = true;
 

@@ -1,8 +1,12 @@
 import { RuntimeError } from '../error';
-import { Value, ValueType } from '../expr';
+import { Value, ValueType } from '../Value';
 import Var from '../Var';
+import { Program } from '../program';
+import { Context } from '../context';
 
 /**
+ * @param {Program} program
+ * @param {Context} context
  * @param {Var} identifier
  * @param {Value} value
  */
