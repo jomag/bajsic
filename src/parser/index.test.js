@@ -13,7 +13,7 @@ describe('Parse Statements', () => {
       const s = P('DIM A(5)');
       expect(s.type).to.equal(StatementType.DIM);
       expect(s.arrays).to.deep.equal({
-        A: [5],
+        A: [[0, 5]],
       });
     });
 
@@ -21,7 +21,7 @@ describe('Parse Statements', () => {
       const s = P('DIM A(5, 10, 15)');
       expect(s.type).to.equal(StatementType.DIM);
       expect(s.arrays).to.deep.equal({
-        A: [5, 10, 15],
+        A: [[0, 5], [0, 10], [0, 15]],
       });
     });
 
@@ -29,8 +29,8 @@ describe('Parse Statements', () => {
       const s = P('DIM A(11, 22), B(33, 44)');
       expect(s.type).to.equal(StatementType.DIM);
       expect(s.arrays).to.deep.equal({
-        A: [11, 22],
-        B: [33, 44],
+        A: [[0, 11], [0, 22]],
+        B: [[0, 33], [0, 44]],
       });
     });
   });

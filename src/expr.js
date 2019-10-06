@@ -146,11 +146,11 @@ export class CallExpr extends Expr {
     }
 
     if (sub instanceof BasicFunction) {
-      return await sub.call(argValues, program, context);
+      return sub.call(argValues, program, context);
     }
 
     if (sub instanceof UserFunction) {
-      return await sub.call(argValues, program, context);
+      return sub.call(argValues, program, context);
     }
 
     if (sub instanceof BasicArray) {
