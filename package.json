@@ -5,7 +5,8 @@
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
   "scripts": {
-    "start": "node --inspect -r esm src/cli.js",
+    "start": "node -r esm src/cli.js",
+    "start:debug": "node --inspect -r esm src/cli.js",
     "test": "mocha -r esm \"./src/**/*.test.js\" ./tests/*.test.js",
     "lint": "eslint \"tests/**/*.js\" \"src/**/*.js\"",
     "coverage": "nyc --reporter=text mocha -r esm \"./src/**/*.test.js\" ./tests/*.test.js"

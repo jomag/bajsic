@@ -1,4 +1,10 @@
-// @ts-check
+// BASIC arrays are declared using the DIM statement:
+//
+// 10 DIM A(3, 4)
+//
+// This statement creates a new array (or more precise, a matrix)
+// of two dimensions. As the index is zero-based, the first dimension
+// has length 4 and the second has length 5.
 
 import { RuntimeError } from './error';
 import { Value, ValueType } from './Value';
@@ -6,7 +12,7 @@ import { Value, ValueType } from './Value';
 export default class BasicArray {
   /**
    * @param {ValueType} type - the data type of the array
-   * @param {*} dimensions - array of dimensions
+   * @param {Array.<number[]>} dimensions - array of dimensions
    */
   constructor(type, dimensions) {
     this.type = type;
@@ -23,7 +29,7 @@ export default class BasicArray {
 
     for (let i = 0; i < path.length - 1; i++) {
       const dim = this.dimensions[i];
-      index += (dim[1] - dim[0]) * path[i];
+      index += (dim[1] - dim[0] + 1) * path[i];
     }
 
     return index + path[path.length - 1];
@@ -46,7 +52,9 @@ export default class BasicArray {
 
   get(path) {
     const index = this.pathToIndex(path);
-    return new Value(this.type, this.data[index]);
+    return this.data[index] === undefined
+      ? Value.defaultValue(this.type)
+      : new Value(this.type, this.data[index]);
   }
 
   totalSize() {

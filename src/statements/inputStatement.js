@@ -21,12 +21,13 @@ export class InputStatement extends BaseStatement {
       context.outputStream.write(prompt);
 
       const inp = await io.input(context.inputStream);
+      const trimmed = inp.replace(/\n$/, '');
 
       await assignIdentifierValue(
         program,
         context,
         q.identifier,
-        new Value(ValueType.STRING, inp)
+        new Value(ValueType.STRING, trimmed)
       );
     }
   }

@@ -17,6 +17,7 @@ const evalList = (statement, program, context) => {
 const evalPrint = async (statement, program, context) => {
   // FIXME: handle different output channels
   for (const outp of statement.list) {
+    // console.log(JSON.stringify(outp, null, 2));
     const result = await outp[0].evaluate(program, context);
     context.outputStream.write(
       outp[1] ? `${result.value}\n` : `${result.value}`
