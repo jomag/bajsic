@@ -22,6 +22,23 @@ describe('BasicArray', () => {
       a = new BasicArray(ValueType.INT, [[0, 10], [0, 4]]);
     });
 
+    it('can fill matrix and read it back', () => {
+      const m = new BasicArray(ValueType.INT, [[0, 3], [0, 3]]);
+
+      for (let i = 0; i <= 3; i++) {
+        for (let j = 0; j <= 3; j++) {
+          m.set([i, j], new Value(ValueType.INT, i * 100 + j));
+        }
+      }
+
+      for (let i = 0; i <= 3; i++) {
+        for (let j = 0; j <= 3; j++) {
+          const val = m.get([i, j]);
+          expect(val.value).to.equal(i * 100 + j);
+        }
+      }
+    });
+
     it('can set and get in multi dimension array', () => {
       const data = ['a', 'b', 'c', 'd'];
 

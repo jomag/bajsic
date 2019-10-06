@@ -156,14 +156,49 @@ const rightFun = args => {
   );
 };
 
+const echoFun = () => {
+  console.log('FIXME: the ECHO function is not implemented.');
+  return new Value(ValueType.INT, 1);
+};
+
 const midFun = args => {
   const [strVal, startVal, lenVal] = args;
   validateValueType(strVal, ValueType.STRING);
   validateNumber(startVal);
   validateNumber(lenVal);
+
   const [str, start, length] = [strVal.value, startVal.value, lenVal.value];
+
+  if (start < 1) {
+    throw new IllegalFunctionCallError('Start index must be 1 or higher');
+  }
+
   const sub = str.slice(start - 1, start - 1 + length);
   return new Value(ValueType.STRING, sub);
+};
+
+const asciiFun = args => {
+  const [str] = args;
+  validateValueType(str, ValueType.STRING);
+
+  if (str.value.length > 0) {
+    return new Value(ValueType.INT, str.value.charCodeAt(0));
+  }
+
+  throw new IllegalFunctionCallError('Empty string');
+};
+
+const sleepFun = async ([seconds]) => {
+  validateNumber(seconds);
+  // FIXME: should be interrupted when user is typing any delimiter, such as return
+  await new Promise(resolve => setTimeout(resolve, seconds.value * 1000.0));
+  return new Value(ValueType.INT, 0);
+};
+
+const valFun = async ([str]) => {
+  validateValueType(str, ValueType.STRING);
+  const num = parseFloat(str.value.replace(/,/, '.'));
+  return new Value(ValueType.FLOAT, num);
 };
 
 const instrFun = args => {
@@ -223,5 +258,10 @@ export const builtinFunctions = () => {
     INSTR: new BasicFunction(2, 1, instrFun),
     RIGHT$: new BasicFunction(2, 0, rightFun),
     MID$: new BasicFunction(3, 0, midFun),
+    ASCII: new BasicFunction(1, 0, asciiFun),
+    ASC: new BasicFunction(1, 0, asciiFun),
+    SLEEP: new BasicFunction(1, 0, sleepFun),
+    VAL: new BasicFunction(1, 0, valFun),
+    ECHO: new BasicFunction(1, 0, echoFun),
   };
 };

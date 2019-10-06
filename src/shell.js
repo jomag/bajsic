@@ -71,7 +71,9 @@ export async function shell(program, context) {
         printError(JSON.stringify(e.stack, null, 2));
         console.log(e.stack);
         console.trace();
-        printError(`Context: line index ${context.pc}`);
+        printError(
+          `Context: line index ${context.pc}:\n    ${program.lines[context.pc].source}`
+        );
       }
     } else {
       program.add(line);

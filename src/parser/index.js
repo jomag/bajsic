@@ -61,7 +61,7 @@ const parseDim = tokens => {
       // FIXME: does not handle non-zero based dimensions like DIM A(10 TO 20)
       const lenToken = popType(tokens, TokenType.INT);
       const len = lenToken.value;
-      dim.push(len);
+      dim.push([0, len]);
 
       const nextToken = popType(tokens, [TokenType.COMMA, TokenType.RPAR]);
 

@@ -62,3 +62,9 @@ export class IllegalFunctionCallError extends RuntimeError {
     super(`Illegal Function Call: ${message}`, context, program);
   }
 }
+
+export class TypeMismatchError extends RuntimeError {
+  constructor(message, context, program) {
+    super(`Type Mismatch: ${message}`, context, program);
+  }
+}

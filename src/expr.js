@@ -49,6 +49,10 @@ export class Expr {
     this.type = type;
   }
 
+  /**
+   * @returns {Value}
+   * @abstract
+   */
   evaluate() {
     throw new Error('Evaluation method not implemented!');
   }
@@ -81,8 +85,11 @@ export class IdentifierExpr extends Expr {
     const name = this.value;
 
     const sub = context.getSubscripted(name);
-    if (sub && sub instanceof BasicFunction) {
-      return sub.call([], program, context);
+
+    if (sub) {
+      if (sub instanceof BasicFunction) {
+        return sub.call([], program, context);
+      }
     }
 
     const v = context.get(name);
