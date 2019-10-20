@@ -35,11 +35,12 @@ class Scope {
 
 export class Context {
   constructor() {
-    // Program Counter, points at the current line index
-    this.pc = 0;
+    // Program Counter: [ current line (index), current statement in line ]
+    this.cursor = [0, 0];
+
     this.scopes = [new Scope()];
     this.forStack = [];
-    this.stack = [];
+    this.gosubStack = [];
     this.debugger = null;
     this.inputStream = undefined;
     this.outputStream = undefined;
@@ -116,21 +117,21 @@ export class Context {
   }
 
   /**
-   * @param {number} value
+   * @param {[number, number]} value
    */
-  push(value) {
-    this.stack.push(value);
+  pushGosub(value) {
+    this.gosubStack.push(value);
   }
 
   /**
-   * @returns {number}
+   * @returns {[number, number]}
    */
-  pop() {
-    if (this.stack.length === 0) {
+  popGosub() {
+    if (this.gosubStack.length === 0) {
       throw new RuntimeError('Pop on empty stack');
     }
 
-    return this.stack.pop();
+    return this.gosubStack.pop();
   }
 
   assignConst(name, value) {

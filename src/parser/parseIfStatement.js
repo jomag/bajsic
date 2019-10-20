@@ -2,7 +2,7 @@ import { isKeyword, popKeyword, popOptionalType } from './utils';
 import { Keyword, TokenType } from '../lex';
 import { parseExpression } from './expression';
 import { IfStatement } from '../statements/ifStatement';
-import { GotoStatement } from '../statement';
+import { GotoStatement } from '../statements/GotoStatement';
 
 // eslint-disable-next-line import/no-cycle
 import { parseStatement } from './index';

@@ -1,14 +1,13 @@
 import { BaseStatement, StatementType } from '../statement';
 import { RuntimeError } from '../error';
 
-export class GosubStatement extends BaseStatement {
+export class GotoStatement extends BaseStatement {
   constructor(destination) {
-    super(StatementType.GOSUB);
+    super(StatementType.GOTO);
     this.destination = destination;
   }
 
-  exec(program, context) {
-    context.pushGosub([context.cursor[0], context.cursor[1] + 1]);
+  async exec(program) {
     const lineIndex = program.lineNumberToIndex(this.destination);
 
     if (lineIndex === undefined) {

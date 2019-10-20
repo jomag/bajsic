@@ -1,7 +1,7 @@
 import { popKeyword, popOptionalType } from './utils';
 import { parseOptionalExpression, parseExpression } from './expression';
 import { Keyword, TokenType } from '../lex';
-import { PrintStatement } from '../statement';
+import { PrintStatement } from '../statements/PrintStatement';
 
 export const parsePrint = tokens => {
   // VAX BASIC Ref: page 462

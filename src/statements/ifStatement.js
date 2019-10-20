@@ -1,5 +1,4 @@
 import { BaseStatement, StatementType } from '../statement';
-import { evaluateStatement } from '../evaluate';
 
 export class IfStatement extends BaseStatement {
   constructor(conditionExpr, thenStatements, elseStatements) {
@@ -14,7 +13,7 @@ export class IfStatement extends BaseStatement {
     const block = result.isTrue() ? this.thenStatements : this.elseStatements;
 
     for (const stmt of block || []) {
-      const jumpTo = await evaluateStatement(stmt, program, context);
+      const jumpTo = await stmt.exec(program, context);
       if (jumpTo !== undefined) {
         return jumpTo;
       }

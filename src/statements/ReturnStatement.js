@@ -6,6 +6,6 @@ export class ReturnStatement extends BaseStatement {
   }
 
   exec(program, context) {
-    return context.pop();
+    return context.popGosub();
   }
 }

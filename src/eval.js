@@ -1,6 +1,5 @@
 /* eslint-disable no-param-reassign */
 
-import { RuntimeError } from './error';
 import { Program } from './program';
 
 /**
@@ -14,25 +13,33 @@ export const evaluate = async (program, context, single) => {
   while (!single || first) {
     first = false;
 
-    const line = program.lines[context.pc];
-    const nextLine = await line.exec(program, context);
+    const line = program.lines[context.cursor[0]];
+    let next;
 
-    if (nextLine === null) {
-      context.pc = 0;
+    while (context.cursor[1] < line.statements.length) {
+      const stmt = line.statements[context.cursor[1]];
+      next = await stmt.exec(program, context);
+      if (next === undefined) {
+        context.cursor[1] += 1;
+      } else {
+        break;
+      }
+    }
+
+    if (next === null) {
+      // If next is null, the program has reached its end
+      context.pc = [0, 0];
       break;
     }
 
-    if (nextLine === undefined) {
-      context.pc += 1;
-      if (context.pc >= program.lines.length) {
+    if (next === undefined) {
+      // If next is undefined, the program should continue with next line
+      context.cursor = [context.cursor[0] + 1, 0];
+      if (context.cursor[0] >= program.lines.length) {
         break;
       }
     } else {
-      const lineIndex = program.lineNumberToIndex(nextLine);
-      if (lineIndex === undefined) {
-        throw new RuntimeError(`Undefined line: ${lineIndex}`);
-      }
-      context.pc = lineIndex;
+      context.cursor = next;
     }
   }
 };
