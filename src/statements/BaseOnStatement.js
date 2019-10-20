@@ -33,7 +33,7 @@ export class BaseOnStatement extends BaseStatement {
     const index = Math.floor(x.value) - 1;
 
     if (index >= 0 && index < this.targets.length) {
-      return this.targets[index];
+      return [program.lineNumberToIndex(this.targets[index]), 0];
     }
   }
 }

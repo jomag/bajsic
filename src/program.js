@@ -3,6 +3,8 @@ export class Program {
     // Array of lines in sorted order
     this.lines = [];
 
+    this.statements = [];
+
     // Map of line number to line index
     this.lineToIndexMap = undefined;
 

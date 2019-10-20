@@ -1,7 +1,7 @@
 export class Line {
-  constructor(source, sourceLineNo) {
+  constructor(source) {
+    // Contains the original source code of this line
     this.source = source;
-    this.sourceLineNo = sourceLineNo;
     this.num = undefined;
     this.statements = [];
   }

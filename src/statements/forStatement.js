@@ -44,7 +44,7 @@ export class ForStatement extends BaseStatement {
         start: start.value,
         final: final.value,
         step: step.value,
-        entry: program.lineIndexToNumber(context.pc + 1),
+        entry: [context.cursor[0], context.cursor[1] + 1],
       });
     }
 

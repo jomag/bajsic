@@ -1,6 +1,6 @@
 import { popKeyword } from './utils';
 import { Keyword, TokenType } from '../lex';
-import { ListStatement } from '../statement';
+import { ListStatement } from '../statements/ListStatement';
 import { SyntaxError } from '../error';
 
 export const parseList = tokens => {
