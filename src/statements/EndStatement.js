@@ -8,13 +8,13 @@ export class EndStatement extends BaseStatement {
     this.blockType = blockType;
   }
 
-  exec() {
+  async exec(program) {
     switch (this.blockType) {
       case null:
       case Keyword.PROGRAM:
       case Keyword.FUNCTION: // <-- temporary!
-        // Return null to stop program execution
-        return null;
+        // Jump to end of program
+        return program.statements.length;
 
       default:
         throw new RuntimeError(

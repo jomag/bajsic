@@ -34,7 +34,7 @@ export const popType = (tokens, type) => {
 
   if (!tok) {
     const exp = (Array.isArray(type) ? type : [type]).join(' or ');
-    throw new SyntaxError(`Expected ${exp} at end of line`);
+    throw new SyntaxError(`Expected token with type ${exp} at end of line`);
   }
 
   expectToken(tok, type);
@@ -95,7 +95,9 @@ export const popKeyword = (tokens, keyword) => {
   const tok = tokens.shift();
 
   if (!tok) {
-    throw new SyntaxError(`Expected ${kws.join(' or ')} at end of line`);
+    throw new SyntaxError(
+      `Expected keyword ${kws.join(' or ')} at end of line`
+    );
   }
 
   expectKeyword(tok, keyword);

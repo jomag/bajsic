@@ -27,6 +27,8 @@ export const StatementType = {
   LET: 'let',
   NEXT: 'next',
   RESUME: 'resume',
+
+  BRANCH: 'branch',
 };
 
 export class BaseStatement {

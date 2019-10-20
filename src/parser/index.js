@@ -275,16 +275,17 @@ export const parseStatements = tokens => {
  * @param {number} sourceLineNo
  * @returns {Line}
  */
-export const parseLine = source => {
-  const line = new Line(source);
+export const parseLine = (source, sourceLineNo) => {
+  const line = new Line(source, sourceLineNo);
 
   // Lexical analyze
   let tokens;
   try {
-    tokens = tokenize(source);
+    tokens = tokenize(source, sourceLineNo);
   } catch (e) {
     if (e instanceof LexicalError) {
       e.code = source;
+      e.line = sourceLineNo;
     }
     throw e;
   }
@@ -300,6 +301,7 @@ export const parseLine = source => {
   } catch (e) {
     if (e instanceof SyntaxError) {
       e.code = source;
+      e.lineNumber = sourceLineNo;
     }
     throw e;
   }
@@ -322,5 +324,6 @@ export const parse = source => {
     }
   }
 
+  program.flatten();
   return program;
 };

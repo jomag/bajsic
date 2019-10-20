@@ -2,18 +2,18 @@ import { BaseStatement, StatementType } from '../statement';
 import { RuntimeError } from '../error';
 
 export class GotoStatement extends BaseStatement {
-  constructor(destination) {
+  constructor(label) {
     super(StatementType.GOTO);
-    this.destination = destination;
+    this.label = label;
   }
 
   async exec(program) {
-    const lineIndex = program.lineNumberToIndex(this.destination);
+    const target = program.labels[this.label];
 
-    if (lineIndex === undefined) {
-      throw new RuntimeError(`Undefined line: ${lineIndex}`);
+    if (target === undefined) {
+      throw new RuntimeError(`Undefined line: ${target}`);
     }
 
-    return [lineIndex, 0];
+    return target;
   }
 }

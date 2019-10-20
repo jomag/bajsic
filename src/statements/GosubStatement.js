@@ -8,13 +8,13 @@ export class GosubStatement extends BaseStatement {
   }
 
   exec(program, context) {
-    context.pushGosub([context.cursor[0], context.cursor[1] + 1]);
-    const lineIndex = program.lineNumberToIndex(this.destination);
+    context.push(context.pc + 1);
+    const target = program.labels[this.destination];
 
-    if (lineIndex === undefined) {
-      throw new RuntimeError(`Undefined line: ${lineIndex}`);
+    if (target === undefined) {
+      throw new RuntimeError(`Undefined line: ${target}`);
     }
 
-    return [lineIndex, 0];
+    return target;
   }
 }
