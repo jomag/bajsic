@@ -243,6 +243,11 @@ const instrFun = args => {
   return new Value(ValueType.INT, pos);
 };
 
+const spaceFun = ([n]) => {
+  validateNumber(n);
+  return new Value(ValueType.STRING, ' '.repeat(Math.floor(n.value)));
+};
+
 export const builtinFunctions = () => {
   return {
     sin: new BasicFunction(1, 0, ([angle]) => {
@@ -263,5 +268,6 @@ export const builtinFunctions = () => {
     SLEEP: new BasicFunction(1, 0, sleepFun),
     VAL: new BasicFunction(1, 0, valFun),
     ECHO: new BasicFunction(1, 0, echoFun),
+    SPACE$: new BasicFunction(1, 0, spaceFun),
   };
 };
