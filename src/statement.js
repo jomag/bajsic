@@ -27,6 +27,8 @@ export const StatementType = {
   LET: 'let',
   NEXT: 'next',
   RESUME: 'resume',
+
+  BRANCH: 'branch',
 };
 
 export class BaseStatement {
@@ -38,47 +40,5 @@ export class BaseStatement {
     }
 
     this.type = type;
-  }
-}
-
-export class PrintStatement extends BaseStatement {
-  constructor(channel, list) {
-    super(StatementType.PRINT);
-    this.channel = channel;
-    this.list = list;
-  }
-}
-
-export class GotoStatement extends BaseStatement {
-  constructor(destination) {
-    super(StatementType.GOTO);
-    this.destination = destination;
-  }
-
-  exec() {
-    return this.destination;
-  }
-}
-
-export class RunStatement extends BaseStatement {
-  constructor() {
-    super(StatementType.RUN);
-  }
-}
-
-export class RemarkStatement extends BaseStatement {
-  constructor() {
-    super(StatementType.REMARK);
-  }
-
-  exec() {
-    // Does nothing at runtime
-  }
-}
-
-export class ListStatement extends BaseStatement {
-  constructor(ranges) {
-    super(StatementType.LIST);
-    this.ranges = ranges;
   }
 }

@@ -1,27 +1,24 @@
+import { StatementType } from './statement';
+import { BranchStatement } from './statements/BranchStatement';
+import { GotoStatement } from './statements/GotoStatement';
+
 export class Program {
-  constructor(lines) {
+  constructor() {
     // Array of lines in sorted order
     this.lines = [];
 
-    // Map of line number to line index
-    this.lineToIndexMap = undefined;
-
-    if (lines) {
-      lines.map(line => this.add(line));
-    }
+    this.labels = {};
+    this.statements = [];
   }
 
   add(line) {
-    if (!line.num && line.num !== 0) {
+    const { num } = line;
+
+    if (!num && num !== 0) {
       throw new SyntaxError(
         `Attempt to add line without line number to program: ${line.source}`
       );
     }
-
-    // Invalidate the line map
-    this.lineToIndexMap = undefined;
-
-    const { num } = line;
 
     for (let i = 0; i <= this.lines.length; i++) {
       if (i === this.lines.length || this.lines[i].num > num) {
@@ -49,23 +46,40 @@ export class Program {
     return this.lines.filter(line => line.num >= from && to >= line.num);
   }
 
-  lineNumberToIndex(num) {
-    // Optimize: build and reuse a line number to index map
-    for (let i = 0; i < this.lines.length; i++) {
-      if (this.lines[i].num === num) {
-        return i;
+  flatten() {
+    const statements = [];
+    const labels = {};
+
+    const flattenBlock = block => {
+      for (const stmt of block) {
+        if (stmt.type === StatementType.IF) {
+          const thenLabel = `@${statements.length}.then`;
+          const elseLabel = `@${statements.length}.else`;
+          const endLabel = `@${statements.length}.end`;
+
+          statements.push(
+            new BranchStatement(stmt.conditionExpr, thenLabel, elseLabel)
+          );
+
+          labels[thenLabel] = statements.length;
+          flattenBlock(stmt.thenStatements);
+          statements.push(new GotoStatement(endLabel));
+          labels[elseLabel] = statements.length;
+          flattenBlock(stmt.elseStatements);
+          labels[endLabel] = statements.length;
+        } else {
+          statements.push(stmt);
+        }
+        statements.push('eol');
       }
+    };
+
+    for (const line of this.lines) {
+      labels[line.num] = statements.length;
+      flattenBlock(line.statements);
     }
 
-    return undefined;
-  }
-
-  lineIndexToNumber(idx) {
-    return this.lines[idx].num;
-  }
-
-  getLineByNumber(num) {
-    const idx = this.lineNumberToIndex(num);
-    return this.lines[idx];
+    this.statements = statements;
+    this.labels = labels;
   }
 }

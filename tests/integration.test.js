@@ -2,8 +2,7 @@ import fs from 'fs';
 import { expect } from 'chai';
 
 import { Stream } from '../src/stream';
-import { evaluateStatement } from '../src/evaluate';
-import { RunStatement } from '../src/statement';
+import { RunStatement } from '../src/statements/RunStatement';
 import { setupEnvironment } from '../src/utils';
 
 const tests = fs.readdirSync(__dirname).filter(name => name.endsWith('.bas'));
@@ -53,7 +52,7 @@ describe('Integration tests', () => {
       });
 
       try {
-        await evaluateStatement(new RunStatement(), program, context);
+        await new RunStatement().exec(program, context);
       } catch (e) {
         if (expectError) {
           receivedError = e;

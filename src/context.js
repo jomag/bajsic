@@ -35,8 +35,9 @@ class Scope {
 
 export class Context {
   constructor() {
-    // Program Counter, points at the current line index
+    // Program Counter
     this.pc = 0;
+
     this.scopes = [new Scope()];
     this.forStack = [];
     this.stack = [];

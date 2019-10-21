@@ -3,8 +3,9 @@ import { Program } from '../program';
 import { Line } from '../line';
 import { LexicalError } from '../error';
 
-import { GotoStatement, RemarkStatement, RunStatement } from '../statement';
-
+import { GotoStatement } from '../statements/GotoStatement';
+import { RemarkStatement } from '../statements/RemarkStatement';
+import { RunStatement } from '../statements/RunStatement';
 import { DebugStatement } from '../statements/DebugStatement';
 import { DimStatement } from '../statements/DimStatement';
 import { EndStatement } from '../statements/EndStatement';
@@ -323,5 +324,6 @@ export const parse = source => {
     }
   }
 
+  program.flatten();
   return program;
 };

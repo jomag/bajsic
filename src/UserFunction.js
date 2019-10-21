@@ -1,5 +1,4 @@
 import { evaluate } from './eval';
-import { RuntimeError } from './error';
 
 export class UserFunction {
   constructor(lineNumber) {
@@ -7,21 +6,11 @@ export class UserFunction {
   }
 
   async call(args, program, context) {
-    context.push(context.pc);
+    context.push(context.pc + 1);
     context.scope();
 
-    const defLineIndex = program.lineNumberToIndex(this.lineNumber);
-    const defLine = program.lines[defLineIndex];
-
-    if (defLine.statements.length !== 1) {
-      throw new RuntimeError(
-        `DEF FN is not single statement on line ${this.lineNumber}`,
-        context,
-        program
-      );
-    }
-
-    const defStatement = defLine.statements[0];
+    const address = program.labels[this.lineNumber];
+    const defStatement = program.statements[address];
     const name = defStatement.name.toUpperCase();
 
     let n = 0;
@@ -31,7 +20,7 @@ export class UserFunction {
     }
 
     // eslint-disable-next-line no-param-reassign
-    context.pc = program.lineNumberToIndex(this.lineNumber) + 1;
+    context.pc = address + 1;
     await evaluate(program, context);
 
     // eslint-disable-next-line no-param-reassign

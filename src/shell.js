@@ -58,7 +58,11 @@ export async function shell(program, context) {
       }
     } else if (line.num === undefined) {
       try {
-        await line.exec(program, context);
+        let pc = 0;
+        while (pc < line.statements.length) {
+          const next = await line.statements[pc].exec(program, context);
+          pc = next === undefined ? pc + 1 : next;
+        }
       } catch (e) {
         if (e instanceof RuntimeError) {
           e.setContext(context, program);
