@@ -4,7 +4,6 @@ import fs from 'fs';
 
 import io from './io';
 import { setupEnvironment } from './utils';
-import { Stream } from './stream';
 import { shell } from './shell';
 
 export const userInput = async prompt => {
@@ -43,19 +42,6 @@ const start = argv => {
       throw e;
     }
   }
-
-  context.inputStream = new Stream();
-  process.stdin.setEncoding('utf8');
-  process.stdin.on('data', data => {
-    context.inputStream.write(data);
-  });
-
-  context.outputStream = new Stream();
-  context.outputStream.on('data', () => {
-    context.outputStream.read();
-  });
-
-  context.outputStream.on('data', data => process.stdout.write(data));
 
   shell(program, context);
 };

@@ -18,17 +18,19 @@ export class InputStatement extends BaseStatement {
         prompt = `${q.str}${prompt}`;
       }
 
-      context.outputStream.write(prompt);
+      context.support.print(0, prompt, false);
 
-      const inp = await io.input(context.inputStream);
+      const inp = await context.support.input();
       const trimmed = inp.replace(/\n$/, '');
 
-      await assignIdentifierValue(
-        program,
-        context,
-        q.identifier,
-        new Value(ValueType.STRING, trimmed)
-      );
+      let val;
+      if (q.identifier.getType() !== ValueType.STRING) {
+        val = new Value(ValueType.INT, Number(trimmed));
+      } else {
+        val = new Value(ValueType.STRING, trimmed);
+      }
+
+      await assignIdentifierValue(program, context, q.identifier, val);
     }
   }
 }

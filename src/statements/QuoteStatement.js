@@ -14,6 +14,6 @@ export class QuoteStatement extends BaseStatement {
   }
 
   exec() {
-    throw new Error('QUOTE is not implemented');
+    console.warn('QUOTE is not implemented');
   }
 }

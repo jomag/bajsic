@@ -1,18 +1,16 @@
 import { BaseStatement, StatementType } from '../statement';
 
-export const OpenMode = {
-  INPUT: 'INPUT',
-  OUTPUT: 'OUTPUT',
-};
-
 export class OpenStatement extends BaseStatement {
-  constructor(filename, channel) {
+  constructor(filename, mode, channel) {
     super(StatementType.OPEN);
     this.filename = filename;
+    this.mode = mode;
     this.channel = channel;
   }
 
-  exec() {
-    throw new Error('OPEN is not implemented');
+  async exec(program, context) {
+    const filename = this.filename.value;
+    const channel = this.channel.value;
+    await context.support.open(filename, this.mode, channel);
   }
 }

@@ -3,13 +3,14 @@
 
 import { popKeyword, popOptionalType, popOptionalKeyword } from './utils';
 import { Keyword, TokenType } from '../lex';
-import { OpenStatement, OpenMode } from '../statements/OpenStatement';
+import { OpenStatement } from '../statements/OpenStatement';
 import { parseExpression } from './expression';
+import { OpenMode } from '../support/storage';
 
 export const parseOpenStatement = tokens => {
   popKeyword(tokens, Keyword.OPEN);
   const filename = parseExpression(tokens);
-  let mode;
+  let mode = OpenMode.INPUT;
 
   if (popOptionalKeyword(tokens, Keyword.FOR)) {
     const modeToken = popKeyword(tokens, [Keyword.INPUT, Keyword.OUTPUT]);

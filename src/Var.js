@@ -13,6 +13,7 @@
 // as there's no way to differentiate between a function
 // call and an index in an array.
 import { Expr } from './expr';
+import { ValueType } from './Value';
 
 export default class Var {
   /**
@@ -22,5 +23,15 @@ export default class Var {
   constructor(name, index) {
     this.name = name;
     this.index = index;
+  }
+
+  getType() {
+    // FIXME: handle type defined by DIM statement
+
+    if (this.name.endsWith('$')) {
+      return ValueType.STRING;
+    }
+
+    return ValueType.INT;
   }
 }
