@@ -39,7 +39,12 @@ export async function shell(program, context) {
 
   for (;;) {
     context.support.print(0, PROMPT, false);
-    const text = await context.support.input();
+    let text;
+    try {
+      text = await context.support.readLine(0);
+    } catch (e) {
+      console.log('SOME ERROR', e);
+    }
 
     let line;
 

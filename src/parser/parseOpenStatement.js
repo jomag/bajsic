@@ -1,6 +1,3 @@
-// FIXME: Incomplete parser. There's a lot of options
-// that are not (yet?) handled.
-
 import { popKeyword, popOptionalType, popOptionalKeyword } from './utils';
 import { Keyword, TokenType } from '../lex';
 import { OpenStatement } from '../statements/OpenStatement';

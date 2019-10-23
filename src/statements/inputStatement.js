@@ -20,7 +20,7 @@ export class InputStatement extends BaseStatement {
 
       context.support.print(0, prompt, false);
 
-      const inp = await context.support.input();
+      const inp = await context.support.readLine(this.channel.value);
       const trimmed = inp.replace(/\n$/, '');
 
       let val;

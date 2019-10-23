@@ -2,6 +2,7 @@ import fs from 'fs';
 import util from 'util';
 
 import { Stream } from '../stream';
+import { RuntimeError } from '../error';
 
 const fsOpen = util.promisify(fs.open);
 const fsWrite = util.promisify(fs.write);
@@ -18,16 +19,22 @@ class Support {
 
     this.inputStream = new Stream();
     process.stdin.setEncoding('utf8');
-    process.stdin.on('data', data => {
-      this.inputStream.write(data);
-    });
 
+    this.stdinDataHandler = data => this.inputStream.write(data);
+    // process.stdin.on('data', this.stdinDataHandler);
+
+    this.outputStreamDataHandler = data => process.stdout.write(data);
     this.outputStream = new Stream();
-    this.outputStream.on('data', () => {
-      this.outputStream.read();
-    });
+    this.outputStream.on('data', this.outputStreamDataHandler);
+  }
 
-    this.outputStream.on('data', data => process.stdout.write(data));
+  finalize() {
+    for (const fd of Object.values(this.fileDescriptors)) {
+      fsClose(fd);
+    }
+
+    this.outputStream.removeAllListeners();
+    this.inputStream.removeAllListeners();
   }
 
   async open(filename, mode, channel) {
@@ -69,15 +76,37 @@ class Support {
 
   /**
    * @param {number} channel
+   * @returns {string}
    */
-  async input(channel) {
+  async readLine(channel) {
+    console.log('AH');
     if (channel === 0) {
       return new Promise(resolve => {
         this.inputStream.once('data', data => resolve(data));
       });
-    } else {
-      return fsRead;
     }
+    console.log('ah6');
+
+    const fd = this.fileDescriptors[channel];
+
+    if (!fd) {
+      throw new RuntimeError('Bad file number');
+    }
+
+    const buf = Buffer.alloc(4);
+    let line = '';
+
+    while (fs.readSync(fd, buf, 0, 1) > 0) {
+      const char = buf.toString('utf8')[0];
+
+      if (char === '\n') {
+        break;
+      }
+
+      line += char;
+    }
+
+    return line;
   }
 }
 
