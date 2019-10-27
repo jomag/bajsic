@@ -2,7 +2,6 @@ import fs from 'fs';
 import util from 'util';
 import readline from 'readline';
 
-import { Stream } from '../stream';
 import { RuntimeError } from '../error';
 
 const fsOpen = util.promisify(fs.open);
