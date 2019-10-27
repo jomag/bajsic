@@ -3,11 +3,13 @@ import { expect } from 'chai';
 
 import { RunStatement } from '../src/statements/RunStatement';
 import { setupEnvironment } from '../src/utils';
+import { BaseSupport } from '../src/support';
 
 const tests = fs.readdirSync(__dirname).filter(name => name.endsWith('.bas'));
 
-class TestSupport {
+class TestSupport extends BaseSupport {
   constructor() {
+    super();
     this.output = '';
     this.files = {};
     this.openFiles = {};
@@ -58,8 +60,6 @@ class TestSupport {
 
     const { filename, line } = this.openFiles[channel];
     const lines = this.files[filename].split('\n');
-    console.log('LINES:', lines);
-    console.log('LINE', line);
     this.openFiles[channel].line += 1;
     const data = lines[line];
     return data;

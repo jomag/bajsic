@@ -2,7 +2,7 @@ import { popKeyword, popOptionalType, popOptionalKeyword } from './utils';
 import { Keyword, TokenType } from '../lex';
 import { OpenStatement } from '../statements/OpenStatement';
 import { parseExpression } from './expression';
-import { OpenMode } from '../support/storage';
+import { OpenMode } from '../support';
 
 export const parseOpenStatement = tokens => {
   popKeyword(tokens, Keyword.OPEN);

@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import Support, { OpenMode } from './storage';
+import Support from './node';
+import { OpenMode } from '.';
 
 describe('Class: Support', () => {
   let support;

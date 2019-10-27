@@ -7,7 +7,6 @@ import { UserFunction } from './UserFunction';
 import { DataStatement } from './statements/DataStatement';
 import { DefStatement } from './statements/DefStatement';
 import { Program } from './program';
-import Support from './support/storage';
 
 class Scope {
   // FIXME:

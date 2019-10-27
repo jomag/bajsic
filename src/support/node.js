@@ -2,19 +2,16 @@ import fs from 'fs';
 import util from 'util';
 import readline from 'readline';
 
+import { BaseSupport, OpenMode } from '.';
 import { RuntimeError } from '../error';
 
 const fsOpen = util.promisify(fs.open);
 const fsWrite = util.promisify(fs.write);
 const fsClose = util.promisify(fs.close);
 
-export const OpenMode = {
-  INPUT: 'INPUT',
-  OUTPUT: 'OUTPUT',
-};
-
-class Support {
+class Support extends BaseSupport {
   constructor() {
+    super();
     this.fileDescriptors = {};
 
     this.rl = readline.createInterface({
@@ -49,10 +46,8 @@ class Support {
   }
 
   /**
-   *
    * @param {number} channel
-   * @param {Value} value
-   * @param {boolean} lineBreak
+   * @param {string} value
    */
   async print(channel, value) {
     const buf = `${value}`;
