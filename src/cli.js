@@ -5,7 +5,7 @@ import fs from 'fs';
 import io from './io';
 import { setupEnvironment } from './utils';
 import { shell } from './shell';
-import Support from './support/storage';
+import Support from './support/node';
 
 export const userInput = async prompt => {
   const rl = readline.createInterface({

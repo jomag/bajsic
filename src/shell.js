@@ -2,7 +2,6 @@ import { RuntimeError } from './error';
 import { Program } from './program';
 import { Context } from './context';
 import { parseLine } from './parser';
-import io from './io';
 
 const PROMPT = '] ';
 

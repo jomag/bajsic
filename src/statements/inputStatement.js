@@ -1,5 +1,4 @@
 import { BaseStatement, StatementType } from '../statement';
-import io from '../io';
 import { assignIdentifierValue } from './utils';
 import { Value, ValueType } from '../Value';
 
