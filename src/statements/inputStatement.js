@@ -11,14 +11,12 @@ export class InputStatement extends BaseStatement {
   }
 
   async exec(program, context) {
+    const prompt = this.channel === undefined && '? ';
+
     for (const q of this.list) {
-      let prompt = '? ';
-
-      if (q.str) {
-        prompt = `${q.str}${prompt}`;
+      if (prompt) {
+        context.support.print(0, `${q.str || ''}${prompt}`, false);
       }
-
-      context.support.print(0, prompt, false);
 
       const inp = await context.support.readLine(
         this.channel ? this.channel.value : 0

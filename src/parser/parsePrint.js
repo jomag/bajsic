@@ -24,16 +24,14 @@ export const parsePrint = tokens => {
       break;
     }
 
-    let lineFeed = true;
-    const tok = popOptionalType(tokens, [TokenType.SEMICOLON, TokenType.COMMA]);
+    const delimiter = popOptionalType(tokens, [
+      TokenType.SEMICOLON,
+      TokenType.COMMA,
+    ]);
 
-    if (tok && tok.type === TokenType.SEMICOLON) {
-      lineFeed = false;
-    }
+    list.push([expr, delimiter && delimiter.type]);
 
-    list.push([expr, lineFeed]);
-
-    if (!tok) {
+    if (!delimiter) {
       break;
     }
   }

@@ -8,6 +8,6 @@
 120 fnend
 -------------
 Start recursion test
-120
-5040
+ 120 
+ 5040 
 Done!

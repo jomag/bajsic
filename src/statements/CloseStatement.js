@@ -7,6 +7,6 @@ export class CloseStatement extends BaseStatement {
   }
 
   async exec(program, context) {
-    await context.support.close(this.channel);
+    await context.support.close(this.channel.value);
   }
 }

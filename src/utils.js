@@ -1,10 +1,8 @@
 import { Context } from './context';
 import { builtinFunctions } from './BasicFunction';
 import { parse } from './parser';
-import Support from './support/storage';
 
-export const setupEnvironment = source => {
-  const support = new Support();
+export const setupEnvironment = (source, support) => {
   const context = new Context(support);
   const builtins = builtinFunctions();
   const program = parse(source);

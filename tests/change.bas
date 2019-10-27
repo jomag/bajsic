@@ -7,9 +7,9 @@
 70 CHANGE arrayChanges TO A
 80 PRINT A
 ---------------
-4
-65
-66
-67
-68
+ 4 
+ 65 
+ 66 
+ 67 
+ 68 
 ABCD

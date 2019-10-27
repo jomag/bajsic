@@ -5,6 +5,7 @@ import fs from 'fs';
 import io from './io';
 import { setupEnvironment } from './utils';
 import { shell } from './shell';
+import Support from './support/storage';
 
 export const userInput = async prompt => {
   const rl = readline.createInterface({
@@ -32,7 +33,7 @@ const start = argv => {
   }
 
   try {
-    const env = setupEnvironment(source);
+    const env = setupEnvironment(source, new Support());
     program = env.program;
     context = env.context;
   } catch (e) {

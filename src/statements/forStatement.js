@@ -27,7 +27,7 @@ export class ForStatement extends BaseStatement {
     if (this.statement) {
       let nextValue = start;
 
-      while (nextValue.isLessThan(final)) {
+      while (nextValue.isLessOrEqualTo(final)) {
         context.assignVariable(this.name, nextValue);
 
         const jumpTo = await this.statement.exec(program, context);

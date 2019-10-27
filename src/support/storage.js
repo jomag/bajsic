@@ -21,7 +21,6 @@ class Support {
     this.rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-      // prompt: 'OHAI> ',
     });
   }
 
@@ -33,7 +32,6 @@ class Support {
   }
 
   async open(filename, mode, channel) {
-    console.log(`open ${filename} as #${channel} for ${mode}`);
     if (this.fileDescriptors[channel]) {
       await fsClose(this.fileDescriptors[channel]);
       delete this.fileDescriptors[channel];
@@ -57,8 +55,8 @@ class Support {
    * @param {Value} value
    * @param {boolean} lineBreak
    */
-  async print(channel, value, lineBreak) {
-    const buf = lineBreak ? `${value}\n` : `${value}`;
+  async print(channel, value) {
+    const buf = `${value}`;
     if (channel === 0) {
       process.stdout.write(buf);
     } else {
