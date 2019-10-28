@@ -38,13 +38,7 @@ export async function shell(program, context) {
 
   for (;;) {
     context.support.print(0, PROMPT, false);
-    let text;
-    try {
-      text = await context.support.readLine(0);
-    } catch (e) {
-      console.log('SOME ERROR', e);
-    }
-
+    const text = await context.support.readLine(0);
     let line;
 
     try {

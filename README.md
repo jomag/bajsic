@@ -108,13 +108,6 @@ INPUT "Question"_A$
 
 Currently this is handled by treating `,`, `;` and `_` equally.
 
-## Error fixes in STUGA.BAS
-
-Line 80110 (saving game state):
-
-- Original: `80110 PRINT #1,A(I); FOR I=0 TO A(0)'&&&&&`
-- Fix: `80110 PRINT #1,A(I); FOR I=0 TO A(0)'&&&&&`
-
 ## References
 
 - [VAX Basic User Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY15B-TE_VAX_BASIC_User_Manual_Feb90.pdf) (1990)
