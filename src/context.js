@@ -7,6 +7,7 @@ import { UserFunction } from './UserFunction';
 import { DataStatement } from './statements/DataStatement';
 import { DefStatement } from './statements/DefStatement';
 import { Program } from './program';
+import { BaseSupport } from './support';
 
 class Scope {
   // FIXME:
@@ -34,7 +35,12 @@ class Scope {
 }
 
 export class Context {
-  constructor() {
+  /**
+   * @param {BaseSupport} support
+   */
+  constructor(support) {
+    this.support = support;
+
     // Program Counter
     this.pc = 0;
 

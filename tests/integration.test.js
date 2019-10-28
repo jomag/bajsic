@@ -1,11 +1,70 @@
 import fs from 'fs';
 import { expect } from 'chai';
 
-import { Stream } from '../src/stream';
 import { RunStatement } from '../src/statements/RunStatement';
 import { setupEnvironment } from '../src/utils';
+import { BaseSupport } from '../src/support';
 
 const tests = fs.readdirSync(__dirname).filter(name => name.endsWith('.bas'));
+
+class TestSupport extends BaseSupport {
+  constructor() {
+    super();
+    this.output = '';
+    this.files = {};
+    this.openFiles = {};
+  }
+
+  finalize() {}
+
+  open(filename, mode, channel) {
+    if (this.openFiles[channel]) {
+      throw new Error(`Channel #${channel} is already in use`);
+    }
+    this.openFiles[channel] = { filename, line: 0 };
+    if (!this.files[filename]) {
+      this.files[filename] = '';
+    }
+  }
+
+  close(channel) {
+    if (!this.openFiles[channel]) {
+      throw new Error(`Attempt to close unavailable channel: #${channel}`);
+    }
+    delete this.openFiles[channel];
+  }
+
+  print(channel, value) {
+    if (channel === 0) {
+      this.output += value;
+    } else {
+      if (!this.openFiles[channel]) {
+        throw new Error(`Channel #${channel} is not available`);
+      }
+
+      const { filename } = this.openFiles[channel];
+      this.files[filename] += value;
+    }
+  }
+
+  readLine(channel) {
+    if (channel === 0) {
+      throw new Error(
+        '"readLine" is not implemented for channel #0 in TestSupport'
+      );
+    }
+
+    if (!this.openFiles[channel]) {
+      throw new Error(`Channel #${channel} is not available`);
+    }
+
+    const { filename, line } = this.openFiles[channel];
+    const lines = this.files[filename].split('\n');
+    this.openFiles[channel].line += 1;
+    const data = lines[line];
+    return data;
+  }
+}
 
 describe('Integration tests', () => {
   for (const test of tests) {
@@ -35,7 +94,7 @@ describe('Integration tests', () => {
     }
 
     const src = basLines.join('\n');
-    const txt = txtLines.join('\n').trim();
+    const txt = txtLines.join('\n');
 
     it(`${test}`, async () => {
       if (skip) {
@@ -43,13 +102,8 @@ describe('Integration tests', () => {
         return;
       }
 
-      const { program, context } = setupEnvironment(src);
-      let output = '';
-
-      context.outputStream = new Stream();
-      context.outputStream.on('data', data => {
-        output += data;
-      });
+      const support = new TestSupport();
+      const { program, context } = setupEnvironment(src, support);
 
       try {
         await new RunStatement().exec(program, context);
@@ -66,7 +120,7 @@ describe('Integration tests', () => {
         expect(expectError).to.equal(receivedError.message);
       }
 
-      expect(output.trim()).to.equal(txt);
+      expect(support.output).to.equal(txt);
     });
   }
 });

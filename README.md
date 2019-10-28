@@ -82,6 +82,14 @@ Used once in the game:
 90064	X=CRT(1)
 ```
 
+### QUOTE
+
+Used when saving game state to disk:
+
+```basic
+80105	MARGIN #1,132 \ QUOTE #1 \ X=0'&&&&&
+```
+
 ### Underscores in INPUT statements
 
 INPUT statements allows "," or ";" to separate the string presented

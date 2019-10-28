@@ -4,8 +4,8 @@ import fs from 'fs';
 
 import io from './io';
 import { setupEnvironment } from './utils';
-import { Stream } from './stream';
 import { shell } from './shell';
+import Support from './support/node';
 
 export const userInput = async prompt => {
   const rl = readline.createInterface({
@@ -33,7 +33,7 @@ const start = argv => {
   }
 
   try {
-    const env = setupEnvironment(source);
+    const env = setupEnvironment(source, new Support());
     program = env.program;
     context = env.context;
   } catch (e) {
@@ -43,19 +43,6 @@ const start = argv => {
       throw e;
     }
   }
-
-  context.inputStream = new Stream();
-  process.stdin.setEncoding('utf8');
-  process.stdin.on('data', data => {
-    context.inputStream.write(data);
-  });
-
-  context.outputStream = new Stream();
-  context.outputStream.on('data', () => {
-    context.outputStream.read();
-  });
-
-  context.outputStream.on('data', data => process.stdout.write(data));
 
   shell(program, context);
 };

@@ -2,7 +2,6 @@ import { RuntimeError } from './error';
 import { Program } from './program';
 import { Context } from './context';
 import { parseLine } from './parser';
-import io from './io';
 
 const PROMPT = '] ';
 
@@ -38,9 +37,8 @@ export async function shell(program, context) {
   };
 
   for (;;) {
-    context.outputStream.write(PROMPT);
-    const text = await io.input(context.inputStream);
-
+    context.support.print(0, PROMPT, false);
+    const text = await context.support.readLine(0);
     let line;
 
     try {

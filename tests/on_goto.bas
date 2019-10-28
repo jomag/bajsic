@@ -12,10 +12,10 @@
 500 PRINT "Line 500: "; X
 510 END
 ------------
-Line 30: -2
-Line 30: -1
-Line 30: 0
-Line 200: 1
-Line 300: 2
-Line 400: 3
-Line 500: 4
+Line 30: -2 
+Line 30: -1 
+Line 30:  0 
+Line 200:  1 
+Line 300:  2 
+Line 400:  3 
+Line 500:  4 

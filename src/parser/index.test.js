@@ -2,7 +2,9 @@ import { expect } from 'chai';
 
 import { parseStatement } from '.';
 import { StatementType } from '../statement';
-import { tokenize } from '../lex';
+import { tokenize, TokenType } from '../lex';
+import { ValueType } from '../Value';
+import { ExprType } from '../expr';
 
 const T = text => tokenize(text);
 const P = text => parseStatement(T(text));
@@ -68,24 +70,32 @@ describe('Parse Statements', () => {
     it('single output', () => {
       const s = P('PRINT 123');
       expect(s.list.length).to.equal(1);
-      expect(s.list[0][1]).to.be.true;
+      expect(s.list[0][1]).to.be.undefined;
     });
 
-    it('single output without linebreak', () => {
+    it('single output without grouping', () => {
       const s = P('PRINT 123;');
       expect(s.list.length).to.equal(1);
-      expect(s.list[0][1]).to.be.false;
+      expect(s.list[0][1]).to.equal(TokenType.SEMICOLON);
     });
 
     it('multiple outputs', () => {
       const s = P('PRINT 123, 234; 345');
       const res = s.list.map(o => o[1]);
-      expect(res).to.deep.equal([true, false, true]);
+      expect(res).to.deep.equal([
+        TokenType.COMMA,
+        TokenType.SEMICOLON,
+        undefined,
+      ]);
     });
 
-    it.skip('with channel', () => {
-      // const s = P('PRINT #5, 123');
-      // expect(s.channel).to.deep.equal([{ type: TokenType.INT, value: 5 }]);
+    it('with channel', () => {
+      const s = P('PRINT #5, 123');
+      expect(s.channel).to.deep.equal({
+        type: ExprType.CONST,
+        valueType: ValueType.INT,
+        value: 5,
+      });
     });
   });
 

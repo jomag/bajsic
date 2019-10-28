@@ -9,5 +9,5 @@
 ---------
 Start
 Enter fna$
-3
+ 3 
 Done!

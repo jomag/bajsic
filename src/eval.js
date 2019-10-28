@@ -5,7 +5,6 @@ import { Program } from './program';
 /**
  * @param {Program} program
  * @param {any} context
- * @param {boolean} single only evaluate one line
  */
 export const evaluate = async (program, context) => {
   while (context.pc < program.statements.length) {

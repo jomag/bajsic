@@ -48,6 +48,10 @@ export class Value {
     return this.value < other.value;
   }
 
+  isLessOrEqualTo(other) {
+    return this.value <= other.value;
+  }
+
   add(value) {
     return new Value(this.type, this.value + value.value);
   }
