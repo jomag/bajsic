@@ -61,6 +61,24 @@ class Support extends BaseSupport {
     }
   }
 
+  waitForInput(timeout) {
+    return new Promise(resolve => {
+      const inputHandler = data => {
+        console.log('IN INPUT HANDLER: ', data);
+        clearTimeout(timeoutId);
+        resolve(data);
+      };
+
+      this.rl.once('line', inputHandler);
+
+      const timeoutId = setTimeout(() => {
+        console.log('IN TIMEOUT HANDLER');
+        this.rl.removeListener('line', inputHandler);
+        resolve(0);
+      }, timeout);
+    });
+  }
+
   /**
    * @param {number} channel
    * @returns {string}

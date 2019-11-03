@@ -42,6 +42,8 @@ const start = argv => {
     } else {
       throw e;
     }
+
+    process.exit(1);
   }
 
   shell(program, context);

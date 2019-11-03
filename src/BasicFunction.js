@@ -188,11 +188,12 @@ const asciiFun = args => {
   throw new IllegalFunctionCallError('Empty string');
 };
 
-const sleepFun = async ([seconds]) => {
+const sleepFun = async ([seconds], context) => {
   validateNumber(seconds);
   // FIXME: should be interrupted when user is typing any delimiter, such as return
-  await new Promise(resolve => setTimeout(resolve, seconds.value * 1000.0));
-  return new Value(ValueType.INT, 0);
+  //await new Promise(resolve => setTimeout(resolve, seconds.value * 1000.0));
+  const result = await context.support.waitForInput(seconds.value * 1000.0);
+  return new Value(ValueType.INT, result);
 };
 
 const valFun = async ([str]) => {
