@@ -24,6 +24,10 @@ export class BaseSupport {
     throw new Error('Not implemented');
   }
 
+  async printError(message) {
+    console.error(message + '\n');
+  }
+
   /**
    * @param {number} channel
    * @returns {string}

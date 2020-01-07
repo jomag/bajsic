@@ -10,7 +10,7 @@ const PROMPT = '] ';
  * @param {Context} context
  */
 export async function shell(program, context) {
-  const printError = err => {
+  const printError = async err => {
     let msg;
 
     if (err instanceof RuntimeError) {
@@ -29,22 +29,19 @@ export async function shell(program, context) {
       msg = err.message;
     }
 
-    if (context.errorStream) {
-      context.errorStream.write(`${msg}\n`);
-    } else {
-      console.error(msg);
-    }
+    await context.support.printError(msg);
   };
 
   for (;;) {
-    context.support.print(0, PROMPT, false);
+    await context.support.print(0, PROMPT, false);
     const text = await context.support.readLine(0);
     let line;
 
     try {
       line = parseLine(text.trim());
     } catch (e) {
-      printError(e);
+      console.error(e);
+      await printError(e);
 
       // eslint-disable-next-line no-continue
       continue;
@@ -64,17 +61,19 @@ export async function shell(program, context) {
       } catch (e) {
         if (e instanceof RuntimeError) {
           e.setContext(context, program);
-          printError(e);
+          await printError(e);
           return;
         }
 
-        printError(`There was an unhandled error:`);
-        printError(e);
-        printError(JSON.stringify(e.stack, null, 2));
+        await printError(`There was an unhandled error:`);
+        await printError(e);
+        await printError(JSON.stringify(e.stack, null, 2));
         console.log(e.stack);
         console.trace();
-        printError(
-          `Context: line index ${context.pc}:\n    ${program.lines[context.pc].source}`
+        await printError(
+          `Context: line index ${context.pc}:\n    ${
+            program.lines[context.pc].source
+          }`
         );
       }
     } else {
