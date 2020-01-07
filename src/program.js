@@ -1,6 +1,7 @@
 import { StatementType } from './statement';
 import { BranchStatement } from './statements/BranchStatement';
 import { GotoStatement } from './statements/GotoStatement';
+import { SyntaxError } from './error';
 
 export class Program {
   constructor() {
