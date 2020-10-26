@@ -1,5 +1,4 @@
-import { RuntimeError } from '../error';
-import { Value, ValueType } from '../Value';
+import { Value, ValueType, castValue } from '../Value';
 import Var from '../Var';
 import { Program } from '../program';
 import { Context } from '../context';
@@ -24,12 +23,7 @@ export const assignIdentifierValue = async (
     }
 
     const numIndex = index.map(indexValue => {
-      if (indexValue.type !== ValueType.INT) {
-        throw new RuntimeError(
-          'Only numeric values are allowed as array index'
-        );
-      }
-      return indexValue.value;
+      return castValue(indexValue, ValueType.INT).value;
     });
 
     context.setArrayItem(identifier.name, numIndex, value);

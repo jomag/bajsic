@@ -1,4 +1,4 @@
-import { InternalError } from './error';
+import { InternalError, RuntimeError } from './error';
 
 /**
  * @enum {string}
@@ -65,3 +65,27 @@ export class Value {
     }
   }
 }
+
+/**
+ *
+ * @param {Value} value
+ * @param {ValueType} toType
+ * @returns {Value}
+ */
+export const castValue = (value, toType) => {
+  if (value.type === toType) {
+    return value;
+  }
+
+  if (value.type === ValueType.INT && toType === ValueType.FLOAT) {
+    return new Value(toType, value.value);
+  }
+
+  if (value.type === ValueType.FLOAT && toType === ValueType.INT) {
+    return new Value(toType, Math.floor(value.value));
+  }
+
+  throw new RuntimeError(
+    `Invalid cast from value of type "${value.type}" to "${toType}"`
+  );
+};

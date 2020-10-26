@@ -13,6 +13,7 @@ class Support extends BaseSupport {
   constructor() {
     super();
     this.fileDescriptors = {};
+    this.inputBuffer = [];
 
     this.rl = readline.createInterface({
       input: process.stdin,
@@ -62,16 +63,19 @@ class Support extends BaseSupport {
   }
 
   waitForInput(timeout) {
+    let timeoutId;
+
     return new Promise(resolve => {
       const inputHandler = data => {
         console.log('IN INPUT HANDLER: ', data);
+        this.inputBuffer.push(data);
         clearTimeout(timeoutId);
-        resolve(data);
+        resolve(1);
       };
 
       this.rl.once('line', inputHandler);
 
-      const timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(() => {
         console.log('IN TIMEOUT HANDLER');
         this.rl.removeListener('line', inputHandler);
         resolve(0);
@@ -85,6 +89,10 @@ class Support extends BaseSupport {
    */
   async readLine(channel) {
     if (channel === 0) {
+      if (this.inputBuffer.length > 0) {
+        return this.inputBuffer.shift();
+      }
+
       return new Promise(resolve => {
         this.rl.once('line', data => resolve(data));
       });

@@ -1,5 +1,5 @@
 // @ts-check
-import { Value, ValueType } from './Value';
+import { Value, ValueType, castValue } from './Value';
 import { RuntimeError, OutOfDataError } from './error';
 import BasicArray from './BasicArray';
 import { BasicFunction } from './BasicFunction';
@@ -8,6 +8,7 @@ import { DataStatement } from './statements/DataStatement';
 import { DefStatement } from './statements/DefStatement';
 import { Program } from './program';
 import { BaseSupport } from './support';
+import { valueTypeFromName } from './Var';
 
 class Scope {
   // FIXME:
@@ -141,11 +142,13 @@ export class Context {
   }
 
   assignConst(name, value) {
-    this.scopes[0].constants[name.toUpperCase()] = value;
+    const type = valueTypeFromName(name);
+    this.scopes[0].constants[name.toUpperCase()] = castValue(value, type);
   }
 
   assignVariable(name, value) {
-    this.scopes[0].variables[name.toUpperCase()] = value;
+    const type = valueTypeFromName(name);
+    this.scopes[0].variables[name.toUpperCase()] = castValue(value, type);
   }
 
   /**

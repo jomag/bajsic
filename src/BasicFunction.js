@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { RuntimeError, IllegalFunctionCallError } from './error';
-import { Value, ValueType } from './Value';
+import { Value, ValueType, castValue } from './Value';
 
 export class BasicFunction {
   /**
@@ -58,8 +58,8 @@ const timeDollar = args => {
   let timeOfDay;
 
   if (minutesBeforeMidnight) {
-    validateValueType(minutesBeforeMidnight, ValueType.INT);
-    minutesBeforeMidnight = minutesBeforeMidnight.value;
+    minutesBeforeMidnight = castValue(minutesBeforeMidnight, ValueType.INT)
+      .value;
   }
 
   if (minutesBeforeMidnight === undefined || minutesBeforeMidnight === 0) {
@@ -89,11 +89,10 @@ const timeDollar = args => {
 };
 
 const dateDollar = args => {
-  const dateArg = args[0];
+  const dateArg = args[0] && castValue(args[0], ValueType.INT);
   let date;
 
   if (dateArg) {
-    validateValueType(dateArg, ValueType.INT);
     const dateInt = dateArg.value;
     const year = 1970 + Math.floor(dateInt / 1000);
     const dayOfYear = dateInt % 1000;
@@ -114,9 +113,8 @@ const len = args => {
 
 const leftDollar = args => {
   validateValueType(args[0], ValueType.STRING);
-  validateValueType(args[1], ValueType.INT);
 
-  const n = args[1].value;
+  const n = castValue(args[1], ValueType.INT).value;
 
   if (n >= 0) {
     return new Value(ValueType.STRING, args[0].value.slice(0, n));
@@ -191,7 +189,7 @@ const asciiFun = args => {
 const sleepFun = async ([seconds], context) => {
   validateNumber(seconds);
   // FIXME: should be interrupted when user is typing any delimiter, such as return
-  //await new Promise(resolve => setTimeout(resolve, seconds.value * 1000.0));
+  // await new Promise(resolve => setTimeout(resolve, seconds.value * 1000.0));
   const result = await context.support.waitForInput(seconds.value * 1000.0);
   return new Value(ValueType.INT, result);
 };

@@ -90,6 +90,19 @@ Used when saving game state to disk:
 80105	MARGIN #1,132 \ QUOTE #1 \ X=0'&&&&&
 ```
 
+### SLEEP
+
+In all used references, SLEEP is a statement. But in the game it is used as
+a function:
+
+```basic
+09419	D=SLEEP(3) \ IF D THEN INPUT ""_A$
+```
+
+From all usages in the code it seems like `SLEEP` will sleep for the specified
+number of seconds, unless interrupted by user input. The return value is
+true if the function was interrupted before its timeout.
+
 ### Underscores in INPUT statements
 
 INPUT statements allows "," or ";" to separate the string presented
