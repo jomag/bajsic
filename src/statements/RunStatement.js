@@ -12,5 +12,6 @@ export class RunStatement extends BaseStatement {
     }
     context.prepare(program);
     await evaluate(program, context);
+    context.support.clearInputBuffer();
   }
 }

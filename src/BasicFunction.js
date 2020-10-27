@@ -21,8 +21,9 @@ export class BasicFunction {
         args.length > this.argCount + this.optArgCount
       ) {
         throw new RuntimeError(
-          `Expected ${this.argCount} to ${this.argCount +
-            this.optArgCount} arguments, got ${args.length}`
+          `Expected ${this.argCount} to ${
+            this.argCount + this.optArgCount
+          } arguments, got ${args.length}`
         );
       }
     } else if (args.length !== this.argCount) {
@@ -35,7 +36,7 @@ export class BasicFunction {
   }
 }
 
-const twoDigits = n => (n > 9 ? `${n}` : `0${n}`);
+const twoDigits = (n) => (n > 9 ? `${n}` : `0${n}`);
 
 /**
  * @param {Value} value
@@ -47,13 +48,13 @@ const validateValueType = (value, type) => {
   }
 };
 
-const validateNumber = value => {
+const validateNumber = (value) => {
   if (!value.isNumeric()) {
     throw new RuntimeError(`Expected numeric value, got ${value.type}`);
   }
 };
 
-const timeDollar = args => {
+const timeDollar = (args) => {
   let minutesBeforeMidnight = args ? args[0] : 0;
   let timeOfDay;
 
@@ -88,7 +89,7 @@ const timeDollar = args => {
   return new Value(ValueType.STRING, result);
 };
 
-const dateDollar = args => {
+const dateDollar = (args) => {
   const dateArg = args[0] && castValue(args[0], ValueType.INT);
   let date;
 
@@ -106,12 +107,12 @@ const dateDollar = args => {
   return new Value(ValueType.STRING, result);
 };
 
-const len = args => {
+const len = (args) => {
   validateValueType(args[0], ValueType.STRING);
   return new Value(ValueType.INT, args[0].value.length);
 };
 
-const leftDollar = args => {
+const leftDollar = (args) => {
   validateValueType(args[0], ValueType.STRING);
 
   const n = castValue(args[1], ValueType.INT).value;
@@ -123,7 +124,7 @@ const leftDollar = args => {
   return new Value(ValueType.STRING, args[0].value);
 };
 
-const intFun = args => {
+const intFun = (args) => {
   validateNumber(args[0]);
   return new Value(ValueType.INT, Math.floor(args[0].value));
 };
@@ -133,13 +134,13 @@ const rndFun = () => {
   return new Value(ValueType.FLOAT, Math.random());
 };
 
-const chrFun = args => {
+const chrFun = (args) => {
   validateNumber(args[0]);
   const i = Math.floor(args[0].value);
   return new Value(ValueType.STRING, String.fromCharCode(i));
 };
 
-const rightFun = args => {
+const rightFun = (args) => {
   // Once again, the ref and both Stuga, C64 BASIC and GWBASIC differ
   // According to ref, this function should return all characters
   // from the nth until end of string. All other implementations
@@ -159,7 +160,7 @@ const echoFun = () => {
   return new Value(ValueType.INT, 1);
 };
 
-const midFun = args => {
+const midFun = (args) => {
   const [strVal, startVal, lenVal] = args;
   validateValueType(strVal, ValueType.STRING);
   validateNumber(startVal);
@@ -175,7 +176,7 @@ const midFun = args => {
   return new Value(ValueType.STRING, sub);
 };
 
-const asciiFun = args => {
+const asciiFun = (args) => {
   const [str] = args;
   validateValueType(str, ValueType.STRING);
 
@@ -188,8 +189,6 @@ const asciiFun = args => {
 
 const sleepFun = async ([seconds], context) => {
   validateNumber(seconds);
-  // FIXME: should be interrupted when user is typing any delimiter, such as return
-  // await new Promise(resolve => setTimeout(resolve, seconds.value * 1000.0));
   const result = await context.support.waitForInput(seconds.value * 1000.0);
   return new Value(ValueType.INT, result);
 };
@@ -200,7 +199,7 @@ const valFun = async ([str]) => {
   return new Value(ValueType.FLOAT, num);
 };
 
-const instrFun = args => {
+const instrFun = (args) => {
   // The ref says three arguments are required, but stuga.bas does
   // not use the start index. So this implementation accepts either.
   /* eslint-disable prefer-destructuring */

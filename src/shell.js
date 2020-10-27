@@ -52,7 +52,7 @@ export async function shell(program, context) {
 
     if (line.num !== undefined) {
       if (line.statements.length === 0) {
-        console.error(`FIXME: should delete line ${line.lineNo}`);
+        console.error(`FIXME: should delete line ${line.num}`);
       } else {
         program.add(line);
       }

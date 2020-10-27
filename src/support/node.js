@@ -65,9 +65,8 @@ class Support extends BaseSupport {
   waitForInput(timeout) {
     let timeoutId;
 
-    return new Promise(resolve => {
-      const inputHandler = data => {
-        console.log('IN INPUT HANDLER: ', data);
+    return new Promise((resolve) => {
+      const inputHandler = (data) => {
         this.inputBuffer.push(data);
         clearTimeout(timeoutId);
         resolve(1);
@@ -76,7 +75,6 @@ class Support extends BaseSupport {
       this.rl.once('line', inputHandler);
 
       timeoutId = setTimeout(() => {
-        console.log('IN TIMEOUT HANDLER');
         this.rl.removeListener('line', inputHandler);
         resolve(0);
       }, timeout);
@@ -93,8 +91,8 @@ class Support extends BaseSupport {
         return this.inputBuffer.shift();
       }
 
-      return new Promise(resolve => {
-        this.rl.once('line', data => resolve(data));
+      return new Promise((resolve) => {
+        this.rl.once('line', (data) => resolve(data));
       });
     }
 
@@ -118,6 +116,10 @@ class Support extends BaseSupport {
     }
 
     return line;
+  }
+
+  clearInputBuffer() {
+    this.inputBuffer = [];
   }
 }
 
