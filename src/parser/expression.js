@@ -16,6 +16,7 @@ import {
 } from '../expr';
 
 import { ValueType } from '../Value';
+import { SyntaxError } from '../error';
 
 const Operator = {
   EXP: 'EXP',

@@ -1,5 +1,6 @@
 import { Token, TokenType } from '../lex';
 import { Value, ValueType } from '../Value';
+import { SyntaxError } from '../error';
 
 export const expectLineLength = (tokens, length) => {
   if (tokens.length > length) {

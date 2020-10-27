@@ -11,6 +11,14 @@ export class SyntaxError extends Error {
     super(...params);
     this.message = message;
   }
+
+  toString() {
+    if (this.code) {
+      return `Syntax Error: ${this.message}: ${this.code}`;
+    }
+
+    return `Syntax Error: ${this.message}`;
+  }
 }
 
 export class RuntimeError extends Error {

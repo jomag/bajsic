@@ -1,7 +1,7 @@
 import { TokenType, Keyword, tokenize } from '../lex';
 import { Program } from '../program';
 import { Line } from '../line';
-import { LexicalError } from '../error';
+import { LexicalError, SyntaxError } from '../error';
 
 import { GotoStatement } from '../statements/GotoStatement';
 import { RemarkStatement } from '../statements/RemarkStatement';

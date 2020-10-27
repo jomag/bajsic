@@ -66,6 +66,6 @@ export class PrintStatement extends BaseStatement {
       }
     }
 
-    context.support.print(channel, str);
+    await context.support.print(channel, str);
   }
 }

@@ -6,6 +6,7 @@ import io from './io';
 import { setupEnvironment } from './utils';
 import { shell } from './shell';
 import Support from './support/node';
+import { SyntaxError } from './error';
 
 export const userInput = async prompt => {
   const rl = readline.createInterface({

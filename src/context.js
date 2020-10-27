@@ -49,8 +49,6 @@ export class Context {
     this.forStack = [];
     this.stack = [];
     this.debugger = null;
-    this.inputStream = undefined;
-    this.outputStream = undefined;
 
     /** @type {Value[]} */
     this.data = [];
