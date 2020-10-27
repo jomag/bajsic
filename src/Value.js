@@ -59,6 +59,7 @@ export class Value {
   isTrue() {
     switch (this.type) {
       case ValueType.INT:
+      case ValueType.FLOAT:
         return this.value !== 0;
       default:
         throw new InternalError(`isTrue not implemented for type ${this.type}`);

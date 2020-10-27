@@ -10,10 +10,10 @@ describe('LetStatement', () => {
   it('assigns value to variable', async () => {
     const context = new Context();
     const expr = new ConstExpr(ValueType.STRING, 'Popcorn!');
-    const identifier = new Var('a');
+    const identifier = new Var('a$');
     const stmt = new LetStatement(identifier, expr);
     await stmt.exec(undefined, context);
-    expect(context.scopes[0].variables.A).to.deep.equal({
+    expect(context.scopes[0].variables['A$']).to.deep.equal({
       type: ValueType.STRING,
       value: 'Popcorn!',
     });
@@ -23,7 +23,10 @@ describe('LetStatement', () => {
     const context = new Context();
     context.assignArray(
       'v',
-      new BasicArray(ValueType.STRING, [[0, 3], [0, 3]])
+      new BasicArray(ValueType.STRING, [
+        [0, 3],
+        [0, 3],
+      ])
     );
 
     const stmt = new LetStatement(

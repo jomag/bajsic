@@ -1,6 +1,6 @@
-10 X="ABCabcÅÄÖåäö"
-20 FOR I=1 TO LEN(X)
-30 C$ = MID$(X, I, 1)
+10 X$="ABCabcÅÄÖåäö"
+20 FOR I=1 TO LEN(X$)
+30 C$ = MID$(X$, I, 1)
 40 PRINT C$; " =>"; ASCII(C$)
 50 NEXT I
 --------
