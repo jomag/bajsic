@@ -15,20 +15,20 @@
   "license": "ISC",
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^6.5.1",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-config-prettier": "^6.3.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jsdoc": "^15.9.10",
-    "mocha": "^6.1.4",
-    "nyc": "^14.1.1"
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsdoc": "^15.12.2",
+    "mocha": "^6.2.3",
+    "nyc": "^15.1.0"
   },
   "dependencies": {
     "chalk": "^2.4.2",
     "esm": "^3.2.25",
-    "moment": "^2.24.0",
-    "why-is-node-running": "^2.1.0",
-    "yargs": "^13.2.4"
+    "moment": "^2.29.1",
+    "why-is-node-running": "^2.2.0",
+    "yargs": "^13.3.2"
   },
   "prettier": {
     "trailingComma": "es5",

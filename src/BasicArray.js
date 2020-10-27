@@ -7,7 +7,7 @@
 // has length 4 and the second has length 5.
 
 import { RuntimeError } from './error';
-import { Value, ValueType } from './Value';
+import { Value, ValueType, castValue } from './Value';
 
 export default class BasicArray {
   /**
@@ -40,14 +40,9 @@ export default class BasicArray {
    * @param {Value} value
    */
   set(path, value) {
-    if (value.type !== this.type) {
-      throw new RuntimeError(
-        `Assigning value of type "${value.type}" to array of type "${this.type}"`
-      );
-    }
-
     const index = this.pathToIndex(path);
-    this.data[index] = value.value;
+    const casted = castValue(value, this.type);
+    this.data[index] = casted.value;
   }
 
   get(path) {

@@ -47,11 +47,13 @@ export async function shell(program, context) {
       continue;
     }
 
-    if (line.statements.length === 0) {
-      if (line.num !== undefined) {
-        console.error(`FIXME: should delete line ${line.lineNo}`);
+    if (line.num !== undefined) {
+      if (line.statements.length === 0) {
+        console.error(`FIXME: should delete line ${line.num}`);
+      } else {
+        program.add(line);
       }
-    } else if (line.num === undefined) {
+    } else {
       try {
         let pc = 0;
         while (pc < line.statements.length) {
@@ -76,8 +78,6 @@ export async function shell(program, context) {
           }`
         );
       }
-    } else {
-      program.add(line);
     }
   }
 }

@@ -15,6 +15,18 @@
 import { Expr } from './expr';
 import { ValueType } from './Value';
 
+export const valueTypeFromName = name => {
+  if (name.endsWith('$')) {
+    return ValueType.STRING;
+  }
+
+  if (name.endsWith('%')) {
+    return ValueType.INT;
+  }
+
+  return ValueType.FLOAT;
+};
+
 export default class Var {
   /**
    * @param {string} name
@@ -26,12 +38,6 @@ export default class Var {
   }
 
   getType() {
-    // FIXME: handle type defined by DIM statement
-
-    if (this.name.endsWith('$')) {
-      return ValueType.STRING;
-    }
-
-    return ValueType.INT;
+    return valueTypeFromName(this.name);
   }
 }

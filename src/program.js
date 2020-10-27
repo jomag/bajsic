@@ -10,6 +10,9 @@ export class Program {
 
     this.labels = {};
     this.statements = [];
+
+    // True if program has been modified since flattened.
+    this.modified = false;
   }
 
   add(line) {
@@ -32,11 +35,12 @@ export class Program {
         break;
       }
     }
+
+    this.modified = true;
   }
 
   getUserFunctions() {
     const functions = [];
-
     return functions;
   }
 
@@ -44,14 +48,14 @@ export class Program {
     // We don't know if 'from' and 'to' points directly
     // at lines that are defined, so we can't rely on the line
     // map to find the first and last index to return.
-    return this.lines.filter(line => line.num >= from && to >= line.num);
+    return this.lines.filter((line) => line.num >= from && to >= line.num);
   }
 
   flatten() {
     const statements = [];
     const labels = {};
 
-    const flattenBlock = block => {
+    const flattenBlock = (block) => {
       for (const stmt of block) {
         if (stmt.type === StatementType.IF) {
           const thenLabel = `@${statements.length}.then`;
@@ -82,5 +86,6 @@ export class Program {
 
     this.statements = statements;
     this.labels = labels;
+    this.modified = false;
   }
 }

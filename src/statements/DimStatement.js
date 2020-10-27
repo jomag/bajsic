@@ -1,8 +1,8 @@
 import { BaseStatement, StatementType } from '../statement';
 import BasicArray from '../BasicArray';
-import { ValueType } from '../Value';
 import { Context } from '../context';
 import { Program } from '../program';
+import { valueTypeFromName } from '../Var';
 
 export class DimStatement extends BaseStatement {
   constructor(arrays) {
@@ -16,18 +16,8 @@ export class DimStatement extends BaseStatement {
    */
   exec(program, context) {
     for (const name of Object.keys(this.arrays)) {
-      console.warn('DimStatement always use type "number"');
-
-      // FIXME: does not handle explicit data types
-      let dataType = ValueType.INT;
-
-      if (name.endsWith('$')) {
-        dataType = ValueType.STRING;
-      } else if (name.endsWith('%')) {
-        dataType = ValueType.INT;
-      }
-
-      context.assignArray(name, new BasicArray(dataType, this.arrays[name]));
+      const valueType = valueTypeFromName(name);
+      context.assignArray(name, new BasicArray(valueType, this.arrays[name]));
     }
   }
 }
