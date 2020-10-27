@@ -13,7 +13,7 @@ describe('LetStatement', () => {
     const identifier = new Var('a$');
     const stmt = new LetStatement(identifier, expr);
     await stmt.exec(undefined, context);
-    expect(context.scopes[0].variables['A$']).to.deep.equal({
+    expect(context.scopes[0].variables.A$).to.deep.equal({
       type: ValueType.STRING,
       value: 'Popcorn!',
     });

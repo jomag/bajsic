@@ -5,7 +5,7 @@ import { RunStatement } from '../src/statements/RunStatement';
 import { setupEnvironment } from '../src/utils';
 import { BaseSupport } from '../src/support';
 
-const tests = fs.readdirSync(__dirname).filter(name => name.endsWith('.bas'));
+const tests = fs.readdirSync(__dirname).filter((name) => name.endsWith('.bas'));
 
 class TestSupport extends BaseSupport {
   constructor() {
@@ -64,6 +64,8 @@ class TestSupport extends BaseSupport {
     const data = lines[line];
     return data;
   }
+
+  clearInputBuffer() {}
 }
 
 describe('Integration tests', () => {
