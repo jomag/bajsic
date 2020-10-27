@@ -7,6 +7,9 @@ export class RunStatement extends BaseStatement {
   }
 
   async exec(program, context) {
+    if (program.modified) {
+      program.flatten();
+    }
     context.prepare(program);
     await evaluate(program, context);
   }

@@ -10,7 +10,7 @@ const PROMPT = '] ';
  * @param {Context} context
  */
 export async function shell(program, context) {
-  const printError = err => {
+  const printError = (err) => {
     let msg;
 
     if (err instanceof RuntimeError) {
@@ -50,11 +50,13 @@ export async function shell(program, context) {
       continue;
     }
 
-    if (line.statements.length === 0) {
-      if (line.num !== undefined) {
+    if (line.num !== undefined) {
+      if (line.statements.length === 0) {
         console.error(`FIXME: should delete line ${line.lineNo}`);
+      } else {
+        program.add(line);
       }
-    } else if (line.num === undefined) {
+    } else {
       try {
         let pc = 0;
         while (pc < line.statements.length) {
@@ -74,11 +76,11 @@ export async function shell(program, context) {
         console.log(e.stack);
         console.trace();
         printError(
-          `Context: line index ${context.pc}:\n    ${program.lines[context.pc].source}`
+          `Context: line index ${context.pc}:\n    ${
+            program.lines[context.pc].source
+          }`
         );
       }
-    } else {
-      program.add(line);
     }
   }
 }
