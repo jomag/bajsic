@@ -25,7 +25,7 @@ export class BaseSupport {
   }
 
   async printError(message) {
-    console.error(message + '\n');
+    console.error(`${message}\n`);
   }
 
   /**
