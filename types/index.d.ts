@@ -27,4 +27,5 @@ declare module 'bajsic' {
 
   declare function parse(source: string): Program;
   declare function shell(program: Program, context: Context): Promise<void>;
+  declare function run(program: Program, context: Context): Promise<void>;
 }

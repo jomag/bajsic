@@ -1,6 +1,7 @@
 import { Context } from './context';
 import { builtinFunctions } from './BasicFunction';
 import { parse } from './parser';
+import { RunStatement } from './statements/RunStatement';
 
 export const setupEnvironment = (source, support) => {
   const context = new Context(support);
@@ -12,4 +13,8 @@ export const setupEnvironment = (source, support) => {
   }
 
   return { program, context };
+};
+
+export const run = async (program, context) => {
+  return RunStatement().exec(program, context);
 };

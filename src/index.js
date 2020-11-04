@@ -1,4 +1,4 @@
-export { setupEnvironment } from './utils';
+export { setupEnvironment, run } from './utils';
 export { Stream } from './stream';
 export { shell } from './shell';
 export { BaseSupport } from './support';
