@@ -16,5 +16,5 @@ export const setupEnvironment = (source, support) => {
 };
 
 export const run = async (program, context) => {
-  return RunStatement().exec(program, context);
+  return new RunStatement().exec(program, context);
 };
