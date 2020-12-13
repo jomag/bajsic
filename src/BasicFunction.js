@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { RuntimeError, IllegalFunctionCallError } from './error';
+import { RuntimeError, IllegalFunctionCallError, InternalError } from './error';
 import { Value, ValueType, castValue } from './Value';
 
 export class BasicFunction {
@@ -48,6 +48,7 @@ const validateValueType = (value, type) => {
   }
 };
 
+/** @param {Value} value */
 const validateNumber = (value) => {
   if (!value.isNumeric()) {
     throw new RuntimeError(`Expected numeric value, got ${value.type}`);
@@ -246,6 +247,42 @@ const spaceFun = ([n]) => {
   return new Value(ValueType.STRING, ' '.repeat(Math.floor(n.value)));
 };
 
+/** @param {[Value]} arg */
+/** @returns {Value} */
+const strDollarFun = ([arg]) => {
+  validateNumber(arg);
+
+  switch (arg.type) {
+    case ValueType.INT:
+      // "The STR$ function returns up to 10 digits for LONG integers
+      // and up to 31 digits for DECIMAL values"
+      console.log(
+        `STR$: ivalue ${arg.value} -> ${Number(arg.value).toFixed(0)}`
+      );
+      return new Value(ValueType.STRING, Number(arg.value).toFixed(0));
+
+    case ValueType.FLOAT:
+      // Floating point numbers are not formatted exactly according
+      // to the documentation:
+      //
+      // "When you print a floating point number that has six decimal
+      // digits or more but the integer portion has six digits or less
+      // (for example 1234.567), VAX BASIC rounds the number to six
+      // digits (1234.57). If a floating-point number's integer part
+      // is seven decimal digits or more, VAX BASIC rounds the number
+      // to six digits and prints it in E format"
+      //
+      // "When you print a floating-point number with magnitude between
+      // 0.1 and 1, VAX BASIC rounds it to six digits. When you print a
+      // number with magnitude smaller than 0.1, VAX BASIC rounds it to
+      // six digits and prints it in E format."
+      console.log(`STR$: fvalue ${arg.value}`);
+      return new Value(ValueType.STRING, `${arg.value}`);
+    default:
+      throw new InternalError(`Invalid number type: ${arg.type}`);
+  }
+};
+
 export const builtinFunctions = () => {
   return {
     sin: new BasicFunction(1, 0, ([angle]) => {
@@ -267,5 +304,6 @@ export const builtinFunctions = () => {
     VAL: new BasicFunction(1, 0, valFun),
     ECHO: new BasicFunction(1, 0, echoFun),
     SPACE$: new BasicFunction(1, 0, spaceFun),
+    STR$: new BasicFunction(1, 0, strDollarFun),
   };
 };
