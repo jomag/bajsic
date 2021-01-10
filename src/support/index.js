@@ -35,4 +35,15 @@ export class BaseSupport {
   async readLine(channel) {
     throw new Error('Not implemented');
   }
+
+  /**
+   * @param {timeout} timeout in milliseconds
+   */
+  async waitForInput(timeout) {
+    throw new Error('Not implemented');
+  }
+
+  clearInputBuffer() {
+    throw new Error('Not implemented');
+  }
 }

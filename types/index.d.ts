@@ -15,6 +15,8 @@ declare module 'bajsic' {
     async close(channel: number);
     async print(channel: number, value: string);
     async readLine(channel: number);
+    async waitForInput(timeout: number);
+    clearInputBuffer();
   }
 
   declare function setupEnvironment(
