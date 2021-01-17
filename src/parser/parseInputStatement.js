@@ -12,7 +12,7 @@ import {
 import { parseExpression } from './expression';
 import { parseVar } from './parseVar';
 
-export const parseInputStatement = tokens => {
+export const parseInputStatement = (tokens) => {
   popKeyword(tokens, Keyword.INPUT);
   let channel;
   let tok;
@@ -27,27 +27,27 @@ export const parseInputStatement = tokens => {
 
   while (tokens.length) {
     let str;
-    let lineFeed = false;
+    let separator = false;
 
     tok = popOptionalType(tokens, TokenType.STRING);
 
     if (tok) {
       str = tok.value;
 
-      const lineFeedToken = popType(tokens, [
+      const separatorToken = popType(tokens, [
         TokenType.COMMA,
         TokenType.SEMICOLON,
         TokenType.UNDERSCORE,
       ]);
 
-      lineFeed = lineFeedToken.value !== TokenType.COMMA;
+      separator = separatorToken.value;
     }
 
     const identifier = parseVar(tokens);
 
     list.push({
       str,
-      lineFeed,
+      separator,
       identifier,
     });
 

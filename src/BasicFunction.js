@@ -185,7 +185,9 @@ const asciiFun = (args) => {
     return new Value(ValueType.INT, str.value.charCodeAt(0));
   }
 
-  throw new IllegalFunctionCallError('Empty string');
+  // From 1990 reference:
+  // "Note that the ASCII value of a null string is zero."
+  return new Value(ValueType.INT, 0);
 };
 
 const sleepFun = async ([seconds], context) => {

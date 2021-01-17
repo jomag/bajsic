@@ -88,37 +88,6 @@ Used when saving game state to disk:
 80105	MARGIN #1,132 \ QUOTE #1 \ X=0'&&&&&
 ```
 
-### SLEEP
-
-In all used references, SLEEP is a statement. But in the game it is used as
-a function:
-
-```basic
-09419	D=SLEEP(3) \ IF D THEN INPUT ""_A$
-```
-
-From all usages in the code it seems like `SLEEP` will sleep for the specified
-number of seconds, unless interrupted by user input. The return value is
-true if the function was interrupted before its timeout.
-
-### Underscores in INPUT statements
-
-INPUT statements allows "," or ";" to separate the string presented
-from the target variable:
-
-```basic
-INPUT "Question";A$
-```
-
-The _Stugan_ source code also uses underscore, which is not legal according
-to the reference:
-
-```basic
-INPUT "Question"_A$
-```
-
-Currently this is handled by treating `,`, `;` and `_` equally.
-
 ## References
 
 - [VAX Basic User Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY15B-TE_VAX_BASIC_User_Manual_Feb90.pdf) (1990)

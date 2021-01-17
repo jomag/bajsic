@@ -14,6 +14,7 @@ declare module 'bajsic' {
     async open(filename: string, mode: string, channel: number);
     async close(channel: number);
     async print(channel: number, value: string);
+    async printError(message: string);
     async readLine(channel: number);
     async waitForInput(timeout: number);
     clearInputBuffer();
