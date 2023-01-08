@@ -94,7 +94,7 @@ Used when saving game state to disk:
 - [VAX Basic Reference Manual](http://bitsavers.trailing-edge.com/pdf/dec/vax/lang/basic/AA-HY16B-TE_VAX_BASIC_Reference_Manual_Feb90.pdf) (1990)
 - [ Let's Build a Compiler, by Jack Crenshaw](https://compilers.iecc.com/crenshaw/) (1989)
 - [A bunch of HP 9000 Basic references](http://bitsavers.informatik.uni-stuttgart.de/pdf/hp/9000_basic/)
-- [BASIC 4.0 for the HP 9000 series 200/300 computers](http://bitsavers.informatik.uni-stuttgart.de/pdf/dec/pdp11/rsts/V10/AA-2623D-TC_BASIC_PLUS_Lanuage_Manual_Dec1981.pdf)
+- [BASIC 4.0 for the HP 9000 series 200/300 computers](http://bitsavers.informatik.uni-stuttgart.de/pdf/dec/pdp11/rsts/V10/AA-2623D-TC_BASIC_PLUS_Lanuage_Manual_Dec1981.pdf) ([Archived](https://web.archive.org/web/20220206131954/http://bitsavers.informatik.uni-stuttgart.de/pdf/dec/pdp11/rsts/V10/AA-2623D-TC_BASIC_PLUS_Lanuage_Manual_Dec1981.pdf))
 - [Small BASIC Interpreters](https://sites.google.com/site/smallbasicinterpreters/)
 
 ## Q & A
